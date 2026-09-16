@@ -1,0 +1,85 @@
+/* SentraVA — Glacia Liquid Glass tokens (Light) */
+
+:root {
+  --glacia-bg: #E8ECF5;
+  --glacia-bg-elevated: #EEF1FA;
+  --glacia-red: #ff2529;
+  --glacia-ink: #0F172A;
+  --glacia-ink-dim: #64748B;
+
+  --glacia-glass-fill: rgba(255,255,255,0.60);
+  --glacia-glass-fill-strong: rgba(255,255,255,0.80);
+  --glacia-glass-border: rgba(255,255,255,0.75);
+  --glacia-glass-highlight: rgba(255,255,255,0.95);
+
+  --glacia-blur-sm: 14px;
+  --glacia-blur-md: 22px;
+  --glacia-blur-lg: 34px;
+
+  --glacia-radius-sm: 12px;
+  --glacia-radius-md: 20px;
+  --glacia-radius-lg: 28px;
+  --glacia-radius-pill: 999px;
+
+  --glacia-sev-critical: #dc2626;
+  --glacia-sev-high: #ea580c;
+  --glacia-sev-medium: #ca8a04;
+  --glacia-sev-low: #2563eb;
+  --glacia-sev-info: #64748b;
+}
+
+.glass-panel {
+  background: var(--glacia-glass-fill);
+  border: 1px solid var(--glacia-glass-border);
+  border-radius: var(--glacia-radius-md);
+  backdrop-filter: blur(var(--glacia-blur-md)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glacia-blur-md)) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight), 0 4px 24px rgba(0,0,0,0.07), 0 1px 6px rgba(0,0,0,0.04);
+}
+
+.glass-panel--strong {
+  background: var(--glacia-glass-fill-strong);
+}
+
+.btn-primary {
+  background: var(--glacia-red);
+  color: white;
+  border: none;
+  border-radius: var(--glacia-radius-pill);
+  padding: 12px 22px;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(255,37,41,0.35);
+}
+
+.btn-glass {
+  background: var(--glacia-glass-fill-strong);
+  border: 1px solid var(--glacia-glass-border);
+  border-radius: var(--glacia-radius-pill);
+  padding: 12px 22px;
+  font-weight: 600;
+  color: var(--glacia-ink);
+  backdrop-filter: blur(var(--glacia-blur-sm));
+  -webkit-backdrop-filter: blur(var(--glacia-blur-sm));
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--glacia-radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+.badge .dot { width: 7px; height: 7px; border-radius: 50%; }
+.badge--critical { color: var(--glacia-sev-critical); background: rgba(220,38,38,0.08); }
+.badge--critical .dot { background: var(--glacia-sev-critical); }
+.badge--high { color: var(--glacia-sev-high); background: rgba(234,88,12,0.08); }
+.badge--high .dot { background: var(--glacia-sev-high); }
+.badge--medium { color: var(--glacia-sev-medium); background: rgba(202,138,4,0.08); }
+.badge--medium .dot { background: var(--glacia-sev-medium); }
+.badge--low { color: var(--glacia-sev-low); background: rgba(37,99,235,0.08); }
+.badge--low .dot { background: var(--glacia-sev-low); }
+.badge--info { color: var(--glacia-sev-info); background: rgba(100,116,139,0.08); }
+.badge--info .dot { background: var(--glacia-sev-info); }

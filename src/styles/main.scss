@@ -1,0 +1,110 @@
+@use "variables" as *;
+@use "tokens";
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #app {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: var(--text-base);
+  color: var(--glacia-ink);
+  background-color: var(--glacia-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ── PrimeVue overrides ──────────────────────────────────────────────────────
+
+.p-button-primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+
+  &:hover {
+    background-color: var(--color-primary-dark) !important;
+    border-color: var(--color-primary-dark) !important;
+  }
+}
+
+// PrimeVue Select — light glass override
+.p-select {
+  background: var(--glacia-glass-fill-strong) !important;
+  border: 1px solid var(--glacia-glass-border) !important;
+  border-radius: var(--glacia-radius-sm) !important;
+  backdrop-filter: blur(var(--glacia-blur-sm)) !important;
+  color: var(--glacia-ink) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+
+  .p-select-label { color: var(--glacia-ink) !important; font-size: 13px !important; }
+  .p-select-dropdown { color: var(--glacia-ink-dim) !important; }
+}
+
+.p-select-overlay {
+  background: rgba(255,255,255,0.92) !important;
+  backdrop-filter: blur(var(--glacia-blur-md)) !important;
+  -webkit-backdrop-filter: blur(var(--glacia-blur-md)) !important;
+  border: 1px solid rgba(255,255,255,0.80) !important;
+  border-radius: var(--glacia-radius-sm) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+
+  .p-select-option {
+    color: var(--glacia-ink) !important;
+    font-size: 13px !important;
+
+    &:hover, &.p-select-option-selected {
+      background: rgba(0,0,0,0.05) !important;
+    }
+  }
+}
+
+// ── Utility classes ─────────────────────────────────────────────────────────
+
+.text-primary    { color: var(--color-primary); }
+.text-secondary  { color: var(--glacia-ink-dim); }
+.text-muted      { color: #6a6a74; }
+.text-success    { color: var(--color-resolved); }
+.text-danger     { color: var(--glacia-sev-critical); }
+
+.fw-500 { font-weight: 500; }
+.fw-600 { font-weight: 600; }
+.fw-700 { font-weight: 700; }
+
+.flex         { display: flex; }
+.flex-col     { display: flex; flex-direction: column; }
+.items-center { align-items: center; }
+.gap-sm       { gap: var(--gap-sm); }
+.gap-md       { gap: var(--gap-md); }
+.gap-lg       { gap: var(--gap-lg); }
+
+// ── Card — Glacia glass panel ────────────────────────────────────────────────
+
+.card {
+  background: var(--glacia-glass-fill);
+  border: 1px solid var(--glacia-glass-border);
+  border-radius: var(--glacia-radius-md);
+  backdrop-filter: blur(var(--glacia-blur-md)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glacia-blur-md)) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight), 0 4px 24px rgba(0,0,0,0.07), 0 1px 6px rgba(0,0,0,0.04);
+  padding: 18px;
+}
+
+.card-title {
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--glacia-ink);
+  margin: 0;
+}
+
+// ── Scrollbar ───────────────────────────────────────────────────────────────
+
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(0,0,0,0.14); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.24); }

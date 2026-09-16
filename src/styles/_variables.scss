@@ -1,0 +1,28 @@
+// Brand
+$primary: #FF2529;
+$primary-dark: #cc1f23;
+$primary-light: #ff6b6d;
+$primary-50: #fff1f1;
+
+// Surfaces
+$bg-app: #F5F6FA;
+$bg-surface: #FFFFFF;
+$text-dark: #171717;
+$text-secondary: #6B7280;
+$text-muted: #9CA3AF;
+$border-color: #E5E7EB;
+
+// Sidebar
+$sidebar-width: 260px;
+$sidebar-collapsed-width: 68px;
+
+// Breakpoints
+$bp-xl: 1280px;
+$bp-lg: 1024px;
+$bp-md: 768px;
+
+@mixin below($bp) {
+  @media (max-width: $bp) {
+    @content;
+  }
+}
