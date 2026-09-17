@@ -1,10 +1,10 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import Select from 'primevue/select'
 import { useAuthStore } from '@/store/auth'
 import { greeting } from '@/utils/helpers'
 import { useCompanyContext } from '@/composables/useCompanyContext'
-import { IconRadar } from '@tabler/icons-vue'
+import { IconRadar, IconChevronDown, IconWorld, IconNetwork, IconBrowser, IconCode } from '@tabler/icons-vue'
 
 const props = defineProps({
   companies: { type: Array, default: () => [] },
@@ -13,6 +13,30 @@ const emit = defineEmits(['run-scan'])
 
 const auth = useAuthStore()
 const { activeCompany, switchCompany } = useCompanyContext()
+
+const modules = [
+  { key: 'domain',  label: 'Domain Inspection', icon: IconWorld   },
+  { key: 'network', label: 'Network',           icon: IconNetwork },
+  { key: 'webapp',  label: 'Web Application',   icon: IconBrowser },
+  { key: 'source',  label: 'Source Code',       icon: IconCode    },
+]
+
+const showScanMenu = ref(false)
+const scanMenuRef = ref(null)
+
+function handleClickOutside(e) {
+  if (scanMenuRef.value && !scanMenuRef.value.contains(e.target)) {
+    showScanMenu.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('mousedown', handleClickOutside))
+onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
+
+function runScan(moduleKey) {
+  showScanMenu.value = false
+  emit('run-scan', moduleKey)
+}
 
 const name = computed(() => {
   const n = auth.user?.name ?? auth.user?.username ?? ''
@@ -44,10 +68,36 @@ const selectedCompanyId = computed({
         placeholder="Company List"
         class="dash-header__select"
       />
-      <button class="btn-scan" @click="emit('run-scan')">
-        <IconRadar :size="15" />
-        Run Scan
-      </button>
+      <div ref="scanMenuRef" class="scan-menu">
+        <button
+          class="btn-scan"
+          :class="{ 'btn-scan--open': showScanMenu }"
+          @click="showScanMenu = !showScanMenu"
+        >
+          <IconRadar :size="15" />
+          Run Scan
+          <IconChevronDown
+            :size="14"
+            class="btn-scan__chevron"
+            :class="{ 'btn-scan__chevron--up': showScanMenu }"
+          />
+        </button>
+
+        <transition name="scan-dropdown">
+          <div v-if="showScanMenu" class="scan-panel">
+            <button
+              v-for="m in modules"
+              :key="m.key"
+              type="button"
+              class="scan-panel__item"
+              @click="runScan(m.key)"
+            >
+              <component :is="m.icon" :size="16" color="#FF2529" />
+              <span>{{ m.label }}</span>
+            </button>
+          </div>
+        </transition>
+      </div>
     </div>
   </div>
 </template>
@@ -88,7 +138,8 @@ const selectedCompanyId = computed({
   }
 
   &__select {
-    min-width: 200px;
+    width: 220px;
+    flex-shrink: 0;
     height: 36px;
     font-size: 13px;
   }
@@ -103,12 +154,16 @@ const selectedCompanyId = computed({
   }
 }
 
+.scan-menu {
+  position: relative;
+}
+
 .btn-scan {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: 38px;
-  padding: 0 20px;
+  padding: 0 18px;
   background: var(--glacia-red);
   color: #fff;
   border: none;
@@ -120,9 +175,69 @@ const selectedCompanyId = computed({
   box-shadow: 0 6px 20px rgba(255,37,41,0.40);
   transition: background .15s, box-shadow .15s;
 
-  &:hover {
+  &:hover, &--open {
     background: #e01e22;
     box-shadow: 0 8px 24px rgba(255,37,41,0.50);
   }
+
+  &__chevron {
+    margin-left: 2px;
+    transition: transform 0.18s ease;
+
+    &--up { transform: rotate(180deg); }
+  }
+}
+
+.scan-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
+  overflow: hidden;
+  padding: 6px;
+  z-index: 100;
+  transform-origin: top right;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 9px;
+    border: none;
+    background: transparent;
+    color: var(--glacia-ink);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.13s;
+
+    &:hover {
+      background: rgba(255, 37, 41, 0.08);
+    }
+  }
+}
+
+.scan-dropdown-enter-active {
+  animation: scan-panel-bounce 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.scan-dropdown-leave-active {
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.scan-dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+@keyframes scan-panel-bounce {
+  0%   { opacity: 0; transform: scale(0.85) translateY(-8px); }
+  60%  { opacity: 1; transform: scale(1.03) translateY(0); }
+  100% { transform: scale(1); }
 }
 </style>

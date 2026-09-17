@@ -1,6 +1,37 @@
 export const clientDashboardMock = {
   greeting: { name: 'ricolimruijie', company: 'Protergo Cyber Security Ampera' },
 
+  // ── 0. Overall Severity Trend ────────────────────────────────────────────────
+  severityTrend: {
+    years: [2026, 2025, 2024],
+    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    byYear: {
+      2026: {
+        critical: [16, 26, 14, 17, 11, 8, 5, 17, 18, 22, 19, 3],
+        high:     [41, 27, 22, 19, 12, 5, 4, 27, 34, 30, 29, 32],
+        medium:   [30, 24, 20, 18, 8, 6, 9, 27, 46, 44, 36, 34],
+        low:      [10, 12, 8, 12, 34, 40, 23, 21, 17, 6, 5, 27],
+        info:     [8, 7, 27, 15, 9, 7, 4, 22, 24, 22, 15, 2],
+      },
+      2025: {
+        critical: [22, 19, 25, 12, 9, 14, 10, 6, 15, 20, 24, 18],
+        high:     [30, 33, 28, 20, 15, 11, 9, 14, 22, 27, 31, 29],
+        medium:   [18, 22, 26, 24, 16, 10, 7, 12, 20, 28, 33, 30],
+        low:      [14, 10, 16, 22, 28, 32, 26, 18, 12, 9, 11, 15],
+        info:     [6, 9, 13, 10, 8, 5, 4, 11, 17, 19, 14, 8],
+      },
+      // Tracking only began in July 2024 — Jan–Jun have no data (null leaves
+      // a gap in the line instead of drawing a false zero).
+      2024: {
+        critical: [null, null, null, null, null, null, 13, 10, 8, 11, 14, 16],
+        high:     [null, null, null, null, null, null, 8, 12, 19, 25, 22, 20],
+        medium:   [null, null, null, null, null, null, 6, 10, 16, 21, 25, 27],
+        low:      [null, null, null, null, null, null, 18, 14, 10, 7, 9, 12],
+        info:     [null, null, null, null, null, null, 5, 8, 10, 12, 9, 6],
+      },
+    },
+  },
+
   // ── 1. Asset Registered Tracker ─────────────────────────────────────────────
   assetTracker: {
     total:      248,
@@ -77,16 +108,36 @@ export const clientDashboardMock = {
     { id: 'sp5', target: 'greenbone-main',      type: 'Source Code',       date: '13 Apr 2026', executedAt: '8:30 AM', status: 'running' },
     { id: 'sp6', target: 'payments-service',    type: 'Source Code',       date: '13 Apr 2026', executedAt: '9:00 AM', status: 'running' },
     { id: 'sp7', target: 'auth-service',        type: 'Source Code',       date: '13 Apr 2026', executedAt: '9:15 AM', status: 'queued' },
+    { id: 'sp8', target: 'checkout-svc',        type: 'Web Application',   date: '13 Apr 2026', executedAt: '9:20 AM', status: 'running' },
+    { id: 'sp9', target: 'billing-svc',         type: 'Source Code',       date: '13 Apr 2026', executedAt: '9:35 AM', status: 'running' },
+    { id: 'sp10', target: 'notify-svc',         type: 'Web Application',   date: '13 Apr 2026', executedAt: '9:40 AM', status: 'running' },
+    { id: 'sp11', target: 'vpn-edge',           type: 'Network',           date: '13 Apr 2026', executedAt: '9:45 AM', status: 'running' },
   ],
 
   // ── 6. Ticket Feed ───────────────────────────────────────────────────────────
   ticketFeed: [
-    { id: 't1', label: 'Application & System Failures', name: 'API gateway returning 502 on /checkout', color: '#FF2529' },
-    { id: 't2', label: 'Application & System Failures', name: 'Memory leak in order-processing pod',    color: '#FF2529' },
-    { id: 't3', label: 'General Enquiry',               name: 'Request for DAST scope expansion',       color: '#2563EB' },
-    { id: 't4', label: 'Vulnerability Report',          name: 'OpenSSL CVE-2025-29847 remediation',     color: '#EA580C' },
-    { id: 't5', label: 'Access Request',                name: 'Analyst onboarding — new team member',   color: '#7C3AED' },
+    { id: 't1',  label: 'Application & System Failures', name: 'API gateway returning 502 on /checkout',        color: '#FF2529', status: 'open' },
+    { id: 't2',  label: 'Application & System Failures', name: 'Memory leak in order-processing pod',           color: '#FF2529', status: 'open' },
+    { id: 't3',  label: 'General Enquiry',               name: 'Request for DAST scope expansion',              color: '#2563EB', status: 'resolved' },
+    { id: 't4',  label: 'Others',                        name: 'OpenSSL CVE-2025-29847 remediation',            color: '#64748B', status: 'open' },
+    { id: 't5',  label: 'Others',                        name: 'Analyst onboarding — new team member',          color: '#64748B', status: 'resolved' },
+    { id: 't6',  label: 'Application & System Failures', name: 'Database connection pool exhausted',            color: '#FF2529', status: 'resolved' },
+    { id: 't7',  label: 'Others',                        name: 'Outdated jQuery 1.12.4 flagged on web-console', color: '#64748B', status: 'open' },
+    { id: 't8',  label: 'General Enquiry',               name: 'Question about credit usage this month',        color: '#2563EB', status: 'resolved' },
+    { id: 't9',  label: 'Others',                        name: 'Revoke access for former contractor',           color: '#64748B', status: 'resolved' },
+    { id: 't10', label: 'Application & System Failures', name: 'Scheduled scan failed to start on time',        color: '#FF2529', status: 'open' },
+    { id: 't11', label: 'Others',                        name: 'Exposed .git directory on static-cdn',          color: '#64748B', status: 'resolved' },
+    { id: 't12', label: 'General Enquiry',               name: 'Clarify scope for upcoming pen test',           color: '#2563EB', status: 'open' },
   ],
+
+  // ── 6b. Vulnerability Cycle Tracker ──────────────────────────────────────────
+  vulnerabilityCycle: {
+    active: 40,
+    fixing: 25,
+    mitigated: 15,
+    tolerated: 12,
+    falsePositive: 8,
+  },
 
   // ── 7. Activity Feed ─────────────────────────────────────────────────────────
   recentActivity: [

@@ -1,10 +1,14 @@
 import { registerMock } from '@/utils/request'
 import { clientDashboardMock }     from './dashboard/client'
 import { superAdminDashboardMock } from './dashboard/superAdmin'
+import { apiKeysMock }             from './settings/apiKeys'
 
 // ── Dashboard ────────────────────────────────────────────────────────────────
 registerMock(/\/dashboard\/client/,      () => clientDashboardMock)
 registerMock(/\/dashboard\/super-admin/, () => superAdminDashboardMock)
+
+// ── Settings ─────────────────────────────────────────────────────────────────
+registerMock(/\/settings\/api-keys/, () => apiKeysMock)
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 registerMock(/\/auth\/login/, (_, cfg) => {

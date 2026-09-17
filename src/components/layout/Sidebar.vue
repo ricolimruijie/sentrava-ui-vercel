@@ -12,14 +12,11 @@ import {
   IconBuilding,
   IconKey,
   IconTicket,
-  IconChevronsLeft,
-  IconChevronsRight,
 } from '@tabler/icons-vue'
 
 const props = defineProps({
   collapsed: { type: Boolean, default: false },
 })
-const emit = defineEmits(['update:collapsed'])
 
 const route = useRoute()
 
@@ -107,28 +104,12 @@ function isActive(itemRoute) {
         </router-link>
       </div>
     </nav>
-
-    <!-- ── Footer ──────────────────────────────────────────────── -->
-    <div class="sidebar__footer">
-      <!-- Collapse toggle -->
-      <button
-        class="sidebar__toggle"
-        :title="props.collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-        @click="emit('update:collapsed', !props.collapsed)"
-      >
-        <component :is="props.collapsed ? IconChevronsRight : IconChevronsLeft" :size="16" />
-        <transition name="label-fade">
-          <span v-if="!props.collapsed" class="sidebar__toggle-label">Collapse</span>
-        </transition>
-      </button>
-    </div>
-
   </aside>
 </template>
 
 <style scoped lang="scss">
 // ── Variables ───────────────────────────────────────────────────────────────
-$w-expanded:  268px;
+$w-expanded:  230px;
 $w-collapsed:  64px;
 
 .sidebar {
@@ -175,45 +156,6 @@ $w-collapsed:  64px;
     color: var(--glacia-ink);
     user-select: none;
     white-space: nowrap;
-  }
-
-  // ── Footer ──────────────────────────────────────────────────────
-  &__footer {
-    padding: 12px 0 0;
-    border-top: 1px solid var(--glacia-glass-border);
-    flex-shrink: 0;
-  }
-
-  &__toggle {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    width: 100%;
-    padding: 9px 10px;
-    border-radius: 9px;
-    border: none;
-    background: transparent;
-    color: var(--glacia-ink-dim);
-    font-size: 13.5px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.13s, color 0.13s;
-    white-space: nowrap;
-    overflow: hidden;
-
-    .sidebar--collapsed & {
-      justify-content: center;
-      padding: 9px 0;
-    }
-
-    &:hover {
-      background: var(--glacia-glass-fill-strong);
-      color: var(--glacia-ink);
-    }
-  }
-
-  &__toggle-label {
-    line-height: 1;
   }
 
   // ── Nav ─────────────────────────────────────────────────────────

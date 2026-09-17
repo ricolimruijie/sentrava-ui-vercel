@@ -21,6 +21,11 @@ const appRoutes = [
   { path: '/vulnerabilities',     component: Placeholder, meta: { requiresAuth: true } },
   { path: '/reports',             component: Placeholder, meta: { requiresAuth: true } },
   { path: '/settings',            component: Placeholder, meta: { requiresAuth: true } },
+  {
+    path: '/settings/api-keys',
+    component: () => import('@/views/Settings/ApiKeysView.vue'),
+    meta: { requiresAuth: true, title: 'API Keys', section: 'Manage' },
+  },
   { path: '/companies',           component: Placeholder, meta: { requiresAuth: true } },
   { path: '/credits',             component: Placeholder, meta: { requiresAuth: true } },
   { path: '/tickets',             component: Placeholder, meta: { requiresAuth: true } },

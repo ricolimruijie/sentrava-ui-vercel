@@ -15,10 +15,10 @@ const collapsed = ref(false)
   </div>
 
   <div class="app-layout" :class="{ 'app-layout--collapsed': collapsed }">
-    <Sidebar v-model:collapsed="collapsed" />
+    <Sidebar :collapsed="collapsed" />
 
     <div class="app-layout__main">
-      <AppNavbar>
+      <AppNavbar :collapsed="collapsed" @toggle-sidebar="collapsed = !collapsed">
         <slot name="navbar" />
       </AppNavbar>
 
