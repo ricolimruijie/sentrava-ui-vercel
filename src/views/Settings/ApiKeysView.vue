@@ -18,12 +18,14 @@ const showCreateModal = ref(false)
 const modalStep = ref('form')
 const newKeyName = ref('')
 const revealedKey = ref('')
+const createState = ref('idle') // 'idle' | 'loading' — spinner before the reveal step
 const copyState = ref('idle') // 'idle' | 'loading' | 'copied'
 const canCreate = computed(() => newKeyName.value.trim().length > 0)
 
 function openCreateModal() {
   newKeyName.value = ''
   modalStep.value = 'form'
+  createState.value = 'idle'
   showCreateModal.value = true
 }
 
@@ -31,6 +33,7 @@ function closeCreateModal() {
   showCreateModal.value = false
   modalStep.value = 'form'
   revealedKey.value = ''
+  createState.value = 'idle'
   copyState.value = 'idle'
 }
 
@@ -41,23 +44,27 @@ function randomHex(len) {
 }
 
 function createApiKey() {
-  if (!canCreate.value) return
-  const fullKey = `sk-${randomHex(32)}`
-  const masked = `sk-${fullKey.slice(3, 9)}*****${fullKey.slice(-12)}`
-  const today = new Date().toISOString().slice(0, 10)
-  const entry = {
-    id: `key-${Date.now()}`,
-    name: newKeyName.value.trim(),
-    trackingId: `${randomHex(8)}-${randomHex(4)}-${randomHex(4)}-${randomHex(4)}-${randomHex(12)}`,
-    key: masked,
-    created: today,
-    lastUsed: today,
-    requests: 0,
-  }
-  data.value = [entry, ...(data.value ?? [])]
-  pagination.goTo(1)
-  revealedKey.value = fullKey
-  modalStep.value = 'reveal'
+  if (!canCreate.value || createState.value !== 'idle') return
+  createState.value = 'loading'
+  setTimeout(() => {
+    const fullKey = `sk-${randomHex(32)}`
+    const masked = `sk-${fullKey.slice(3, 9)}*****${fullKey.slice(-12)}`
+    const today = new Date().toISOString().slice(0, 10)
+    const entry = {
+      id: `key-${Date.now()}`,
+      name: newKeyName.value.trim(),
+      trackingId: `${randomHex(8)}-${randomHex(4)}-${randomHex(4)}-${randomHex(4)}-${randomHex(12)}`,
+      key: masked,
+      created: today,
+      lastUsed: today,
+      requests: 0,
+    }
+    data.value = [entry, ...(data.value ?? [])]
+    pagination.goTo(1)
+    revealedKey.value = fullKey
+    createState.value = 'idle'
+    modalStep.value = 'reveal'
+  }, 600)
 }
 
 function triggerCopy() {
@@ -125,10 +132,36 @@ function saveEdit() {
   }, 500)
 }
 
+// ── Revoke API key modal ─────────────────────────────────────────────────────
+const showRevokeModal = ref(false)
+const revokingItem = ref(null)
+const revokeState = ref('idle') // 'idle' | 'loading' | 'saved'
+const revokeAcknowledged = ref(false)
+
 function revokeKey(item) {
   closeMenu()
-  // stub — wire up to a real revoke flow when the API exists
-  console.info('Revoke API key', item.id)
+  revokingItem.value = item
+  revokeState.value = 'idle'
+  revokeAcknowledged.value = false
+  showRevokeModal.value = true
+}
+
+function closeRevokeModal() {
+  showRevokeModal.value = false
+  revokingItem.value = null
+  revokeState.value = 'idle'
+  revokeAcknowledged.value = false
+}
+
+function confirmRevoke() {
+  if (!revokingItem.value || !revokeAcknowledged.value || revokeState.value !== 'idle') return
+  revokeState.value = 'loading'
+  setTimeout(() => {
+    data.value = (data.value ?? []).filter((k) => k.id !== revokingItem.value.id)
+    pagination.goTo(pagination.page.value) // re-clamp in case the last page just emptied out
+    revokeState.value = 'saved'
+    setTimeout(closeRevokeModal, 700)
+  }, 500)
 }
 
 function handleClickOutside(e) {
@@ -300,11 +333,13 @@ const pageList = computed(() => {
                 <button type="button" class="modal-btn modal-btn--cancel" @click="closeCreateModal">Cancel</button>
                 <button
                   type="button"
-                  class="modal-btn modal-btn--create"
+                  class="modal-btn"
+                  :class="canCreate ? 'modal-btn--save' : 'modal-btn--create'"
                   :disabled="!canCreate"
                   @click="createApiKey"
                 >
-                  Create API key
+                  <span v-if="createState === 'loading'" class="copy-btn__spinner" />
+                  <span v-else>Create API key</span>
                 </button>
               </div>
             </template>
@@ -378,6 +413,49 @@ const pageList = computed(() => {
                 <span v-if="saveState === 'loading'" class="copy-btn__spinner" />
                 <IconCheck v-else-if="saveState === 'saved'" :size="18" class="copy-btn__check" />
                 <span v-else>Save</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showRevokeModal" class="modal-backdrop" @mousedown.self="closeRevokeModal">
+          <div class="create-modal">
+            <div class="create-modal__head">
+              <h2 class="create-modal__title">Revoke API Key</h2>
+              <button type="button" class="create-modal__close" aria-label="Close" @click="closeRevokeModal">
+                <IconX :size="20" />
+              </button>
+            </div>
+
+            <p class="create-modal__note">
+              This API key will immediately be disabled. API requests made using this key will be rejected,
+              which could cause any systems still depending on it to break. Once revoked, you'll no longer be
+              able to view or modify this API key.
+            </p>
+
+            <label class="revoke-ack">
+              <input v-model="revokeAcknowledged" type="checkbox" class="revoke-ack__box" />
+              <span>I understand this action is permanent and cannot be undone.</span>
+            </label>
+
+            <div class="create-modal__actions">
+              <button type="button" class="modal-btn modal-btn--cancel" @click="closeRevokeModal">Cancel</button>
+              <button
+                type="button"
+                class="modal-btn"
+                :class="revokeAcknowledged
+                  ? { 'modal-btn--save': true, 'modal-btn--saved': revokeState === 'saved' }
+                  : 'modal-btn--create'"
+                :disabled="!revokeAcknowledged"
+                @click="confirmRevoke"
+              >
+                <span v-if="revokeState === 'loading'" class="copy-btn__spinner" />
+                <IconCheck v-else-if="revokeState === 'saved'" :size="18" class="copy-btn__check" />
+                <span v-else>Revoke</span>
               </button>
             </div>
           </div>
@@ -935,6 +1013,33 @@ const pageList = computed(() => {
   margin: 16px 0 8px;
   font-size: 14px;
   font-weight: 700;
+  color: var(--glacia-ink);
+}
+
+.revoke-ack {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 14px 0 12px;
+  padding: 18px 18px;
+  border-radius: 14px;
+  background: rgba(220, 38, 38, 0.06);
+  cursor: pointer;
+  user-select: none;
+}
+
+.revoke-ack__box {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  accent-color: var(--glacia-sev-critical);
+  cursor: pointer;
+}
+
+.revoke-ack span {
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--glacia-ink);
 }
 </style>
