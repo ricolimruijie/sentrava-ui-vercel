@@ -7,16 +7,38 @@ import dashboardRoutes from './dashboard'
 // Stub placeholder for future pages
 const Placeholder = {
   template: `
-    <div style="padding:40px;text-align:center;color:var(--color-text-secondary)">
-      <h2 style="font-size:1.5rem;font-weight:600;margin-bottom:8px">Coming Soon</h2>
-      <p style="font-size:var(--text-sm)">This module is under active development.</p>
+    <div style="display:flex;align-items:center;justify-content:center;height:60vh;color:var(--glacia-ink-dim);font-size:14px;">
+      work in progress
     </div>
   `
 }
 
 const appRoutes = [
   ...dashboardRoutes,
-  { path: '/assets/:type?',       component: Placeholder, meta: { requiresAuth: true } },
+  {
+    path: '/assets',
+    component: () => import('@/views/Assets/AssetInventoryView.vue'),
+    meta: { requiresAuth: true, title: 'Asset Inventory', crumbs: [{ label: 'Manage' }] },
+  },
+  // Services — each shows a blank Work in Progress page
+  { path: '/assets/domains',     component: Placeholder, meta: { requiresAuth: true, title: 'Domain Inspection' } },
+  { path: '/assets/networks',    component: Placeholder, meta: { requiresAuth: true, title: 'Network' } },
+  { path: '/assets/webapps',     component: Placeholder, meta: { requiresAuth: true, title: 'Web Application' } },
+  { path: '/assets/source-code', component: Placeholder, meta: { requiresAuth: true, title: 'Source Code' } },
+  {
+    path: '/scans/history',
+    component: () => import('@/views/Scans/CiCdView.vue'),
+    meta: { requiresAuth: true, title: 'CI / CD', crumbs: [{ label: 'Logs' }] },
+  },
+  {
+    path: '/scans/history/:runId/vulnerabilities',
+    component: () => import('@/views/Scans/VulnerabilityOverviewView.vue'),
+    meta: {
+      requiresAuth: true,
+      title: 'Vulnerability Overview',
+      crumbs: [{ label: 'Logs' }, { label: 'CI / CD', to: '/scans/history' }],
+    },
+  },
   { path: '/scans/:section?',     component: Placeholder, meta: { requiresAuth: true } },
   { path: '/vulnerabilities',     component: Placeholder, meta: { requiresAuth: true } },
   { path: '/reports',             component: Placeholder, meta: { requiresAuth: true } },
@@ -24,11 +46,33 @@ const appRoutes = [
   {
     path: '/settings/api-keys',
     component: () => import('@/views/Settings/ApiKeysView.vue'),
-    meta: { requiresAuth: true, title: 'API Keys', section: 'Manage' },
+    meta: { requiresAuth: true, title: 'API Keys', crumbs: [{ label: 'Manage' }] },
   },
-  { path: '/companies',           component: Placeholder, meta: { requiresAuth: true } },
+  {
+    path: '/companies',
+    component: () => import('@/views/Company/CompanyView.vue'),
+    meta: {
+      requiresAuth: true,
+      title: 'Company',
+      crumbs: [{ label: 'Manage' }],
+      // The Company page's tabs live client-side as a `tab` query param —
+      // this lets the breadcrumb reflect the active tab as a trailing
+      // crumb instead of always showing the static page title.
+      tabQuery: 'tab',
+      tabLabels: { overview: 'Overview', list: 'Company list', audit: 'Audit log', probe: 'Probe box' },
+    },
+  },
   { path: '/credits',             component: Placeholder, meta: { requiresAuth: true } },
-  { path: '/tickets',             component: Placeholder, meta: { requiresAuth: true } },
+  {
+    path: '/tickets',
+    component: () => import('@/views/Tickets/TicketListView.vue'),
+    meta: { requiresAuth: true, title: 'Ticket', crumbs: [{ label: 'Manage' }] },
+  },
+  {
+    path: '/tickets/:id',
+    component: () => import('@/views/Tickets/TicketDetailView.vue'),
+    meta: { requiresAuth: true, title: 'Ticket Detail', crumbs: [{ label: 'Manage' }, { label: 'Ticket', to: '/tickets' }] },
+  },
 ]
 
 const router = createRouter({

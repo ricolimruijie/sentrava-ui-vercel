@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { get } from '@/utils/request'
 import { useFetch } from '@/composables/useFetch'
-import { usePagination } from '@/composables/usePagination'
+import DataTable from '@/components/table/DataTable.vue'
 import {
   IconCirclePlus, IconDotsVertical, IconPencil, IconKeyOff, IconX, IconCopy, IconCheck, IconAlertTriangle,
 } from '@tabler/icons-vue'
@@ -10,6 +10,23 @@ import {
 const { data, loading } = useFetch(() => get('/settings/api-keys'))
 
 const MAX_KEYS = 100
+
+const tableRef = ref(null)
+
+const columns = [
+  { key: '__index', label: '#', width: '32px', dim: true },
+  { key: 'name', label: 'Name', width: '190px', truncate: true, bold: true },
+  { key: 'trackingId', label: 'Tracking ID', width: '250px', mono: true, truncate: true },
+  { key: 'key', label: 'Key', width: '230px', mono: true, truncate: true },
+  { key: 'created', label: 'Created', width: '140px', dim: true },
+  { key: 'lastUsed', label: 'Last used', width: '140px', dim: true },
+  { key: 'requests', label: 'API Request', width: '110px', align: 'center', bold: true },
+  { key: 'action', label: 'Action', width: '70px', align: 'center' },
+]
+
+function fmt(iso) {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+}
 
 // ── Create new API key modal ─────────────────────────────────────────────────
 // Two steps: 'form' (name the key) -> 'reveal' (show the full key exactly
@@ -46,7 +63,10 @@ function randomHex(len) {
 function createApiKey() {
   if (!canCreate.value || createState.value !== 'idle') return
   createState.value = 'loading'
+  // Safety: if something stalls, don't leave the button spinning forever
+  const safety = setTimeout(() => { if (createState.value === 'loading') createState.value = 'idle' }, 3000)
   setTimeout(() => {
+    clearTimeout(safety)
     const fullKey = `sk-${randomHex(32)}`
     const masked = `sk-${fullKey.slice(3, 9)}*****${fullKey.slice(-12)}`
     const today = new Date().toISOString().slice(0, 10)
@@ -60,7 +80,7 @@ function createApiKey() {
       requests: 0,
     }
     data.value = [entry, ...(data.value ?? [])]
-    pagination.goTo(1)
+    tableRef.value?.pagination.goTo(1)
     revealedKey.value = fullKey
     createState.value = 'idle'
     modalStep.value = 'reveal'
@@ -70,14 +90,28 @@ function createApiKey() {
 function triggerCopy() {
   if (copyState.value !== 'idle') return
   copyState.value = 'loading'
-  navigator.clipboard.writeText(revealedKey.value).catch(() => {
-    // clipboard permission denied / unavailable — the state sequence still
-    // plays out below so the button doesn't get stuck
-  })
-  setTimeout(() => {
+  const safety = setTimeout(() => { if (copyState.value === 'loading') copyState.value = 'idle' }, 3000)
+  const doCopy = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(revealedKey.value)
+      } else {
+        const ta = document.createElement('textarea')
+        ta.value = revealedKey.value
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand('copy')
+        ta.remove()
+      }
+    } catch {}
+    await new Promise((r) => setTimeout(r, 600))
+    clearTimeout(safety)
     copyState.value = 'copied'
     setTimeout(() => { copyState.value = 'idle' }, 1600)
-  }, 600)
+  }
+  doCopy()
 }
 
 // Action menu — teleported to <body> and positioned from the clicked
@@ -158,7 +192,7 @@ function confirmRevoke() {
   revokeState.value = 'loading'
   setTimeout(() => {
     data.value = (data.value ?? []).filter((k) => k.id !== revokingItem.value.id)
-    pagination.goTo(pagination.page.value) // re-clamp in case the last page just emptied out
+    tableRef.value?.pagination.goTo(tableRef.value.pagination.page.value) // re-clamp in case the last page just emptied out
     revokeState.value = 'saved'
     setTimeout(closeRevokeModal, 700)
   }, 500)
@@ -170,38 +204,6 @@ function handleClickOutside(e) {
 
 onMounted(() => document.addEventListener('mousedown', handleClickOutside))
 onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
-
-const pagination = usePagination({ pageSize: 10 })
-
-const items = computed(() => {
-  pagination.setTotal(data.value?.length ?? 0)
-  const start = pagination.offset.value
-  return (data.value ?? []).slice(start, start + pagination.pageSize.value)
-})
-
-function fmt(iso) {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-}
-
-// Compact page list: 1, 2, 3 … secondToLast, last — with the current page
-// pulled in (and an extra ellipsis) if it isn't already covered.
-const pageList = computed(() => {
-  const total = pagination.totalPages.value
-  const current = pagination.page.value
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-
-  const keep = new Set([1, 2, 3, total - 1, total, current])
-  const sorted = [...keep].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b)
-
-  const out = []
-  let prev = 0
-  for (const p of sorted) {
-    if (p - prev > 1) out.push('…')
-    out.push(p)
-    prev = p
-  }
-  return out
-})
 </script>
 
 <template>
@@ -222,84 +224,37 @@ const pageList = computed(() => {
       at a time.
     </p>
 
-    <div class="apikeys__wrap">
-      <table class="vtable">
-        <thead>
-          <tr>
-            <th class="vtable__num">#</th>
-            <th class="vtable__name">Name</th>
-            <th class="vtable__tracking">Tracking ID</th>
-            <th class="vtable__key">Key</th>
-            <th class="vtable__date">Created</th>
-            <th class="vtable__date">Last used</th>
-            <th class="vtable__requests">API Request</th>
-            <th class="vtable__action">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loading"><td colspan="8" class="vtable__empty">Loading…</td></tr>
-          <tr v-else-if="!items.length"><td colspan="8" class="vtable__empty">No API keys yet.</td></tr>
-          <tr v-for="(item, i) in items" :key="item.id" class="vtable__row">
-            <td class="vtable__num">{{ pagination.offset.value + i + 1 }}.</td>
-            <td class="vtable__name">{{ item.name }}</td>
-            <td class="vtable__tracking">{{ item.trackingId }}</td>
-            <td class="vtable__key">{{ item.key }}</td>
-            <td class="vtable__date">{{ fmt(item.created) }}</td>
-            <td class="vtable__date">{{ fmt(item.lastUsed) }}</td>
-            <td class="vtable__requests">{{ item.requests }}</td>
-            <td class="vtable__action">
-              <button
-                type="button"
-                class="action-btn"
-                aria-label="Actions"
-                @click.stop="toggleMenu(item, $event)"
-              >
-                <IconDotsVertical :size="16" />
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div v-if="pagination.totalPages.value > 1" class="apikeys__pagination">
-      <button type="button" class="page-nav" :disabled="pagination.page.value === 1" @click="pagination.prevPage()">
-        Previous
-      </button>
-
-      <template v-for="(p, idx) in pageList" :key="`${p}-${idx}`">
-        <span v-if="p === '…'" class="page-ellipsis">…</span>
+    <DataTable
+      ref="tableRef"
+      :columns="columns"
+      :items="data ?? []"
+      :loading="loading"
+      empty-text="No API keys yet."
+    >
+      <template #cell-created="{ row }">{{ fmt(row.created) }}</template>
+      <template #cell-lastUsed="{ row }">{{ fmt(row.lastUsed) }}</template>
+      <template #cell-action="{ row }">
         <button
-          v-else
           type="button"
-          class="page-num"
-          :class="{ 'page-num--active': p === pagination.page.value }"
-          @click="pagination.goTo(p)"
+          class="action-btn"
+          aria-label="Actions"
+          @click.stop="toggleMenu(row, $event)"
         >
-          {{ p }}
+          <IconDotsVertical :size="16" />
         </button>
       </template>
-
-      <button
-        type="button"
-        class="page-nav"
-        :disabled="pagination.page.value === pagination.totalPages.value"
-        @click="pagination.nextPage()"
-      >
-        Next
-      </button>
-    </div>
+    </DataTable>
 
     <Teleport to="body">
       <div v-if="openMenuId" class="action-menu" :style="{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }">
-        <button type="button" class="action-menu__item" @click="editKey(items.find((i) => i.id === openMenuId))">
+        <button type="button" class="action-menu__item" @click="editKey((data ?? []).find((i) => i.id === openMenuId))">
           <IconPencil :size="15" />
           Edit
         </button>
         <button
           type="button"
           class="action-menu__item action-menu__item--danger"
-          @click="revokeKey(items.find((i) => i.id === openMenuId))"
+          @click="revokeKey((data ?? []).find((i) => i.id === openMenuId))"
         >
           <IconKeyOff :size="15" />
           Revoke API Key
@@ -425,25 +380,29 @@ const pageList = computed(() => {
         <div v-if="showRevokeModal" class="modal-backdrop" @mousedown.self="closeRevokeModal">
           <div class="create-modal">
             <div class="create-modal__head">
-              <h2 class="create-modal__title">Revoke API Key</h2>
-              <button type="button" class="create-modal__close" aria-label="Close" @click="closeRevokeModal">
+              <div class="revoke-modal__head-left">
+                <div class="revoke-modal__icon">
+                  <IconKeyOff :size="22" />
+                </div>
+                <h2 class="create-modal__title">Revoke API key</h2>
+              </div>
+              <button type="button" class="create-modal__close create-modal__close--circle" aria-label="Close" @click="closeRevokeModal">
                 <IconX :size="20" />
               </button>
             </div>
 
             <p class="create-modal__note">
-              This API key will immediately be disabled. API requests made using this key will be rejected,
-              which could cause any systems still depending on it to break. Once revoked, you'll no longer be
-              able to view or modify this API key.
+              This key will be disabled immediately. Requests using it will be rejected, which could break
+              systems still depending on it. Once revoked, you won't be able to view or restore it.
             </p>
 
             <label class="revoke-ack">
               <input v-model="revokeAcknowledged" type="checkbox" class="revoke-ack__box" />
-              <span>I understand this action is permanent and cannot be undone.</span>
+              <span>This action is permanent and cannot be undone.</span>
             </label>
 
             <div class="create-modal__actions">
-              <button type="button" class="modal-btn modal-btn--cancel" @click="closeRevokeModal">Cancel</button>
+              <button type="button" class="modal-btn modal-btn--neutral" @click="closeRevokeModal">Cancel</button>
               <button
                 type="button"
                 class="modal-btn"
@@ -494,22 +453,6 @@ const pageList = computed(() => {
     line-height: 1.6;
     color: var(--glacia-ink-dim);
   }
-
-  &__wrap {
-    border: 1px solid var(--glacia-glass-border);
-    border-radius: var(--glacia-radius-md);
-    overflow: auto;
-    background: var(--glacia-glass-fill-strong);
-  }
-
-  &__pagination {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    margin-top: 16px;
-    flex-wrap: wrap;
-  }
 }
 
 .btn-create {
@@ -532,104 +475,6 @@ const pageList = computed(() => {
   &:hover {
     background: #e01e22;
     box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5);
-  }
-}
-
-.vtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  table-layout: fixed;
-
-  thead tr {
-    position: sticky;
-    top: 0;
-    background: rgba(15, 23, 42, 0.05);
-    z-index: 1;
-  }
-
-  th {
-    padding: 12px 14px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--glacia-ink-dim);
-    white-space: nowrap;
-  }
-
-  td {
-    padding: 14px;
-    border-bottom: 1px solid var(--glacia-glass-border);
-    vertical-align: middle;
-    color: var(--glacia-ink);
-  }
-
-  &__row:last-child td { border-bottom: none; }
-  &__row:hover td { background: rgba(0, 0, 0, 0.02); }
-
-  &__empty {
-    text-align: center;
-    padding: 28px !important;
-    color: var(--glacia-ink-dim);
-  }
-
-  &__num {
-    width: 60px;
-    color: var(--glacia-ink-dim);
-    font-weight: 500;
-  }
-
-  &__name {
-    width: 190px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__tracking {
-    width: 250px;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 12px;
-    color: var(--glacia-ink-dim);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__key {
-    width: 230px;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 12px;
-    color: var(--glacia-ink-dim);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__date {
-    width: 140px;
-    color: var(--glacia-ink-dim);
-    white-space: nowrap;
-  }
-
-  &__requests {
-    width: 110px;
-    font-weight: 600;
-  }
-
-  // th/td specificity beats the plain class above for text-align, so pin it
-  // here explicitly.
-  th.vtable__requests,
-  td.vtable__requests {
-    text-align: center;
-  }
-
-  &__action {
-    width: 70px;
-    text-align: center;
   }
 }
 
@@ -767,6 +612,14 @@ const pageList = computed(() => {
       background: rgba(0, 0, 0, 0.05);
       color: var(--glacia-ink);
     }
+
+    &--circle {
+      background: rgba(15, 23, 42, 0.06);
+
+      &:hover {
+        background: rgba(15, 23, 42, 0.1);
+      }
+    }
   }
 
   &__note {
@@ -902,6 +755,15 @@ const pageList = computed(() => {
     }
   }
 
+  &--neutral {
+    background: var(--glacia-glass-fill-strong);
+    color: var(--glacia-ink);
+    border: 1px solid var(--glacia-glass-border);
+
+    &:hover {
+      background: rgba(15, 23, 42, 0.08);
+    }
+  }
 }
 
 .copy-btn {
@@ -960,54 +822,6 @@ const pageList = computed(() => {
   100% { transform: scale(1); }
 }
 
-.page-nav,
-.page-num {
-  height: 34px;
-  border-radius: var(--glacia-radius-pill);
-  border: 1px solid var(--glacia-glass-border);
-  background: var(--glacia-glass-fill-strong);
-  color: var(--glacia-ink-dim);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.13s, color 0.13s, border-color 0.13s;
-
-  &:hover:not(:disabled) {
-    background: rgba(255, 37, 41, 0.08);
-    color: var(--glacia-red);
-    border-color: rgba(255, 37, 41, 0.3);
-  }
-
-  &:disabled {
-    opacity: 0.45;
-    cursor: default;
-  }
-}
-
-// Fixed widths so the bar never reflows — page numbers stay a stable
-// square whether they're 1 or 2 digits, and Previous/Next match each other.
-.page-num {
-  width: 34px;
-  padding: 0;
-}
-
-.page-nav {
-  width: 92px;
-  padding: 0 10px;
-}
-
-.page-num--active {
-  background: var(--glacia-red);
-  color: #fff;
-  border-color: var(--glacia-red);
-}
-
-.page-ellipsis {
-  padding: 0 4px;
-  color: var(--glacia-ink-dim);
-}
-
 .edit-modal__label {
   display: block;
   margin: 16px 0 8px;
@@ -1018,28 +832,61 @@ const pageList = computed(() => {
 
 .revoke-ack {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  margin: 14px 0 12px;
-  padding: 18px 18px;
-  border-radius: 14px;
-  background: rgba(220, 38, 38, 0.06);
+  margin: 24px 0 28px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1.5px solid var(--glacia-red);
+  background: #fff;
   cursor: pointer;
   user-select: none;
 }
 
 .revoke-ack__box {
-  width: 18px;
-  height: 18px;
-  margin-top: 1px;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border-radius: 6px;
+  border: 2px solid var(--glacia-red);
+  background: #fff;
   flex-shrink: 0;
-  accent-color: var(--glacia-sev-critical);
   cursor: pointer;
+  position: relative;
+
+  &:checked::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 3px;
+    background: var(--glacia-red);
+  }
 }
 
 .revoke-ack span {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--glacia-ink);
+}
+
+.revoke-modal {
+  &__head-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  &__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(255, 37, 41, 0.1);
+    color: var(--glacia-red);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
 }
 </style>

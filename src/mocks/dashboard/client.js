@@ -95,8 +95,8 @@ export const clientDashboardMock = {
     { id: 4, name: 'TLS 1.0 still enabled',                   affectedAsset: 'vpn-edge',      services: 'Network',           severity: 'high' },
     { id: 5, name: 'Weak SSH ciphers detected',               affectedAsset: 'bastion-01',    services: 'Web Application',   severity: 'high' },
     { id: 6, name: 'Exposed .git directory',                  affectedAsset: 'static-cdn',    services: 'Source Code',       severity: 'high' },
-    { id: 7, name: 'Missing Content-Security-Policy header',  affectedAsset: 'marketing-web', services: 'Web Application',   severity: 'medium' },
-    { id: 8, name: 'Open redirect on /auth/callback',         affectedAsset: 'auth-svc',      services: 'Domain Inspection', severity: 'medium' },
+    { id: 7, name: 'Cross-site scripting in /search',         affectedAsset: 'web-app-02',    services: 'Web Application',   severity: 'high' },
+    { id: 8, name: 'Privilege escalation via SUID binary',    affectedAsset: 'app-srv-03',     services: 'Source Code',       severity: 'critical' },
   ],
 
   // ── 5. Scanning in Progress ──────────────────────────────────────────────────

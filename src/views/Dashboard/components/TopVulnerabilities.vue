@@ -1,9 +1,18 @@
 <script setup>
+import { computed } from 'vue'
 import { IconChevronRight } from '@tabler/icons-vue'
 
-defineProps({
+const props = defineProps({
   items:   { type: Array,   default: () => [] },
   loading: { type: Boolean, default: false },
+})
+
+const filteredItems = computed(() => {
+  const rank = { critical: 0, high: 1 }
+  return (props.items ?? [])
+    .filter((v) => ['critical', 'high'].includes((v.severity ?? '').toLowerCase()))
+    .slice()
+    .sort((a, b) => (rank[a.severity.toLowerCase()] ?? 2) - (rank[b.severity.toLowerCase()] ?? 2))
 })
 
 const sev = {
@@ -34,19 +43,19 @@ function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg
               <th>Vulnerability</th>
               <th>Asset</th>
               <th>Service</th>
-              <th>Severity</th>
+              <th class="text-center">Severity</th>
               <th class="vtable__arrow"></th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loading"><td colspan="6" class="vtable__empty">Loading…</td></tr>
-            <tr v-else-if="!items.length"><td colspan="6" class="vtable__empty">No vulnerabilities found.</td></tr>
-            <tr v-for="(item, i) in items" :key="item.id" class="vtable__row">
+            <tr v-else-if="!filteredItems.length"><td colspan="6" class="vtable__empty">No vulnerabilities found.</td></tr>
+            <tr v-for="(item, i) in filteredItems" :key="item.id" class="vtable__row">
               <td class="vtable__num">{{ i + 1 }}</td>
               <td class="vtable__name">{{ item.name }}</td>
               <td class="vtable__asset">{{ item.affectedAsset }}</td>
               <td class="vtable__svc">{{ item.services }}</td>
-              <td>
+              <td class="text-center">
                 <span
                   class="sev-badge"
                   :style="{ background: s(item.severity).bg, color: s(item.severity).color }"
@@ -176,6 +185,8 @@ function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg
     width: 40px;
   }
 }
+
+.text-center { text-align: center; }
 
 .sev-badge {
   display: inline-flex;

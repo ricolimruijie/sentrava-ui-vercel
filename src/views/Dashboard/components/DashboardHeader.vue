@@ -1,9 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import Select from 'primevue/select'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { greeting } from '@/utils/helpers'
-import { useCompanyContext } from '@/composables/useCompanyContext'
 import { IconRadar, IconChevronDown, IconWorld, IconNetwork, IconBrowser, IconCode } from '@tabler/icons-vue'
 
 const props = defineProps({
@@ -12,13 +11,13 @@ const props = defineProps({
 const emit = defineEmits(['run-scan'])
 
 const auth = useAuthStore()
-const { activeCompany, switchCompany } = useCompanyContext()
+const router = useRouter()
 
 const modules = [
-  { key: 'domain',  label: 'Domain Inspection', icon: IconWorld   },
-  { key: 'network', label: 'Network',           icon: IconNetwork },
-  { key: 'webapp',  label: 'Web Application',   icon: IconBrowser },
-  { key: 'source',  label: 'Source Code',       icon: IconCode    },
+  { key: 'domain',  label: 'Domain Inspection', icon: IconWorld,   route: '/assets/domains' },
+  { key: 'network', label: 'Network',           icon: IconNetwork, route: '/assets/networks' },
+  { key: 'webapp',  label: 'Web Application',   icon: IconBrowser, route: '/assets/webapps' },
+  { key: 'source',  label: 'Source Code',       icon: IconCode,    route: '/assets/source-code' },
 ]
 
 const showScanMenu = ref(false)
@@ -35,7 +34,8 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 function runScan(moduleKey) {
   showScanMenu.value = false
-  emit('run-scan', moduleKey)
+  const target = modules.find((m) => m.key === moduleKey)?.route
+  if (target) router.push(target)
 }
 
 const name = computed(() => {
@@ -43,14 +43,6 @@ const name = computed(() => {
   return n.split(' ')[0]
 })
 const hi = computed(() => greeting())
-
-const companyOptions = computed(() =>
-  props.companies.length ? props.companies : (auth.companies ?? [])
-)
-const selectedCompanyId = computed({
-  get:  () => activeCompany.value?.id,
-  set: (id) => switchCompany(id),
-})
 </script>
 
 <template>
@@ -60,14 +52,6 @@ const selectedCompanyId = computed({
       <p class="dash-header__sub">Here's what's happening across your assets today.</p>
     </div>
     <div class="dash-header__right">
-      <Select
-        v-model="selectedCompanyId"
-        :options="companyOptions"
-        option-label="name"
-        option-value="id"
-        placeholder="Company List"
-        class="dash-header__select"
-      />
       <div ref="scanMenuRef" class="scan-menu">
         <button
           class="btn-scan"
@@ -135,13 +119,6 @@ const selectedCompanyId = computed({
     align-items: center;
     gap: 10px;
     flex-shrink: 0;
-  }
-
-  &__select {
-    width: 220px;
-    flex-shrink: 0;
-    height: 36px;
-    font-size: 13px;
   }
 
   @include below($bp-lg) {

@@ -32,7 +32,7 @@ const toolIcons = {
   source:  IconCode,
 }
 
-const expanded = ref('probeBox')
+const expanded = ref(null)
 function toggle(id) {
   expanded.value = expanded.value === id ? null : id
 }
@@ -113,7 +113,7 @@ function onLeave(el, done) {
           <span class="row-item__label">Probe Box</span>
           <span class="row-item__status">
             <span class="status-dot" :class="isUp(probeBox.status) ? 'on' : 'off'" />
-            {{ isUp(probeBox.status) ? 'Connected' : 'Disconnected' }}
+            {{ isUp(probeBox.status) ? 'Online' : 'Offline' }}
           </span>
           <IconChevronDown :size="16" class="row-item__chevron" />
         </button>
@@ -162,7 +162,7 @@ function onLeave(el, done) {
           <span class="row-item__label">{{ toolLabel(t.name, t.id) }}</span>
           <span class="row-item__status">
             <span class="status-dot" :class="isUp(t.status) ? 'on' : 'off'" />
-            {{ isUp(t.status) ? 'Connected' : 'Disconnected' }}
+            {{ isUp(t.status) ? 'Online' : 'Offline' }}
           </span>
           <IconChevronDown :size="16" class="row-item__chevron" />
         </button>
