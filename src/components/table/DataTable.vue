@@ -40,6 +40,15 @@ function cellStyle(col) {
   return style
 }
 
+// The row-number column and the trailing action-menu column only ever hold a
+// couple of characters or a single icon button, so they're pinned to a fixed
+// 32px regardless of what a caller passes — callers shouldn't need to think
+// about sizing these two.
+function colWidth(col) {
+  if (col.key === '__index' || col.key === 'actions') return '32px'
+  return col.width || null
+}
+
 // Compact page list: 1, 2, 3 … secondToLast, last — with the current page
 // pulled in (and an extra ellipsis) if it isn't already covered.
 const pageList = computed(() => {
@@ -68,7 +77,7 @@ defineExpose({ pagination })
     <div class="data-table__wrap">
       <table class="vtable">
         <colgroup>
-          <col v-for="col in columns" :key="col.key" :style="col.width ? { width: col.width } : null" />
+          <col v-for="col in columns" :key="col.key" :style="colWidth(col) ? { width: colWidth(col) } : null" />
         </colgroup>
         <thead>
           <tr>
@@ -176,6 +185,8 @@ defineExpose({ pagination })
     letter-spacing: 0.06em;
     color: var(--glacia-ink-dim);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   td {
