@@ -1,6 +1,6 @@
 const repos = ['protergo-cyber-security', 'sentra-dashboard', 'payments-service', 'auth-gateway']
 const branches = ['main', 'develop', 'release/2.4', 'hotfix/scan-timeout']
-const statuses = ['completed', 'completed', 'completed', 'failed', 'running']
+const statuses = ['Completed', 'Completed', 'Queue', 'Scanning', 'Waiting', 'Failed']
 
 // 100 pipeline runs, newest first.
 export const cicdRunsMock = Array.from({ length: 100 }, (_, i) => {

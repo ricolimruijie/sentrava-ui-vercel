@@ -18,17 +18,23 @@ const columns = [
   { key: 'repository', label: 'Repository', width: '27%', dim: true },
   { key: 'branch', label: 'Branch', width: '27%', mono: true },
   { key: 'status', label: 'Scanning status', width: '15%', align: 'center' },
-  { key: 'action', label: 'Action', width: '8%', align: 'center' },
+  { key: 'action', label: 'Action', width: '32px', align: 'center' },
 ]
 
 const statusMeta = {
-  completed: { label: 'Completed', color: '#16a34a', bg: 'rgba(22, 163, 74, 0.12)' },
-  failed:    { label: 'Failed',    color: '#dc2626', bg: 'rgba(220, 38, 38, 0.12)' },
-  running:   { label: 'Running',   color: '#b45309', bg: 'rgba(234, 179, 8, 0.16)' },
+  Queue:     { label: 'Queue',     color: '#0c4a6e', bg: '#e0f2fe' },
+  Scanning:  { label: 'Scanning',  color: '#F79009', bg: '#fef3c7' },
+  Completed: { label: 'Completed', color: '#16a34a', bg: '#dcfce7' },
+  Failed:    { label: 'Failed',    color: '#dc2626', bg: '#fee2e2' },
+  Waiting:   { label: 'Waiting',   color: '#6b21a8', bg: '#f3e8ff' },
 }
 
+// Legacy lowercase values map onto the same five types.
+const legacyStatus = { completed: 'Completed', failed: 'Failed', running: 'Scanning' }
+
 function s(status) {
-  return statusMeta[status] ?? { label: status, color: '#64748b', bg: 'rgba(100, 116, 139, 0.12)' }
+  const key = legacyStatus[status] ?? status
+  return statusMeta[key] ?? { label: status, color: '#64748b', bg: 'rgba(100, 116, 139, 0.12)' }
 }
 
 function fmt(iso) {
@@ -39,15 +45,18 @@ function fmt(iso) {
 
 // ── Scanning status filter ───────────────────────────────────────────────────
 const statusOptions = [
-  { value: 'completed', label: 'Completed' },
-  { value: 'failed',    label: 'Failed' },
-  { value: 'running',   label: 'Running' },
+  { value: 'Queue',     label: 'Queue' },
+  { value: 'Scanning',  label: 'Scanning' },
+  { value: 'Completed', label: 'Completed' },
+  { value: 'Failed',    label: 'Failed' },
+  { value: 'Waiting',   label: 'Waiting' },
 ]
 const statusFilter = ref(null)
 
 const filteredData = computed(() => {
   const list = data.value ?? []
-  return statusFilter.value ? list.filter((r) => r.status === statusFilter.value) : list
+  if (!statusFilter.value) return list
+  return list.filter((r) => (legacyStatus[r.status] ?? r.status) === statusFilter.value)
 })
 
 watch(statusFilter, () => tableRef.value?.pagination.goTo(1))
