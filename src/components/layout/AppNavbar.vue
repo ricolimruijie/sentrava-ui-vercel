@@ -404,6 +404,8 @@ function submitActivation() {
         placeholder="Filter company"
       />
 
+      <div class="navbar__divider" />
+
       <button class="navbar__icon-btn navbar__icon-btn--notif" aria-label="Notifications">
         <IconBell :size="18" />
         <span class="notif-dot" />

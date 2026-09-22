@@ -28,7 +28,7 @@ const appRoutes = [
   {
     path: '/scans/history',
     component: () => import('@/views/Scans/CiCdView.vue'),
-    meta: { requiresAuth: true, title: 'CI / CD', crumbs: [{ label: 'Logs' }] },
+    meta: { requiresAuth: true, title: 'Report Log', crumbs: [{ label: 'CI/CD' }] },
   },
   {
     path: '/scans/history/:runId/vulnerabilities',
@@ -36,7 +36,7 @@ const appRoutes = [
     meta: {
       requiresAuth: true,
       title: 'Vulnerability Overview',
-      crumbs: [{ label: 'Logs' }, { label: 'CI / CD', to: '/scans/history' }],
+      crumbs: [{ label: 'CI/CD' }, { label: 'Report Log', to: '/scans/history' }],
     },
   },
   { path: '/scans/:section?',     component: Placeholder, meta: { requiresAuth: true } },
@@ -46,7 +46,7 @@ const appRoutes = [
   {
     path: '/settings/api-keys',
     component: () => import('@/views/Settings/ApiKeysView.vue'),
-    meta: { requiresAuth: true, title: 'API Keys', crumbs: [{ label: 'Manage' }] },
+    meta: { requiresAuth: true, title: 'API Keys', crumbs: [{ label: 'CI/CD' }] },
   },
   {
     path: '/companies',

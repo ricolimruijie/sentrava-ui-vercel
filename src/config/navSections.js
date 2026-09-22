@@ -4,7 +4,7 @@ import {
   IconNetwork,
   IconBrowser,
   IconCode,
-  IconGitPullRequest,
+  IconLogs,
   IconDeviceDesktop,
   IconBuilding,
   IconKey,
@@ -30,9 +30,10 @@ export const navSections = [
     ],
   },
   {
-    label: 'Logs',
+    label: 'CI/CD',
     items: [
-      { label: 'CI / CD',           icon: IconGitPullRequest, route: '/scans/history' },
+      { label: 'API Keys',          icon: IconKey,            route: '/settings/api-keys' },
+      { label: 'Report Log',        icon: IconLogs,            route: '/scans/history' },
     ],
   },
   {
@@ -40,7 +41,6 @@ export const navSections = [
     items: [
       { label: 'Asset Inventory',   icon: IconDeviceDesktop,  route: '/assets' },
       { label: 'Company',           icon: IconBuilding,       route: '/companies' },
-      { label: 'API Keys',          icon: IconKey,            route: '/settings/api-keys' },
       { label: 'Ticket',            icon: IconTicket,         route: '/tickets' },
     ],
   },
