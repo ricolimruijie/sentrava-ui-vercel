@@ -15,6 +15,7 @@ import {
   IconX, IconCheck, IconAt, IconMail, IconShield, IconBuilding,
 } from '@tabler/icons-vue'
 import DatePicker from '@/components/reusable/DatePicker.vue'
+import SearchInput from '@/components/reusable/SearchInput.vue'
 import { formatDate } from '@/utils/helpers'
 
 const { data: company } = useFetch(() => get('/company/info'))
@@ -43,6 +44,30 @@ function selectTab(key) {
   router.replace({ query: { ...route.query, tab: key } })
 }
 
+// ── Sliding tab-bar pill — mirrors the active tab's box, animating between
+// positions instead of each tab owning its own static "active" background.
+const tabButtonEls = {}
+const tabPillStyle = ref({ left: '0px', top: '0px', width: '0px', height: '0px' })
+const tabPillReady = ref(false)
+function setTabButtonRef(key, el) {
+  if (el) tabButtonEls[key] = el
+}
+function moveTabPill() {
+  const el = tabButtonEls[activeTab.value]
+  if (!el) return
+  tabPillStyle.value = { left: `${el.offsetLeft}px`, top: `${el.offsetTop}px`, width: `${el.offsetWidth}px`, height: `${el.offsetHeight}px` }
+}
+function onTabResize() { moveTabPill() }
+onMounted(() => {
+  nextTick(() => {
+    moveTabPill()
+    requestAnimationFrame(() => { tabPillReady.value = true })
+  })
+  window.addEventListener('resize', onTabResize)
+})
+onUnmounted(() => window.removeEventListener('resize', onTabResize))
+watch(activeTab, () => nextTick(moveTabPill))
+
 // Keeps the tab synced with the URL both ways: browser back/forward, and a
 // route change that reuses this same component instance (e.g. clicking the
 // "Company" breadcrumb crumb, which only drops the query — Vue Router won't
@@ -64,7 +89,7 @@ const columns = [
   { key: 'email', label: 'Email Address', width: '23%', dim: true },
   { key: 'company', label: 'Company', width: '27%', dim: true },
   { key: 'role', label: 'Role', width: '12%', align: 'center' },
-  { key: 'action', label: 'Action', width: '10%', align: 'center' },
+  { key: 'action', label: 'Action', width: '32px', align: 'center' },
 ]
 
 const roleMeta = {
@@ -1005,11 +1030,15 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
     <div class="company-panel card">
       <div class="company-tabs">
+        <div class="company-tabs__pill" :class="{ 'company-tabs__pill--ready': tabPillReady }" :style="tabPillStyle"></div>
         <button
           v-for="tab in tabs"
           :key="tab.key"
+          :ref="(el) => setTabButtonRef(tab.key, el)"
           type="button"
           class="company-tabs__item"
+          role="tab"
+          :aria-selected="tab.key === activeTab"
           :class="{ 'company-tabs__item--active': tab.key === activeTab }"
           @click="selectTab(tab.key)"
         >
@@ -1021,10 +1050,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
         <div :key="activeTab" class="company-tab-content">
           <template v-if="activeTab === 'overview'">
             <div class="company-controls">
-              <div class="company-search">
-                <IconSearch :size="16" class="company-search__icon" />
-                <input v-model="search" type="text" class="company-search__input" placeholder="Search" />
-              </div>
+              <SearchInput v-model="search" placeholder="Search…" />
 
               <FilterDropdown v-model="roleFilter" :options="roleOptions" placeholder="Role" />
             </div>
@@ -1270,6 +1296,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 }
 
 .company-tabs {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1277,16 +1304,24 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   border-radius: var(--glacia-radius-pill);
   background: var(--glacia-glass-fill-strong);
   border: 1px solid var(--glacia-glass-border);
-  width: 100%;
-  max-width: 560px;
-  align-self: stretch;
+  width: max-content;
+  max-width: 100%;
+  align-self: flex-start;
+
+  &__pill {
+    position: absolute; z-index: 0; background: #fff; border-radius: var(--glacia-radius-pill);
+    box-shadow: 0 2px 6px rgba(16, 24, 32, 0.1);
+    &--ready { transition: left 0.42s cubic-bezier(0.3,1.12,0.5,1), top 0.42s cubic-bezier(0.3,1.12,0.5,1), width 0.42s cubic-bezier(0.3,1.12,0.5,1), height 0.42s cubic-bezier(0.3,1.12,0.5,1); }
+  }
 
   &__item {
-    flex: 1;
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 9px 12px;
+    padding: 9px 16px;
     border-radius: var(--glacia-radius-pill);
     border: none;
     background: transparent;
@@ -1297,18 +1332,20 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     cursor: pointer;
     white-space: nowrap;
     min-width: 0;
-    transition: background 0.15s, color 0.15s;
+    transition: color 0.15s;
 
     &:not(.company-tabs__item--active):hover {
       color: var(--glacia-ink);
     }
 
     &--active {
-      background: #fff;
       color: var(--glacia-ink);
-      box-shadow: 0 2px 6px rgba(16, 24, 32, 0.1);
     }
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .company-tabs__pill--ready { transition: none; }
 }
 
 .company-controls {
@@ -1316,44 +1353,6 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.company-search {
-  position: relative;
-  width: 260px;
-
-  &__icon {
-    position: absolute;
-    top: 50%;
-    left: 14px;
-    transform: translateY(-50%);
-    color: var(--glacia-ink-dim);
-    pointer-events: none;
-  }
-
-  &__input {
-    width: 100%;
-    box-sizing: border-box;
-    height: 38px;
-    padding: 0 14px 0 38px;
-    border-radius: var(--glacia-radius-pill);
-    border: 1px solid var(--glacia-glass-border);
-    background: var(--glacia-glass-fill-strong);
-    color: var(--glacia-ink);
-    font-size: 13px;
-    font-family: 'Manrope', 'Inter', sans-serif;
-    outline: none;
-    transition: border-color 0.13s, box-shadow 0.13s;
-
-    &::placeholder {
-      color: var(--glacia-ink-dim);
-    }
-
-    &:focus {
-      border-color: var(--glacia-red);
-      box-shadow: 0 2px 6px rgba(16, 24, 32, 0.1);
-    }
-  }
 }
 
 .btn-activation {

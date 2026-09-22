@@ -5,7 +5,8 @@ import { get } from '@/utils/request'
 import { useFetch } from '@/composables/useFetch'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
-import { IconSearch, IconDotsVertical, IconEye, IconSettings } from '@tabler/icons-vue'
+import SearchInput from '@/components/reusable/SearchInput.vue'
+import { IconDotsVertical, IconEye, IconSettings } from '@tabler/icons-vue'
 
 const { data, loading } = useFetch(() => get('/company/list'))
 
@@ -17,7 +18,7 @@ const columns = [
   { key: 'type', label: 'Type', width: '18%', dim: true },
   { key: 'users', label: 'Users', width: '12%', align: 'center' },
   { key: 'status', label: 'Status', width: '18%', align: 'center' },
-  { key: 'action', label: 'Action', width: '10%', align: 'center' },
+  { key: 'action', label: 'Action', width: '32px', align: 'center' },
 ]
 
 const statusMeta = {
@@ -99,10 +100,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 <template>
   <div class="company-list">
     <div class="company-controls">
-      <div class="company-search">
-        <IconSearch :size="16" class="company-search__icon" />
-        <input v-model="search" type="text" class="company-search__input" placeholder="Search" />
-      </div>
+      <SearchInput v-model="search" placeholder="Search…" />
       <FilterDropdown v-model="statusFilter" :options="statusOptions" placeholder="Status" />
     </div>
 
@@ -155,44 +153,6 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.company-search {
-  position: relative;
-  width: 260px;
-
-  &__icon {
-    position: absolute;
-    top: 50%;
-    left: 14px;
-    transform: translateY(-50%);
-    color: var(--glacia-ink-dim);
-    pointer-events: none;
-  }
-
-  &__input {
-    width: 100%;
-    box-sizing: border-box;
-    height: 38px;
-    padding: 0 14px 0 38px;
-    border-radius: var(--glacia-radius-pill);
-    border: 1px solid var(--glacia-glass-border);
-    background: var(--glacia-glass-fill-strong);
-    color: var(--glacia-ink);
-    font-size: 13px;
-    font-family: 'Manrope', 'Inter', sans-serif;
-    outline: none;
-    transition: border-color 0.13s, box-shadow 0.13s;
-
-    &::placeholder {
-      color: var(--glacia-ink-dim);
-    }
-
-    &:focus {
-      border-color: var(--glacia-red);
-      box-shadow: 0 2px 6px rgba(16, 24, 32, 0.1);
-    }
-  }
 }
 
 .status-pill {
