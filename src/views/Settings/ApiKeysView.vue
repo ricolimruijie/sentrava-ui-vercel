@@ -15,13 +15,13 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'name', label: 'Name', width: '190px', truncate: true, bold: true },
-  { key: 'trackingId', label: 'Tracking ID', width: '250px', mono: true, truncate: true },
-  { key: 'key', label: 'Key', width: '230px', mono: true, truncate: true },
-  { key: 'created', label: 'Created', width: '140px', dim: true },
-  { key: 'lastUsed', label: 'Last used', width: '140px', dim: true },
-  { key: 'requests', label: 'API Request', width: '110px', align: 'center', bold: true },
-  { key: 'action', label: 'Action', width: '70px', align: 'center' },
+  { key: 'name', label: 'Name', width: '14%', truncate: true, bold: true },
+  { key: 'trackingId', label: 'Tracking ID', width: '18%', mono: true, truncate: true },
+  { key: 'key', label: 'Key', width: '16%', mono: true, truncate: true },
+  { key: 'created', label: 'Created', width: '12%', dim: true },
+  { key: 'lastUsed', label: 'Last used', width: '12%', dim: true },
+  { key: 'requests', label: 'API Request', width: '10%', align: 'center', bold: true },
+  { key: 'action', label: 'Action', width: '90px', align: 'center' },
 ]
 
 function fmt(iso) {

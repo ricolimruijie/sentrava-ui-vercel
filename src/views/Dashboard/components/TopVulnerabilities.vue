@@ -43,7 +43,7 @@ function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg
               <th>Vulnerability</th>
               <th>Asset</th>
               <th>Service</th>
-              <th class="text-center">Severity</th>
+              <th class="text-center vtable__sev">Severity</th>
               <th class="vtable__arrow"></th>
             </tr>
           </thead>
@@ -55,7 +55,7 @@ function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg
               <td class="vtable__name">{{ item.name }}</td>
               <td class="vtable__asset">{{ item.affectedAsset }}</td>
               <td class="vtable__svc">{{ item.services }}</td>
-              <td class="text-center">
+              <td class="text-center vtable__sev">
                 <span
                   class="sev-badge"
                   :style="{ background: s(item.severity).bg, color: s(item.severity).color }"
@@ -184,8 +184,13 @@ function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg
   &__arrow {
     width: 40px;
   }
+
+  &__sev {
+    width: 140px;
+  }
 }
 
+.vtable th.text-center { text-align: center; }
 .text-center { text-align: center; }
 
 .sev-badge {

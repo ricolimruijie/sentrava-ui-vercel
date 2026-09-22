@@ -2,8 +2,9 @@
 import { ref, computed, watch } from 'vue'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
+import SearchInput from '@/components/reusable/SearchInput.vue'
 import { useRouter } from 'vue-router'
-import { IconSearch, IconArrowUpRight } from '@tabler/icons-vue'
+import { IconArrowUpRight } from '@tabler/icons-vue'
 
 const rawTickets = [
   { id: 't1',  date: '10 February 2026', name: "Can't executed scan in module Domain Inspection", detail: 'Scan job failed with error 500 when targeting protergo.id', category: 'Application & System Failures', ticketId: 'ANO31456123458765', status: 'open' },
@@ -27,7 +28,7 @@ const columns = [
   { key: 'category', label: 'Issue Category', width: '170px' },
   { key: 'ticketId', label: 'Ticket ID',  width: '160px', mono: true },
   { key: 'status',   label: 'Ticket Status', width: '110px', align: 'center' },
-  { key: 'action',   label: 'Action',     width: '70px',  align: 'center' },
+  { key: 'action',   label: 'Action',     width: '32px',  align: 'center' },
 ]
 
 const statusMeta = {
@@ -93,10 +94,7 @@ function viewTicket(item) {
       <div class="ticket-controls__left">
         <FilterDropdown v-model="issueFilter" :options="issueCategoryOptions" placeholder="Issue Category" />
       </div>
-      <div class="ticket-search">
-        <input v-model="search" type="text" class="ticket-search__input" placeholder="Search" />
-        <IconSearch :size="16" class="ticket-search__icon" />
-      </div>
+      <SearchInput v-model="search" placeholder="Search…" />
     </div>
 
     <DataTable
@@ -221,40 +219,6 @@ function viewTicket(item) {
   }
 }
 
-.ticket-search {
-  position: relative;
-  width: 220px;
-
-  &__input {
-    width: 100%;
-    box-sizing: border-box;
-    height: 38px;
-    padding: 0 38px 0 14px;
-    border-radius: var(--glacia-radius-pill);
-    border: 1px solid var(--glacia-glass-border);
-    background: var(--glacia-glass-fill-strong);
-    color: var(--glacia-ink);
-    font-size: 13px;
-    font-family: 'Manrope', 'Inter', sans-serif;
-    outline: none;
-    transition: border-color 0.13s, box-shadow 0.13s;
-
-    &::placeholder { color: var(--glacia-ink-dim); }
-    &:focus {
-      border-color: var(--glacia-red);
-      box-shadow: 0 2px 6px rgba(16,24,32,0.1);
-    }
-  }
-
-  &__icon {
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    transform: translateY(-50%);
-    color: var(--glacia-ink-dim);
-    pointer-events: none;
-  }
-}
 
 .ticket-name {
   min-width: 0;
