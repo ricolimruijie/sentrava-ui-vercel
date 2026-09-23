@@ -168,13 +168,13 @@ const sourceCodes = ref([
 ])
 const sourceCodeColumns = [
   { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'repoOwner', label: 'Repository', width: '16%' },
-  { key: 'gitProvider', label: 'Git Provider', width: '12%' },
-  { key: 'owner', label: 'Asset Owner', width: '21%' },
-  { key: 'lastScanned', label: 'Last Scanned', width: '13%' },
-  { key: 'tags', label: 'Multi-Tags', width: '14%', align: 'center' },
-  { key: 'status', label: 'Scanner Status', width: '14%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '32px', align: 'center' },
+  { key: 'repoOwner', label: 'Repository', width: '14%' },
+  { key: 'gitProvider', label: 'Git Provider', width: '11%' },
+  { key: 'owner', label: 'Asset Owner', width: '19%' },
+  { key: 'lastScanned', label: 'Last Scanned', width: '12%' },
+  { key: 'tags', label: 'Multi-Tags', width: '13%', align: 'center' },
+  { key: 'status', label: 'Scanner Status', width: '13%', align: 'center' },
+  { key: 'actions', label: 'Action', width: '70px', align: 'center' },
 ]
 const filteredSourceCodes = computed(() => {
   let list = sourceCodes.value
