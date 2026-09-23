@@ -23,7 +23,16 @@ const appRoutes = [
   // Services — each shows a blank Work in Progress page
   { path: '/assets/domains',     component: Placeholder, meta: { requiresAuth: true, title: 'Domain Inspection' } },
   { path: '/assets/networks',    component: Placeholder, meta: { requiresAuth: true, title: 'Network' } },
-  { path: '/assets/webapps',     component: Placeholder, meta: { requiresAuth: true, title: 'Web Application' } },
+  { path: '/assets/webapps',     component: () => import('@/views/Assets/WebAppView.vue'), meta: { requiresAuth: true, title: 'Web Application', crumbs: [{ label: 'Services' }] } },
+  {
+    path: '/assets/webapps/:id',
+    component: () => import('@/views/Assets/WebAppDetailView.vue'),
+    meta: {
+      requiresAuth: true,
+      title: 'Web Application Detail',
+      crumbs: [{ label: 'Services' }, { label: 'Web Application', to: '/assets/webapps' }],
+    },
+  },
   {
     path: '/assets/source-code',
     component: () => import('@/views/Assets/SourceCodeView.vue'),
