@@ -12,11 +12,10 @@ const router = useRouter()
 const repos = ref(getSourceCodeRepos())
 
 const columns = [
-  { key: '__index', label: 'No.', width: '32px', dim: true },
+  { key: '__index', label: '#', width: '32px', dim: true },
   { key: 'repo', label: 'Repository', width: '13%', bold: true, truncate: true },
   { key: 'branch', label: 'Branch', width: '7%', mono: true },
-  { key: 'gitProvider', label: 'Git Provider', width: '9%' },
-  { key: 'visibility', label: 'Repository Visibility', width: '13%' },
+  { key: 'scanType', label: 'Scan Type', width: '12%' },
   { key: 'owner', label: 'Asset Owner', width: '16%', truncate: true },
   { key: 'tags', label: 'Multi-Tags', width: '18%' },
   { key: 'status', label: 'Scanning status', width: '11%', align: 'center' },
@@ -43,8 +42,8 @@ const statusMeta = {
 }
 
 // ── Filters ────────────────────────────────────────────────────────────────
-const gitProviderFilter = ref(null)
 const multiTagFilter = ref(null)
+const scanTypeFilter = ref(null)
 const statusFilter = ref(null)
 const search = ref('')
 
@@ -55,12 +54,13 @@ const multiTagOptions = computed(() => {
   return [...vocab.keys()].sort().map((label) => ({ value: label, label }))
 })
 const statusOptions = Object.entries(statusMeta).map(([value, meta]) => ({ value, label: meta.label }))
+const scanTypeFilterOptions = computed(() => scanTypeOptions.map((o) => ({ value: o.value, label: o.label })))
 
 const filtered = computed(() => {
   let list = repos.value
-  if (gitProviderFilter.value) list = list.filter((r) => r.gitProvider === gitProviderFilter.value)
   if (multiTagFilter.value) list = list.filter((r) => (r.tags || []).some((t) => t.label === multiTagFilter.value))
   if (statusFilter.value) list = list.filter((r) => r.status === statusFilter.value)
+  if (scanTypeFilter.value) list = list.filter((r) => r.scanType === scanTypeFilter.value)
   const q = search.value.trim().toLowerCase()
   if (q) list = list.filter((r) => r.repo.toLowerCase().includes(q) || r.owner.toLowerCase().includes(q) || r.branch.toLowerCase().includes(q))
   return list
@@ -203,7 +203,7 @@ function submitScan() {
     const targets = scanRepo.value
       ? repos.value.filter((r) => r.id === scanRepo.value)
       : repos.value.filter((r) => r.status === 'NotStarted')
-    targets.forEach((r) => { r.status = 'Scanning' })
+    targets.forEach((r) => { r.status = 'Scanning'; r.scanType = scanType.value })
     scanState.value = 'saved'
     setTimeout(closeScanModal, 700)
   }, 500)
@@ -416,8 +416,8 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
     <div class="source-code__controls">
       <div class="source-code__filters">
-        <FilterDropdown v-model="gitProviderFilter" :options="gitProviderOptions" placeholder="Git Provider" />
         <FilterDropdown v-model="multiTagFilter" :options="multiTagOptions" placeholder="Multi-Tags" />
+        <FilterDropdown v-model="scanTypeFilter" :options="scanTypeFilterOptions" placeholder="Scan Type" />
         <FilterDropdown v-model="statusFilter" :options="statusOptions" placeholder="Scanning Status" />
       </div>
       <SearchInput v-model="search" placeholder="Search" />
@@ -444,6 +444,11 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       <template #cell-status="{ row }">
         <span class="status-pill" :class="statusMeta[row.status]?.pill ?? 'status-pill--notstarted'">
           {{ statusMeta[row.status]?.label ?? row.status }}
+        </span>
+      </template>
+      <template #cell-scanType="{ row }">
+        <span :class="{ dim: !row.scanType }">
+          {{ scanTypeOptions.find((o) => o.value === row.scanType)?.label ?? '—' }}
         </span>
       </template>
       <template #cell-actions="{ row }">
@@ -907,6 +912,10 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 .cell-tags {
   display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; justify-content: flex-start;
+}
+
+.dim {
+  color: var(--glacia-ink-dim);
 }
 
 .dv-tag {
