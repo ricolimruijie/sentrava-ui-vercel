@@ -5,7 +5,7 @@ import { get } from '@/utils/request'
 import { useFetch } from '@/composables/useFetch'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
-import { IconDotsVertical, IconEye, IconTrash, IconX, IconCheck } from '@tabler/icons-vue'
+import { IconDotsVertical, IconArrowUpRight, IconTrash, IconX, IconCheck, IconTag } from '@tabler/icons-vue'
 
 const router = useRouter()
 const { data, loading } = useFetch(() => get('/scans/history'))
@@ -14,9 +14,10 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'dateTime', label: 'Date and Time', width: '20%' },
-  { key: 'repository', label: 'Repository', width: '27%', dim: true },
-  { key: 'branch', label: 'Branch', width: '27%', mono: true },
+  { key: 'dateTime', label: 'Date and Time', width: '18%' },
+  { key: 'repository', label: 'Repository', width: '24%', dim: true },
+  { key: 'branch', label: 'Branch', width: '22%', mono: true },
+  { key: 'scanId', label: 'Scan ID', width: '12%', mono: true, truncate: true },
   { key: 'status', label: 'Scanning status', width: '15%', align: 'center' },
   { key: 'action', label: 'Action', width: '32px', align: 'center' },
 ]
@@ -85,6 +86,75 @@ function viewDetail(item) {
   router.push(`/scans/history/${item.id}/vulnerabilities`)
 }
 
+// ── Manage Tags modal ──────────────────────────────────────────────────────
+const tagColors = [
+  { swatch: '#F26D6D', bg: '#FDE8E8', fg: '#E03131' }, { swatch: '#F2994A', bg: '#FDEEE0', fg: '#E8590C' },
+  { swatch: '#F2C94C', bg: '#FCF3D6', fg: '#A67C00' }, { swatch: '#A8BD3A', bg: '#F1F5D6', fg: '#6B8E00' },
+  { swatch: '#4CAF6D', bg: '#E3F5E8', fg: '#2F9E52' }, { swatch: '#3DBFA8', bg: '#DEF7F0', fg: '#12967D' },
+  { swatch: '#3DC6F2', bg: '#DFF3FC', fg: '#1197C2' }, { swatch: '#7C93F0', bg: '#E6E9FC', fg: '#5C6BC0' },
+  { swatch: '#E896BB', bg: '#FBE6F0', fg: '#C2255C' }, { swatch: '#B69AE8', bg: '#F0E6FB', fg: '#7C3FC4' },
+  { swatch: '#9AA5B1', bg: '#ECEEF0', fg: '#5C6470' },
+]
+
+const showTagModal = ref(false)
+const tagItem = ref(null)
+const newTagText = ref('')
+const tagState = ref('idle') // 'idle' | 'loading' | 'saved'
+
+function manageTags(item) {
+  closeMenu()
+  tagItem.value = item
+  newTagText.value = ''
+  tagState.value = 'idle'
+  showTagModal.value = true
+}
+
+function closeTagModal() {
+  showTagModal.value = false
+  tagItem.value = null
+  newTagText.value = ''
+  tagState.value = 'idle'
+}
+
+function tagColorFor(label) {
+  for (const run of data.value ?? []) {
+    const found = (run.tags || []).find((t) => t.label.toLowerCase() === label.toLowerCase())
+    if (found) return found.colorId
+  }
+  const used = new Set()
+  for (const run of data.value ?? []) (run.tags || []).forEach((t) => used.add(t.colorId))
+  for (let i = 0; i < tagColors.length; i++) {
+    if (!used.has(i)) return i
+  }
+  return label.length % tagColors.length
+}
+
+function addTag() {
+  const label = newTagText.value.trim()
+  if (!label || !tagItem.value) return
+  tagItem.value.tags = tagItem.value.tags || []
+  if (tagItem.value.tags.some((t) => t.label.toLowerCase() === label.toLowerCase())) {
+    newTagText.value = ''
+    return
+  }
+  tagItem.value.tags.push({ label, colorId: tagColorFor(label) })
+  newTagText.value = ''
+}
+
+function removeTag(label) {
+  if (!tagItem.value) return
+  tagItem.value.tags = (tagItem.value.tags || []).filter((t) => t.label !== label)
+}
+
+function saveTags() {
+  if (tagState.value !== 'idle') return
+  tagState.value = 'loading'
+  setTimeout(() => {
+    tagState.value = 'saved'
+    setTimeout(closeTagModal, 700)
+  }, 500)
+}
+
 // ── Delete Log modal ─────────────────────────────────────────────────────────
 const showDeleteModal = ref(false)
 const deletingItem = ref(null)
@@ -139,6 +209,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       empty-text="No pipeline runs yet."
     >
       <template #cell-dateTime="{ row }">{{ fmt(row.dateTime) }}</template>
+      <template #cell-scanId="{ row }">{{ row.id }}</template>
       <template #cell-status="{ row }">
         <span class="status-pill" :style="{ background: s(row.status).bg, color: s(row.status).color }">
           {{ s(row.status).label }}
@@ -159,8 +230,12 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     <Teleport to="body">
       <div v-if="openMenuId" class="action-menu" :style="{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }">
         <button type="button" class="action-menu__item" @click="viewDetail((data ?? []).find((i) => i.id === openMenuId))">
-          <IconEye :size="15" />
+          <IconArrowUpRight :size="15" />
           See Detail
+        </button>
+        <button type="button" class="action-menu__item" @click="manageTags((data ?? []).find((i) => i.id === openMenuId))">
+          <IconTag :size="15" />
+          Manage Tags
         </button>
         <button
           type="button"
@@ -171,6 +246,61 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
           Delete
         </button>
       </div>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showTagModal" class="modal-backdrop" @mousedown.self="closeTagModal">
+          <div class="tag-modal">
+            <div class="tag-modal__head">
+              <h2 class="tag-modal__title">Manage Tags</h2>
+              <button type="button" class="tag-modal__close" aria-label="Close" @click="closeTagModal">
+                <IconX :size="22" />
+              </button>
+            </div>
+
+            <p class="tag-modal__sub">{{ tagItem?.repository }} · {{ tagItem?.id }}</p>
+
+            <div class="tag-modal__current">
+              <span
+                v-for="t in tagItem?.tags || []"
+                :key="t.label"
+                class="dv-tag"
+                :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }"
+              >
+                {{ t.label }}
+                <button type="button" class="dv-tag__x" aria-label="Remove tag" @click="removeTag(t.label)">×</button>
+              </span>
+              <span v-if="!(tagItem?.tags || []).length" class="tag-modal__empty">No tags yet — add one below.</span>
+            </div>
+
+            <div class="tag-modal__create">
+              <input
+                v-model="newTagText"
+                type="text"
+                class="tag-modal__input"
+                placeholder="New tag name"
+                @keydown.enter="addTag"
+              />
+              <button type="button" class="tag-modal__add" :disabled="!newTagText.trim()" @click="addTag">Add</button>
+            </div>
+
+            <div class="tag-modal__actions">
+              <button type="button" class="modal-btn modal-btn--cancel" @click="closeTagModal">Cancel</button>
+              <button
+                type="button"
+                class="modal-btn"
+                :class="{ 'modal-btn--save': true, 'modal-btn--saved': tagState === 'saved' }"
+                @click="saveTags"
+              >
+                <span v-if="tagState === 'loading'" class="modal-btn__spinner" />
+                <IconCheck v-else-if="tagState === 'saved'" :size="18" class="modal-btn__check" />
+                <span v-else>Save</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </Teleport>
 
     <Teleport to="body">
@@ -313,6 +443,153 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   100% { transform: scale(1); }
 }
 
+// ── Manage Tags modal ──────────────────────────────────────────────────────
+
+.tag-modal {
+  width: 100%;
+  max-width: 460px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
+  padding: 28px;
+  animation: delete-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__title {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+    margin: 0;
+  }
+
+  &__close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: var(--glacia-ink-dim);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--glacia-ink);
+    }
+  }
+
+  &__sub {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__current {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+    min-height: 30px;
+  }
+
+  &__empty {
+    font-size: 13px;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__create {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid var(--glacia-glass-border);
+    background: #fff;
+    color: var(--glacia-ink);
+    font-size: 14px;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    outline: none;
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: var(--glacia-ink-dim);
+    }
+
+    &:focus {
+      border-color: var(--glacia-red);
+    }
+  }
+
+  &__add {
+    height: 44px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: none;
+    background: var(--glacia-red);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 20px;
+  }
+}
+
+.dv-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  white-space: nowrap;
+}
+
+.dv-tag__x {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 0 0 2px;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
 // ── Delete Log modal ─────────────────────────────────────────────────────────
 
 .modal-backdrop {
@@ -343,7 +620,6 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 32px;
   animation: delete-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-
   &__head {
     display: flex;
     align-items: flex-start;
