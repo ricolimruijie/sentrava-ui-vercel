@@ -24,7 +24,20 @@ const appRoutes = [
   { path: '/assets/domains',     component: Placeholder, meta: { requiresAuth: true, title: 'Domain Inspection' } },
   { path: '/assets/networks',    component: Placeholder, meta: { requiresAuth: true, title: 'Network' } },
   { path: '/assets/webapps',     component: Placeholder, meta: { requiresAuth: true, title: 'Web Application' } },
-  { path: '/assets/source-code', component: Placeholder, meta: { requiresAuth: true, title: 'Source Code' } },
+  {
+    path: '/assets/source-code',
+    component: () => import('@/views/Assets/SourceCodeView.vue'),
+    meta: { requiresAuth: true, title: 'Source Code', crumbs: [{ label: 'Services' }] },
+  },
+  {
+    path: '/assets/source-code/:id',
+    component: () => import('@/views/Assets/SourceCodeDetailView.vue'),
+    meta: {
+      requiresAuth: true,
+      title: 'Source Code Detail',
+      crumbs: [{ label: 'Services' }, { label: 'Source Code', to: '/assets/source-code' }],
+    },
+  },
   {
     path: '/scans/history',
     component: () => import('@/views/Scans/CiCdView.vue'),

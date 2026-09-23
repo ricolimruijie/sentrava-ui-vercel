@@ -1,4 +1,5 @@
 <script setup>
+import { ref, nextTick, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { IconShieldFilled } from '@tabler/icons-vue'
 import { navSections as sections } from '@/config/navSections'
@@ -13,6 +14,57 @@ function isActive(itemRoute) {
   if (itemRoute === '/assets') return route.path === '/assets'
   return route.path === itemRoute || route.path.startsWith(itemRoute + '/')
 }
+
+function activeItemRoute() {
+  for (const section of sections) {
+    for (const item of section.items) {
+      if (isActive(item.route)) return item.route
+    }
+  }
+  return null
+}
+
+// ── Sliding pill behind the active item ──────────────────────────────────────
+// Only moves when the active route changes (i.e. the user clicks a different
+// item) — hover has its own separate, non-sliding highlight in CSS.
+const navRef = ref(null)
+const itemEls = {}
+function setItemRef(key, el) {
+  // router-link resolves to a component instance in the ref callback — grab
+  // its root DOM element rather than the proxy.
+  const node = el?.$el ?? el
+  if (node) itemEls[key] = node
+}
+
+const pillStyle = ref({ top: '0px', left: '0px', width: '0px', height: '0px', opacity: 0 })
+
+function movePill() {
+  const activeRoute = activeItemRoute()
+  const el = activeRoute ? itemEls[activeRoute] : null
+  const nav = navRef.value
+  if (!el || !nav) {
+    pillStyle.value = { ...pillStyle.value, opacity: 0 }
+    return
+  }
+  const elRect = el.getBoundingClientRect()
+  const navRect = nav.getBoundingClientRect()
+  pillStyle.value = {
+    top: `${elRect.top - navRect.top}px`,
+    left: `${elRect.left - navRect.left}px`,
+    width: `${elRect.width}px`,
+    height: `${elRect.height}px`,
+    opacity: 1,
+  }
+}
+
+watch(() => route.path, () => nextTick(movePill))
+// The collapse/expand width transition (0.22s) reflows every item's
+// position — resnap once immediately and once after it settles.
+watch(() => props.collapsed, () => {
+  nextTick(movePill)
+  setTimeout(movePill, 240)
+})
+onMounted(() => nextTick(movePill))
 </script>
 
 <template>
@@ -27,7 +79,9 @@ function isActive(itemRoute) {
     </div>
 
     <!-- ── Nav ──────────────────────────────────────────────────── -->
-    <nav class="sidebar__nav">
+    <nav ref="navRef" class="sidebar__nav">
+      <div class="sidebar__pill" :style="pillStyle" />
+
       <div
         v-for="section in sections"
         :key="section.label"
@@ -42,6 +96,7 @@ function isActive(itemRoute) {
         <router-link
           v-for="item in section.items"
           :key="item.route"
+          :ref="(el) => setItemRef(item.route, el)"
           :to="item.route"
           class="sidebar__item"
           :class="{ 'sidebar__item--active': isActive(item.route) }"
@@ -116,12 +171,30 @@ $w-collapsed:  64px;
 
   // ── Nav ─────────────────────────────────────────────────────────
   &__nav {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 22px;
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
+  }
+
+  &__pill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-radius: 9px;
+    z-index: 0;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--glacia-red);
+    box-shadow: 0 4px 14px rgba(255, 37, 41, 0.35);
+    transition: top 0.28s cubic-bezier(0.3, 1.15, 0.5, 1), left 0.28s cubic-bezier(0.3, 1.15, 0.5, 1),
+      width 0.28s cubic-bezier(0.3, 1.15, 0.5, 1), height 0.28s cubic-bezier(0.3, 1.15, 0.5, 1),
+      opacity 0.15s ease;
   }
 
   &__section {
@@ -150,7 +223,11 @@ $w-collapsed:  64px;
   }
 
   // ── Nav item ────────────────────────────────────────────────────
+  // Background/shadow live on the sliding &__pill sitting behind these at
+  // z-index:0 — the item itself only ever carries the foreground color.
   &__item {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -170,17 +247,14 @@ $w-collapsed:  64px;
       padding: 9px 0;
     }
 
+    // Plain, instant hover — the pill only ever slides for the active item.
     &:hover:not(&--active) {
       background: var(--glacia-glass-fill-strong);
       color: var(--glacia-ink);
     }
 
     &--active {
-      background: var(--glacia-red);
       color: #ffffff;
-      box-shadow: 0 4px 14px rgba(255,37,41,0.35);
-
-      &:hover { background: #e01f22; }
     }
   }
 

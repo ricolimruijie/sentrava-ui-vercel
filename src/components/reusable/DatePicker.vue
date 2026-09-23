@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import {
   IconCalendarMonth,
   IconChevronLeft,
@@ -28,6 +28,7 @@ watch(() => props.open, (isOpen) => {
   const parsed = parseISO(props.modelValue)
   viewYear.value = parsed?.y ?? today.getFullYear()
   viewMonth.value = parsed?.m ?? today.getMonth()
+  nextTick(movePill)
 })
 
 function parseISO(iso) {
@@ -70,21 +71,45 @@ function shiftMonth(delta) {
   const d = new Date(viewYear.value, viewMonth.value + delta, 1)
   viewYear.value = d.getFullYear()
   viewMonth.value = d.getMonth()
+  nextTick(movePill)
 }
 function shiftYear(delta) {
   viewYear.value += delta
+  nextTick(movePill)
 }
 
 function selectDay(day) {
   if (isDisabled(day)) return
   emit('update:modelValue', toISO(day))
   emit('select', toISO(day))
+  pickN.value += 1
+  nextTick(movePill)
+}
+
+// ── Sliding glass pill behind the selected day (same as DateTimePicker) ────
+const gridRef = ref(null)
+const pill = ref({ left: '0px', top: '0px', opacity: 0 })
+const pickN = ref(0)
+
+function movePill() {
+  const parsed = parseISO(props.modelValue)
+  if (!parsed || parsed.y !== viewYear.value || parsed.m !== viewMonth.value) {
+    pill.value = { ...pill.value, opacity: 0 }
+    return
+  }
+  // Measure the selected cell so the number sits dead-center in the pill.
+  const el = gridRef.value?.querySelector(`[data-day="${parsed.d}"]`)
+  if (!el) {
+    pill.value = { ...pill.value, opacity: 0 }
+    return
+  }
+  pill.value = { left: `${el.offsetLeft}px`, top: `${el.offsetTop}px`, opacity: 1 }
 }
 </script>
 
 <template>
   <div class="form-select date-picker">
-    <button type="button" class="form-select__trigger" @click="emit('toggle')">
+    <button v-show="!open" type="button" class="form-select__trigger" @click="emit('toggle')">
       <span :class="{ 'form-select__trigger-text--placeholder': !modelValue }">
         {{ display || placeholder }}
       </span>
@@ -128,13 +153,19 @@ function selectDay(day) {
           </span>
         </div>
 
-        <div class="calendar__grid">
+        <div ref="gridRef" class="calendar__grid">
+          <div
+            class="calendar__pill"
+            :class="pickN ? (pickN % 2 ? 'calendar__pill--glide-a' : 'calendar__pill--glide-b') : ''"
+            :style="{ left: pill.left, top: pill.top, opacity: pill.opacity }"
+          />
           <template v-for="(day, i) in cells" :key="i">
             <span v-if="day === null" class="calendar__blank" />
             <button
               v-else
               type="button"
               class="calendar__day"
+              :data-day="day"
               :class="{ 'calendar__day--selected': toISO(day) === modelValue }"
               :disabled="isDisabled(day)"
               @click="selectDay(day)"
@@ -198,7 +229,13 @@ function selectDay(day) {
 // Same open/close animation as the other dropdowns: in-flow panel that the
 // modal height follows.
 .select-panel {
-  overflow: hidden;
+  // `clip` (with a small margin) instead of `hidden` — same collapsing
+  // behavior, but it won't flat-cut the selection pill's border/shadow if a
+  // selected day ever sits right at the panel's edge. See DateTimePicker.vue
+  // for the fuller writeup of why this matters.
+  overflow: hidden; // fallback for browsers without `clip` support
+  overflow: clip;
+  overflow-clip-margin: 8px;
   max-height: 0;
   opacity: 0;
   transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
@@ -281,6 +318,32 @@ function selectDay(day) {
   text-align: center;
 }
 
+.calendar__grid {
+  position: relative;
+  row-gap: 3px;
+}
+
+.calendar__pill {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--glacia-glass-fill-strong);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 37, 41, 0.3);
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight), 0 6px 16px -6px rgba(255, 46, 58, 0.45);
+  box-sizing: border-box;
+  transition: left 0.5s cubic-bezier(0.3, 1.35, 0.5, 1), top 0.5s cubic-bezier(0.3, 1.35, 0.5, 1), opacity 0.2s ease;
+
+  // Alternating classes replay the stretch without remounting (remounting
+  // would jump straight to the new spot and skip the slide transition).
+  &--glide-a { animation: dt-glide-a 0.5s; }
+  &--glide-b { animation: dt-glide-b 0.5s; }
+}
+
 .calendar__weekday {
   font-size: 13px;
   font-weight: 700;
@@ -293,8 +356,10 @@ function selectDay(day) {
 }
 
 .calendar__day {
-  height: 38px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  justify-self: center;
+  border-radius: 50%;
   border: none;
   background: transparent;
   color: var(--glacia-ink);
@@ -302,22 +367,42 @@ function selectDay(day) {
   font-weight: 500;
   font-family: 'Manrope', 'Inter', sans-serif;
   cursor: pointer;
-  transition: background 0.13s, color 0.13s;
-
-  &:not(:disabled):hover {
-    background: rgba(255, 37, 41, 0.08);
-  }
+  position: relative;
+  z-index: 1;
+  transition: color 0.3s ease;
 
   &--selected {
-    background: var(--glacia-red);
-    color: #fff;
+    background: transparent;
+    color: #b91c1c;
     font-weight: 700;
-    box-shadow: 0 4px 12px rgba(255, 37, 41, 0.4);
+    animation: dt-pop 0.34s;
   }
 
   &:disabled {
     color: #cbd5e1;
     cursor: default;
   }
+}
+
+.calendar__blank {
+  height: 36px;
+}
+
+@keyframes dt-glide-a {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.18, 0.86); animation-timing-function: ease-out; }
+  70% { transform: scale(0.95, 1.05); }
+  100% { transform: scale(1, 1); }
+}
+@keyframes dt-glide-b {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.18, 0.86); animation-timing-function: ease-out; }
+  70% { transform: scale(0.95, 1.05); }
+  100% { transform: scale(1, 1); }
+}
+@keyframes dt-pop {
+  0% { transform: scale(0.8); animation-timing-function: cubic-bezier(0.3, 1.5, 0.5, 1); }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); }
 }
 </style>

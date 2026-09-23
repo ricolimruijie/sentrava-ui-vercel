@@ -11,6 +11,8 @@ const props = defineProps({
   pageSize: { type: Number, default: 10 },
   emptyText: { type: String, default: 'No data.' },
   rowKey: { type: [String, Function], default: 'id' },
+  // Optional row class: (row, index) => string | object — e.g. highlight rows.
+  rowClass: { type: Function, default: null },
 })
 
 const pagination = usePagination({ pageSize: props.pageSize })
@@ -82,14 +84,14 @@ defineExpose({ pagination })
         <thead>
           <tr>
             <th v-for="col in columns" :key="col.key" :style="cellStyle(col)">
-              {{ col.label }}
+              <slot :name="`header-${col.key}`">{{ col.label }}</slot>
             </th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="loading"><td :colspan="columns.length" class="vtable__empty">Loading…</td></tr>
           <tr v-else-if="!pagedItems.length"><td :colspan="columns.length" class="vtable__empty">{{ emptyText }}</td></tr>
-          <tr v-for="(row, i) in pagedItems" :key="keyFor(row, i)" class="vtable__row">
+            <tr v-for="(row, i) in pagedItems" :key="keyFor(row, i)" class="vtable__row" :class="rowClass ? rowClass(row, pagination.offset.value + i) : null">
             <td
               v-for="col in columns"
               :key="col.key"
@@ -112,31 +114,37 @@ defineExpose({ pagination })
     </div>
 
     <div v-if="pagination.totalPages.value > 1" class="data-table__pagination">
-      <button type="button" class="page-nav" :disabled="pagination.page.value === 1" @click="pagination.prevPage()">
-        Previous
-      </button>
+      <div class="data-table__pagination-info">
+        <slot name="pagination-info" />
+      </div>
 
-      <template v-for="(p, idx) in pageList" :key="`${p}-${idx}`">
-        <span v-if="p === '…'" class="page-ellipsis">…</span>
-        <button
-          v-else
-          type="button"
-          class="page-num"
-          :class="{ 'page-num--active': p === pagination.page.value }"
-          @click="pagination.goTo(p)"
-        >
-          {{ p }}
+      <div class="data-table__pagination-controls">
+        <button type="button" class="page-nav" :disabled="pagination.page.value === 1" @click="pagination.prevPage()">
+          Previous
         </button>
-      </template>
 
-      <button
-        type="button"
-        class="page-nav"
-        :disabled="pagination.page.value === pagination.totalPages.value"
-        @click="pagination.nextPage()"
-      >
-        Next
-      </button>
+        <template v-for="(p, idx) in pageList" :key="`${p}-${idx}`">
+          <span v-if="p === '…'" class="page-ellipsis">…</span>
+          <button
+            v-else
+            type="button"
+            class="page-num"
+            :class="{ 'page-num--active': p === pagination.page.value }"
+            @click="pagination.goTo(p)"
+          >
+            {{ p }}
+          </button>
+        </template>
+
+        <button
+          type="button"
+          class="page-nav"
+          :disabled="pagination.page.value === pagination.totalPages.value"
+          @click="pagination.nextPage()"
+        >
+          Next
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -156,10 +164,23 @@ defineExpose({ pagination })
   &__pagination {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
+    justify-content: space-between;
+    gap: 12px;
     margin-top: 16px;
     flex-wrap: wrap;
+  }
+
+  &__pagination-info {
+    font-size: 13px;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-left: auto;
   }
 }
 

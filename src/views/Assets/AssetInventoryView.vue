@@ -1,9 +1,10 @@
 <script setup>
 import { ref, computed, reactive, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
-import { IconDotsVertical, IconPlus, IconWorld, IconBrowser, IconNetwork, IconCode, IconTag, IconChevronDown, IconX, IconCheck, IconEye, IconRefresh, IconTrash, IconSitemap, IconCircleDot, IconArrowsLeftRight, IconPencil, IconArrowRight, IconPalette } from '@tabler/icons-vue'
+import { IconDotsVertical, IconPlus, IconWorld, IconBrowser, IconNetwork, IconCode, IconTag, IconChevronDown, IconX, IconCheck, IconArrowUpRight, IconRefresh, IconTrash, IconSitemap, IconCircleDot, IconArrowsLeftRight, IconPencil, IconArrowRight, IconPalette } from '@tabler/icons-vue'
 
 const tabs = [
   { key: 'domain', label: 'Domain', icon: IconWorld },
@@ -12,7 +13,11 @@ const tabs = [
   { key: 'source', label: 'Repository', icon: IconCode },
   { key: 'tags', label: 'Tags', icon: IconTag },
 ]
-const activeTab = ref('domain')
+
+// Lets other pages (e.g. the Source Code register-repository flow) deep-link
+// straight into a specific tab via ?tab=source.
+const route = useRoute()
+const activeTab = ref(tabs.some((t) => t.key === route.query.tab) ? route.query.tab : 'domain')
 
 // ── Sliding tab-bar pill — mirrors the active tab's box, animating between
 // positions instead of each tab owning its own static "active" background.
@@ -104,7 +109,7 @@ const networkColumnsSingle = [
   { key: 'endpointType', label: 'Endpoint Type', width: '15%' },
   { key: 'owner', label: 'Asset Owner', width: '21%' },
   { key: 'lastScanned', label: 'Last Scanned', width: '12%' },
-  { key: 'tags', label: 'Multi-Tags', width: '14%', align: 'center' },
+  { key: 'tags', label: 'Multi-Tags', width: '14%' },
   { key: 'status', label: 'Scanner Status', width: '15%', align: 'center' },
   { key: 'actions', label: 'Action', width: '32px', align: 'center' },
 ]
@@ -172,7 +177,7 @@ const sourceCodeColumns = [
   { key: 'gitProvider', label: 'Git Provider', width: '11%' },
   { key: 'owner', label: 'Asset Owner', width: '19%' },
   { key: 'lastScanned', label: 'Last Scanned', width: '12%' },
-  { key: 'tags', label: 'Multi-Tags', width: '13%', align: 'center' },
+  { key: 'tags', label: 'Multi-Tags', width: '13%' },
   { key: 'status', label: 'Scanner Status', width: '13%', align: 'center' },
   { key: 'actions', label: 'Action', width: '70px', align: 'center' },
 ]
@@ -405,7 +410,7 @@ const webappColumns = [
   { key: 'appName', label: 'App Name', width: '16%' },
   { key: 'owner', label: 'Asset Owner', width: '20%' },
   { key: 'lastScanned', label: 'Last Scanned', width: '15%' },
-  { key: 'tags', label: 'Multi-Tags', width: '17%', align: 'center' },
+  { key: 'tags', label: 'Multi-Tags', width: '17%' },
   { key: 'status', label: 'Scanner Status', width: '15%', align: 'center' },
   { key: 'actions', label: 'Action', width: '32px', align: 'center' },
 ]
@@ -1688,7 +1693,7 @@ function submitRegisterWebapp() {
         <div class="cell-tags">
           <span v-for="t in row.tags.slice(0, 2)" :key="t.label" class="dv-tag" :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }">{{ t.label }}</span>
           <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
-          <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event)"><IconPlus :size="12" /> Add tag</button>
+          <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event)">Add tag</button>
         </div>
       </template>
       <template #cell-status="{ row }">
@@ -1718,7 +1723,7 @@ function submitRegisterWebapp() {
         <div class="cell-tags">
           <span v-for="t in row.tags.slice(0, 2)" :key="t.label" class="dv-tag" :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }">{{ t.label }}</span>
           <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
-          <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event)"><IconPlus :size="12" /> Add tag</button>
+          <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event)">Add tag</button>
         </div>
       </template>
       <template #cell-status="{ row }">
@@ -1748,7 +1753,7 @@ function submitRegisterWebapp() {
         <div class="cell-tags">
           <span v-for="t in row.tags.slice(0, 2)" :key="t.label" class="dv-tag" :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }">{{ t.label }}</span>
           <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
-          <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event, 'source')"><IconPlus :size="12" /> Add tag</button>
+          <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event, 'source')">Add tag</button>
         </div>
       </template>
       <template #cell-status="{ row }">
@@ -1804,7 +1809,7 @@ function submitRegisterWebapp() {
           <button type="button" class="action-menu__item action-menu__item--danger" @click="deleteTag(openMenuRow); closeMenu()"><IconTrash :size="14" /> Delete</button>
         </template>
         <template v-else>
-          <button type="button" class="action-menu__item" @click="viewDetail(openMenuRow)"><IconEye :size="14" /> See Detail</button>
+          <button type="button" class="action-menu__item" @click="viewDetail(openMenuRow)"><IconArrowUpRight :size="14" /> See Detail</button>
           <button v-if="activeTab === 'webapp' || activeTab === 'network' || activeTab === 'source'" type="button" class="action-menu__item" @click="manageRowTags(openMenuRow, $event)"><IconTag :size="14" /> Manage tag</button>
           <button type="button" class="action-menu__item" @click="rescan(openMenuRow)"><IconRefresh :size="14" /> Re-scan</button>
           <button type="button" class="action-menu__item action-menu__item--danger" @click="deleteAsset(openMenuRow)"><IconTrash :size="14" /> Delete</button>
@@ -3105,7 +3110,7 @@ function submitRegisterWebapp() {
 }
 
 .cell-tags {
-  display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; justify-content: center;
+  display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; justify-content: flex-start;
 }
 
 .tag-more {

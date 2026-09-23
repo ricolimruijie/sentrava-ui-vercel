@@ -83,7 +83,7 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .dd {
   position: relative;
-  width: 220px;
+  width: 260px;
   flex-shrink: 0;
   font-family: 'Manrope', 'Inter', sans-serif;
 }
@@ -94,7 +94,7 @@ onUnmounted(() => {
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  padding: 15px 18px;
+  padding: 10px 18px;
   box-sizing: border-box;
   border: 1px solid #D3DEE2;
   border-radius: 10px;
@@ -110,8 +110,8 @@ onUnmounted(() => {
   border-color: #AEBEC4;
 }
 .dd.has-value .dd__trigger {
-  padding-top: 9px;
-  padding-bottom: 9px;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
 .dd__text {
@@ -144,8 +144,8 @@ onUnmounted(() => {
 }
 
 .dd__value {
-  font-size: 0.95rem;
-  line-height: 20px;
+  font-size: 0.82rem;
+  line-height: 18px;
   color: #849599;
   white-space: nowrap;
   overflow: hidden;
@@ -154,7 +154,6 @@ onUnmounted(() => {
 }
 .dd.has-value .dd__value {
   color: #101820;
-  font-weight: 600;
 }
 
 .dd__chev {
@@ -190,7 +189,7 @@ onUnmounted(() => {
   top: calc(100% + 8px);
   left: 0;
   right: 0;
-  min-width: 220px;
+  min-width: 260px;
   z-index: 200;
   display: none;
   padding: 6px;
