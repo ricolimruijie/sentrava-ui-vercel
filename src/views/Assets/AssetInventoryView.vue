@@ -9,7 +9,7 @@ const tabs = [
   { key: 'domain', label: 'Domain', icon: IconWorld },
   { key: 'webapp', label: 'Web Application', icon: IconBrowser },
   { key: 'network', label: 'Network', icon: IconNetwork },
-  { key: 'source', label: 'Source Code', icon: IconCode },
+  { key: 'source', label: 'Repository', icon: IconCode },
   { key: 'tags', label: 'Tags', icon: IconTag },
 ]
 const activeTab = ref('domain')
@@ -190,7 +190,7 @@ const totalLabels = {
   domain: 'Total Domain Registered',
   webapp: 'Total Web Application Registered',
   network: 'Total Network Registered',
-  source: 'Total Source Code Registered',
+  source: 'Total Repository Registered',
   tags: 'Total Tags Registered',
 }
 const totalLabel = computed(() => totalLabels[activeTab.value] ?? 'Total Registered')
@@ -484,19 +484,19 @@ const tagDetailUsage = computed(() => {
   assets.value.forEach((a) => { if ((a.tags || []).some((t) => t.label === label)) rows.push({ name: a.domain, type: 'Domain' }) })
   webapps.value.forEach((w) => { if ((w.tags || []).some((t) => t.label === label)) rows.push({ name: w.appName, type: 'Web Application' }) })
   networks.value.forEach((n) => { if ((n.tags || []).some((t) => t.label === label)) rows.push({ name: n.endpoint, type: 'Network' }) })
-  sourceCodes.value.forEach((s) => { if ((s.tags || []).some((t) => t.label === label)) rows.push({ name: s.repoName, type: 'Source Code' }) })
+  sourceCodes.value.forEach((s) => { if ((s.tags || []).some((t) => t.label === label)) rows.push({ name: s.repoName, type: 'Repository' }) })
   Object.values(networkHostsStore).flat().forEach((h) => { if ((h.tags || []).some((t) => t.label === label)) rows.push({ name: h.endpoint, type: 'Network Host' }) })
   return rows
 })
 function typeIcon(type) {
   if (type === 'Domain') return IconWorld
-  if (type === 'Source Code') return IconCode
+  if (type === 'Repository') return IconCode
   if (type === 'Web Application') return IconBrowser
   return IconSitemap
 }
 function typeIconClass(type) {
   if (type === 'Domain') return 'tag-asset__icon--domain'
-  if (type === 'Source Code') return 'tag-asset__icon--code'
+  if (type === 'Repository') return 'tag-asset__icon--code'
   if (type === 'Web Application') return 'tag-asset__icon--web'
   return 'tag-asset__icon--net'
 }
@@ -1552,7 +1552,7 @@ function submitRegisterWebapp() {
     <div class="asset-mgmt__head">
       <h1 class="asset-mgmt__title">Asset Inventory Management</h1>
       <p class="asset-mgmt__sub">{{ totalLabel }}: <b>{{ totalCount }}</b></p>
-      <p class="asset-mgmt__desc">This is where you store and keep all your assets. All assets are automatically categorized by type including Domain, Web Application, Network, Source Code, and Tags. You can register new assets, track their scan status, monitor last scanned dates, and manage your inventory in one place. This helps you keep your security posture organized, up to date, and ready for scanning at any time.</p>
+      <p class="asset-mgmt__desc">This is where you store and keep all your assets. All assets are automatically categorized by type including Domain, Web Application, Network, Repository, and Tags. You can register new assets, track their scan status, monitor last scanned dates, and manage your inventory in one place. This helps you keep your security posture organized, up to date, and ready for scanning at any time.</p>
     </div>
     <div class="asset-tabs">
       <div class="asset-tabs__pill" :class="{ 'asset-tabs__pill--ready': tabPillReady }" :style="tabPillStyle"></div>
@@ -1742,7 +1742,7 @@ function submitRegisterWebapp() {
       :columns="sourceCodeColumns"
       :items="filteredSourceCodes"
       :loading="false"
-      empty-text="No source code repositories found."
+      empty-text="No repositories found."
     >
       <template #cell-tags="{ row }">
         <div class="cell-tags">
