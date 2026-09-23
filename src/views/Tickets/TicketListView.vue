@@ -23,12 +23,12 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: '#',            width: '32px',  dim: true },
-  { key: 'date',     label: 'Submission Date', width: '130px' },
-  { key: 'name',     label: 'Ticket Name', width: '300px' },
-  { key: 'category', label: 'Issue Category', width: '170px' },
-  { key: 'ticketId', label: 'Ticket ID',  width: '160px', mono: true },
-  { key: 'status',   label: 'Ticket Status', width: '110px', align: 'center' },
-  { key: 'action',   label: 'Action',     width: '32px',  align: 'center' },
+  { key: 'date',     label: 'Submission Date', width: '12%' },
+  { key: 'name',     label: 'Ticket Name', width: '26%' },
+  { key: 'category', label: 'Issue Category', width: '16%' },
+  { key: 'ticketId', label: 'Ticket ID',  width: '15%', mono: true },
+  { key: 'status',   label: 'Ticket Status', width: '10%', align: 'center' },
+  { key: 'action',   label: 'Action',     width: '70px',  align: 'center' },
 ]
 
 const statusMeta = {
