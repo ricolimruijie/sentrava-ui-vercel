@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { get } from '@/utils/request'
 import { useFetch } from '@/composables/useFetch'
 import DataTable from '@/components/table/DataTable.vue'
+import TablePagination from '@/components/table/TablePagination.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import CompanyListTab from './tabs/CompanyListTab.vue'
 import AuditLogTab from './tabs/AuditLogTab.vue'
@@ -1053,6 +1054,12 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
               <SearchInput v-model="search" placeholder="Search…" />
 
               <FilterDropdown v-model="roleFilter" :options="roleOptions" placeholder="Role" />
+
+              <TablePagination
+                v-if="tableRef"
+                :pagination="tableRef.pagination"
+                class="company-pagination-inline"
+              />
             </div>
 
             <DataTable
@@ -1060,6 +1067,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
               :columns="columns"
               :items="filteredMembers"
               :loading="loading"
+              hide-pagination
               empty-text="No members found."
             >
               <template #cell-name="{ row }">
@@ -1117,6 +1125,12 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   display: flex;
   flex-direction: column;
   gap: 28px;
+}
+
+// Pagination sits on the controls row, right-aligned with search + role.
+.company-pagination-inline {
+  margin-top: 0;
+  margin-left: auto;
 }
 
 // Plain, unboxed header — matches the dashboard's own DashboardHeader.vue

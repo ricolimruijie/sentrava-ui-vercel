@@ -3,11 +3,14 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { get } from '@/utils/request'
 import { useFetch } from '@/composables/useFetch'
 import DataTable from '@/components/table/DataTable.vue'
+import TablePagination from '@/components/table/TablePagination.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import { IconDotsVertical, IconRefresh, IconTrash } from '@tabler/icons-vue'
 
 const { data, loading } = useFetch(() => get('/company/probes'))
+
+const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: '#', width: '32px', dim: true },
@@ -82,12 +85,20 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     <div class="company-controls">
       <SearchInput v-model="search" placeholder="Search…" />
       <FilterDropdown v-model="statusFilter" :options="statusOptions" placeholder="Status" />
+
+      <TablePagination
+        v-if="tableRef"
+        :pagination="tableRef.pagination"
+        class="company-pagination-inline"
+      />
     </div>
 
     <DataTable
+      ref="tableRef"
       :columns="columns"
       :items="filteredData"
       :loading="loading"
+      hide-pagination
       empty-text="No probes found."
     >
       <template #cell-status="{ row }">
@@ -134,6 +145,12 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+// Pagination sits on the controls row, right-aligned with search + filter.
+.company-pagination-inline {
+  margin-top: 0;
+  margin-left: auto;
 }
 
 .status-pill {

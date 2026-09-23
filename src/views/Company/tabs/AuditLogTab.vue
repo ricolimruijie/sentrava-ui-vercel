@@ -3,11 +3,14 @@ import { ref, computed } from 'vue'
 import { get } from '@/utils/request'
 import { useFetch } from '@/composables/useFetch'
 import DataTable from '@/components/table/DataTable.vue'
+import TablePagination from '@/components/table/TablePagination.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import { IconArrowUpRight } from '@tabler/icons-vue'
 
 const { data, loading } = useFetch(() => get('/company/audit-log'))
+
+const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: '#', width: '32px', dim: true },
@@ -61,12 +64,20 @@ const filteredData = computed(() => {
     <div class="company-controls">
       <SearchInput v-model="search" placeholder="Search…" />
       <FilterDropdown v-model="actionFilter" :options="actionOptions" placeholder="Action" />
+
+      <TablePagination
+        v-if="tableRef"
+        :pagination="tableRef.pagination"
+        class="company-pagination-inline"
+      />
     </div>
 
     <DataTable
+      ref="tableRef"
       :columns="columns"
       :items="filteredData"
       :loading="loading"
+      hide-pagination
       empty-text="No audit entries found."
     >
       <template #cell-dateTime="{ row }">{{ fmt(row.dateTime) }}</template>
@@ -91,6 +102,12 @@ const filteredData = computed(() => {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+// Pagination sits on the controls row, right-aligned with search + filter.
+.company-pagination-inline {
+  margin-top: 0;
+  margin-left: auto;
 }
 
 .view-btn {
