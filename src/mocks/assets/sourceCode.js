@@ -3,16 +3,16 @@
 // because both views mutate rows locally (status changes, deletes, tags).
 
 const REPOS = [
-  { id: 1, repo: 'protergo-cyber-security', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 1987, tags: [{ label: 'Database', colorId: 2 }, { label: 'Server', colorId: 6 }, { label: 'Cloud', colorId: 0 }, { label: 'Production', colorId: 4 }, { label: 'Internal', colorId: 9 }], status: 'NotStarted', scanType: 'manual' },
-  { id: 2, repo: 'tcg-royal', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 4213, tags: [{ label: 'Database', colorId: 2 }, { label: 'Server', colorId: 6 }, { label: 'Cloud', colorId: 0 }, { label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 1 }], status: 'NotStarted', scanType: 'scheduled' },
-  { id: 3, repo: 'aoc-glasshour', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 2765, tags: [{ label: 'Database', colorId: 2 }, { label: 'Server', colorId: 6 }, { label: 'Cloud', colorId: 0 }, { label: 'VPN', colorId: 7 }, { label: 'Backup', colorId: 10 }], status: 'NotStarted', scanType: 'continuous' },
-  { id: 4, repo: 'dune-franky-heretic', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 8340, tags: [{ label: 'Database', colorId: 2 }, { label: 'Server', colorId: 6 }, { label: 'Cloud', colorId: 0 }, { label: 'Dev', colorId: 3 }, { label: 'CDN', colorId: 5 }], status: 'NotStarted', scanType: 'manual' },
-  { id: 5, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Rempoa', linesOfCode: 3128, tags: [{ label: 'Database', colorId: 2 }, { label: 'Server', colorId: 6 }, { label: 'Cloud', colorId: 0 }, { label: 'Internal', colorId: 9 }, { label: 'Staging', colorId: 1 }], status: 'NotStarted', scanType: 'scheduled' },
-  { id: 6, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Rempoa', linesOfCode: 3128, tags: [{ label: 'Database', colorId: 2 }, { label: 'Server', colorId: 6 }, { label: 'Cloud', colorId: 0 }, { label: 'Production', colorId: 4 }, { label: 'Mail', colorId: 8 }], status: 'NotStarted', scanType: 'continuous' },
-  { id: 7, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Rempoa', linesOfCode: 3128, tags: [{ label: 'Database', colorId: 2 }, { label: 'Server', colorId: 6 }, { label: 'Cloud', colorId: 0 }, { label: 'Load balancer', colorId: 6 }, { label: 'CDN', colorId: 5 }], status: 'NotStarted', scanType: 'manual' },
-  { id: 8, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Ciputat', linesOfCode: 3128, tags: [{ label: 'Database', colorId: 2 }, { label: 'Server', colorId: 6 }, { label: 'Cloud', colorId: 0 }, { label: 'Internal', colorId: 9 }, { label: 'VPN', colorId: 7 }], status: 'NotStarted', scanType: 'scheduled' },
-  { id: 9, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Ciputat', linesOfCode: 3128, tags: [{ label: 'Database', colorId: 2 }, { label: 'Server', colorId: 6 }, { label: 'Cloud', colorId: 0 }, { label: 'Backup', colorId: 10 }, { label: 'Dev', colorId: 3 }], status: 'NotStarted', scanType: 'continuous' },
-  { id: 10, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Ciputat', linesOfCode: 3128, tags: [{ label: 'Database', colorId: 2 }, { label: 'Server', colorId: 6 }, { label: 'Cloud', colorId: 0 }, { label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 1 }], status: 'NotStarted', scanType: 'manual' },
+  { id: 1, repo: 'protergo-cyber-security', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 1987, tags: [], status: 'NotStarted', scanType: 'manual' },
+  { id: 2, repo: 'tcg-royal', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 4213, tags: [], status: 'NotStarted', scanType: 'scheduled' },
+  { id: 3, repo: 'aoc-glasshour', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 2765, tags: [], status: 'NotStarted', scanType: 'continuous' },
+  { id: 4, repo: 'dune-franky-heretic', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 8340, tags: [], status: 'NotStarted', scanType: 'manual' },
+  { id: 5, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Rempoa', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'scheduled' },
+  { id: 6, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Rempoa', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'continuous' },
+  { id: 7, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Rempoa', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'manual' },
+  { id: 8, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Ciputat', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'scheduled' },
+  { id: 9, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Ciputat', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'continuous' },
+  { id: 10, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Ciputat', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'manual' },
 ]
 
 export function getSourceCodeRepos() {
@@ -41,24 +41,24 @@ export function getSourceCodeScans() {
 // Findings for the selected scan — severity is lowercase to match
 // VulnerabilityDetailModal's severityMeta.
 const BASE_VULNS = [
-  { id: 'v1', name: 'NVT: Die-Hellman Ephemeral Key Exchange DoS Vulnerability (CVE-2002-20001)', component: 'unitest/scan/mobsf/ios.json', line: 109, severity: 'high', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'ricolimruijie', modifiedEmail: 'ricolimruijie@protergo.id', cycle: 'Active' },
-  { id: 'v2', name: 'Google API keys should not be disclosed', component: 'app/deploy/linux/appimage/config.yaml', line: 203, severity: 'high', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'alexclaire', modifiedEmail: 'alex@protergo.id', cycle: 'Active' },
-  { id: 'v3', name: 'Microsoft Azure Service Fabric Security Misconfiguration', component: 'services/monitoring/logs/2025/fabric.xml', line: 317, severity: 'high', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active' },
-  { id: 'v4', name: 'Cross-Site Scripting (XSS) Vulnerabilities in Web Applications', component: 'database/backup/mysql/2025/dump.sql', line: 425, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'sitirosiyati', modifiedEmail: 'sitirosiyati@protergo.id', cycle: 'Active' },
-  { id: 'v5', name: 'Insecure Direct Object References (IDOR) in REST APIs', component: 'assets/images/icons/icon-router.ts', line: 512, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active' },
-  { id: 'v6', name: 'Hardcoded Credentials in Source Code', component: 'scripts/automation/deploy-prod.sh', line: 678, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active' },
-  { id: 'v7', name: 'Improper Input Validation in Mobile Applications', component: 'config/settings/app-config.json', line: 734, severity: 'low', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active' },
-  { id: 'v8', name: 'Server-Side Request Forgery (SSRF) Attacks', component: 'tests/unit/test_authentication.py', line: 812, severity: 'low', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active' },
-  { id: 'v9', name: 'Insufficient Logging and Monitoring Practices', component: 'documentation/user-manual/logging.md', line: 926, severity: 'info', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active' },
-  { id: 'v10', name: 'Use of Deprecated Cryptographic Algorithms in Applications', component: 'resources/fonts/Roboto-Regular.ttf', line: 1054, severity: 'info', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active' },
-  { id: 'v11', name: 'Missing Security Headers in HTTP Responses', component: 'config/nginx/security-headers.conf', line: 88, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'sitirosiyati', modifiedEmail: 'sitirosiyati@protergo.id', cycle: 'Active' },
-  { id: 'v12', name: 'Verbose Error Messages Exposing Stack Traces', component: 'app/middleware/error-handler.ts', line: 142, severity: 'low', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'alexclaire', modifiedEmail: 'alex@protergo.id', cycle: 'Active' },
-  { id: 'v13', name: 'Weak Password Policy Enforcement', component: 'services/auth/password-policy.js', line: 67, severity: 'high', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active' },
-  { id: 'v14', name: 'Unvalidated Redirects and Forwards', component: 'app/controllers/redirect-controller.py', line: 231, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'ricolimruijie', modifiedEmail: 'ricolimruijie@protergo.id', cycle: 'Active' },
-  { id: 'v15', name: 'Exposed Debug Endpoints in Production', component: 'routes/debug/admin-panel.go', line: 45, severity: 'critical', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'sitirosiyati', modifiedEmail: 'sitirosiyati@protergo.id', cycle: 'Active' },
-  { id: 'v16', name: 'Outdated Third-Party Dependency With Known CVE', component: 'package-lock.json', line: 1204, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active' },
-  { id: 'v17', name: 'Missing Rate Limiting on Authentication API', component: 'api/v1/auth/login-rate-limit.yaml', line: 33, severity: 'low', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'alexclaire', modifiedEmail: 'alex@protergo.id', cycle: 'Active' },
-  { id: 'v18', name: 'Sensitive Data in Log Files', component: 'services/monitoring/log-sanitizer.xml', line: 519, severity: 'info', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active' },
+  { id: 'v1', name: 'NVT: Die-Hellman Ephemeral Key Exchange DoS Vulnerability (CVE-2002-20001)', component: 'unitest/scan/mobsf/ios.json', line: 109, severity: 'high', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'ricolimruijie', modifiedEmail: 'ricolimruijie@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v2', name: 'Google API keys should not be disclosed', component: 'app/deploy/linux/appimage/config.yaml', line: 203, severity: 'high', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'alexclaire', modifiedEmail: 'alex@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v3', name: 'Microsoft Azure Service Fabric Security Misconfiguration', component: 'services/monitoring/logs/2025/fabric.xml', line: 317, severity: 'high', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v4', name: 'Cross-Site Scripting (XSS) Vulnerabilities in Web Applications', component: 'database/backup/mysql/2025/dump.sql', line: 425, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'sitirosiyati', modifiedEmail: 'sitirosiyati@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v5', name: 'Insecure Direct Object References (IDOR) in REST APIs', component: 'assets/images/icons/icon-router.ts', line: 512, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v6', name: 'Hardcoded Credentials in Source Code', component: 'scripts/automation/deploy-prod.sh', line: 678, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v7', name: 'Improper Input Validation in Mobile Applications', component: 'config/settings/app-config.json', line: 734, severity: 'low', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v8', name: 'Server-Side Request Forgery (SSRF) Attacks', component: 'tests/unit/test_authentication.py', line: 812, severity: 'low', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v9', name: 'Insufficient Logging and Monitoring Practices', component: 'documentation/user-manual/logging.md', line: 926, severity: 'info', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v10', name: 'Use of Deprecated Cryptographic Algorithms in Applications', component: 'resources/fonts/Roboto-Regular.ttf', line: 1054, severity: 'info', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v11', name: 'Missing Security Headers in HTTP Responses', component: 'config/nginx/security-headers.conf', line: 88, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'sitirosiyati', modifiedEmail: 'sitirosiyati@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v12', name: 'Verbose Error Messages Exposing Stack Traces', component: 'app/middleware/error-handler.ts', line: 142, severity: 'low', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'alexclaire', modifiedEmail: 'alex@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v13', name: 'Weak Password Policy Enforcement', component: 'services/auth/password-policy.js', line: 67, severity: 'high', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v14', name: 'Unvalidated Redirects and Forwards', component: 'app/controllers/redirect-controller.py', line: 231, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'ricolimruijie', modifiedEmail: 'ricolimruijie@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v15', name: 'Exposed Debug Endpoints in Production', component: 'routes/debug/admin-panel.go', line: 45, severity: 'critical', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'sitirosiyati', modifiedEmail: 'sitirosiyati@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v16', name: 'Outdated Third-Party Dependency With Known CVE', component: 'package-lock.json', line: 1204, severity: 'medium', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v17', name: 'Missing Rate Limiting on Authentication API', component: 'api/v1/auth/login-rate-limit.yaml', line: 33, severity: 'low', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'alexclaire', modifiedEmail: 'alex@protergo.id', cycle: 'Active', validation: 'Unresolved' },
+  { id: 'v18', name: 'Sensitive Data in Log Files', component: 'services/monitoring/log-sanitizer.xml', line: 519, severity: 'info', lastModified: 'Mon, 10 Feb 2025', modifiedBy: 'budiarto', modifiedEmail: 'budiarto@protergo.id', cycle: 'Active', validation: 'Unresolved' },
 ]
 
 // Deep-dive content for VulnerabilityDetailModal, keyed by the same id as
@@ -67,6 +67,9 @@ const BASE_VULNS = [
 // instead of the modal falling back to blank fields or a generic placeholder.
 const VULN_DETAILS = {
   v1: {
+    cves: ['CVE-2002-20001', 'CVE-2002-20002', 'CVE-2002-20003', 'CVE-2002-20004', 'CVE-2002-20005', 'CVE-2002-20006', 'CVE-2002-20007', 'CVE-2002-20008', 'CVE-2002-20009', 'CVE-2002-20010', 'CVE-2002-20011', 'CVE-2002-20012', 'CVE-2002-20013', 'CVE-2002-20014', 'CVE-2002-20015', 'CVE-2002-20016', 'CVE-2002-20017', 'CVE-2002-20018', 'CVE-2002-20019', 'CVE-2002-20020'],
+    findingType: 'Vulnerability',
+    cvss: { score: 9, rating: 'High' },
     cwe: 'CWE-400: Uncontrolled Resource Consumption',
     owasp: 'A05:2021 - Security Misconfiguration',
     likelihood: 'high', impact: 'high', confidence: 'high',
@@ -82,6 +85,9 @@ const VULN_DETAILS = {
     ],
   },
   v2: {
+    cves: [],
+    findingType: 'Vulnerability',
+    cvss: { score: 7.5, rating: 'High' },
     cwe: 'CWE-798: Use of Hard-coded Credentials',
     owasp: 'A02:2021 - Cryptographic Failures',
     likelihood: 'high', impact: 'high', confidence: 'high',
@@ -97,6 +103,9 @@ const VULN_DETAILS = {
     ],
   },
   v3: {
+    cves: ['CVE-2023-29360', 'CVE-2023-29361', 'CVE-2023-29362'],
+    findingType: 'Misconfiguration',
+    cvss: { score: 7.5, rating: 'High' },
     cwe: 'CWE-16: Configuration',
     owasp: 'A05:2021 - Security Misconfiguration',
     likelihood: 'high', impact: 'high', confidence: 'high',
@@ -111,6 +120,9 @@ const VULN_DETAILS = {
     ],
   },
   v4: {
+    cves: ['CVE-2024-31409', 'CVE-2024-31410', 'CVE-2024-31411'],
+    findingType: 'Vulnerability',
+    cvss: { score: 6.1, rating: 'Medium' },
     cwe: 'CWE-79: Improper Neutralization of Input During Web Page Generation',
     owasp: 'A03:2021 - Injection',
     likelihood: 'medium', impact: 'medium', confidence: 'medium',
@@ -125,6 +137,9 @@ const VULN_DETAILS = {
     ],
   },
   v5: {
+    cves: ['CVE-2023-46129', 'CVE-2023-46130', 'CVE-2023-46131'],
+    findingType: 'Vulnerability',
+    cvss: { score: 6.5, rating: 'Medium' },
     cwe: 'CWE-639: Authorization Bypass Through User-Controlled Key',
     owasp: 'A01:2021 - Broken Access Control',
     likelihood: 'medium', impact: 'medium', confidence: 'medium',
@@ -139,6 +154,9 @@ const VULN_DETAILS = {
     ],
   },
   v6: {
+    cves: ['CVE-2024-28027', 'CVE-2024-28028', 'CVE-2024-28029'],
+    findingType: 'Vulnerability',
+    cvss: { score: 7.8, rating: 'High' },
     cwe: 'CWE-798: Use of Hard-coded Credentials',
     owasp: 'A07:2021 - Identification and Authentication Failures',
     likelihood: 'medium', impact: 'medium', confidence: 'medium',
@@ -153,6 +171,9 @@ const VULN_DETAILS = {
     ],
   },
   v7: {
+    cves: ['CVE-2024-31334', 'CVE-2024-31335', 'CVE-2024-31336'],
+    findingType: 'Vulnerability',
+    cvss: { score: 3.7, rating: 'Low' },
     cwe: 'CWE-20: Improper Input Validation',
     owasp: 'A03:2021 - Injection',
     likelihood: 'low', impact: 'low', confidence: 'medium',
@@ -167,6 +188,9 @@ const VULN_DETAILS = {
     ],
   },
   v8: {
+    cves: ['CVE-2023-27524', 'CVE-2023-27525', 'CVE-2023-27526'],
+    findingType: 'Vulnerability',
+    cvss: { score: 6.5, rating: 'Medium' },
     cwe: 'CWE-918: Server-Side Request Forgery (SSRF)',
     owasp: 'A10:2021 - Server-Side Request Forgery',
     likelihood: 'low', impact: 'low', confidence: 'medium',
@@ -181,6 +205,9 @@ const VULN_DETAILS = {
     ],
   },
   v9: {
+    cves: [],
+    findingType: 'Informational',
+    cvss: null,
     cwe: 'CWE-778: Insufficient Logging',
     owasp: 'A09:2021 - Security Logging and Monitoring Failures',
     likelihood: 'low', impact: 'low', confidence: 'low',
@@ -195,6 +222,9 @@ const VULN_DETAILS = {
     ],
   },
   v10: {
+    cves: ['CVE-2024-12984', 'CVE-2024-12985', 'CVE-2024-12986'],
+    findingType: 'Vulnerability',
+    cvss: { score: 5.9, rating: 'Medium' },
     cwe: 'CWE-327: Use of a Broken or Risky Cryptographic Algorithm',
     owasp: 'A02:2021 - Cryptographic Failures',
     likelihood: 'low', impact: 'low', confidence: 'low',
@@ -209,6 +239,9 @@ const VULN_DETAILS = {
     ],
   },
   v11: {
+    cves: [],
+    findingType: 'Misconfiguration',
+    cvss: { score: 5.4, rating: 'Medium' },
     cwe: 'CWE-693: Protection Mechanism Failure',
     owasp: 'A05:2021 - Security Misconfiguration',
     likelihood: 'medium', impact: 'medium', confidence: 'medium',
@@ -223,6 +256,9 @@ const VULN_DETAILS = {
     ],
   },
   v12: {
+    cves: ['CVE-2024-34142', 'CVE-2024-34143', 'CVE-2024-34144'],
+    findingType: 'Misconfiguration',
+    cvss: { score: 3.7, rating: 'Low' },
     cwe: 'CWE-209: Generation of Error Message Containing Sensitive Information',
     owasp: 'A05:2021 - Security Misconfiguration',
     likelihood: 'low', impact: 'low', confidence: 'medium',
@@ -237,6 +273,9 @@ const VULN_DETAILS = {
     ],
   },
   v13: {
+    cves: ['CVE-2024-22263', 'CVE-2024-22264', 'CVE-2024-22265'],
+    findingType: 'Misconfiguration',
+    cvss: { score: 6.5, rating: 'Medium' },
     cwe: 'CWE-521: Weak Password Requirements',
     owasp: 'A07:2021 - Identification and Authentication Failures',
     likelihood: 'high', impact: 'high', confidence: 'high',
@@ -251,6 +290,9 @@ const VULN_DETAILS = {
     ],
   },
   v14: {
+    cves: ['CVE-2024-22195', 'CVE-2024-22196', 'CVE-2024-22197'],
+    findingType: 'Vulnerability',
+    cvss: { score: 6.1, rating: 'Medium' },
     cwe: 'CWE-601: URL Redirection to Untrusted Site',
     owasp: 'A01:2021 - Broken Access Control',
     likelihood: 'medium', impact: 'medium', confidence: 'medium',
@@ -265,6 +307,9 @@ const VULN_DETAILS = {
     ],
   },
   v15: {
+    cves: ['CVE-2024-6387', 'CVE-2024-6388', 'CVE-2024-6389'],
+    findingType: 'Misconfiguration',
+    cvss: { score: 9.8, rating: 'Critical' },
     cwe: 'CWE-489: Active Debug Code',
     owasp: 'A05:2021 - Security Misconfiguration',
     likelihood: 'high', impact: 'high', confidence: 'high',
@@ -279,6 +324,9 @@ const VULN_DETAILS = {
     ],
   },
   v16: {
+    cves: ['CVE-2024-21626', 'CVE-2024-21627', 'CVE-2024-21628'],
+    findingType: 'Vulnerability',
+    cvss: { score: 7.5, rating: 'High' },
     cwe: 'CWE-1104: Use of Unmaintained Third-Party Components',
     owasp: 'A06:2021 - Vulnerable and Outdated Components',
     likelihood: 'medium', impact: 'medium', confidence: 'medium',
@@ -293,6 +341,9 @@ const VULN_DETAILS = {
     ],
   },
   v17: {
+    cves: ['CVE-2023-49103', 'CVE-2023-49104', 'CVE-2023-49105'],
+    findingType: 'Misconfiguration',
+    cvss: { score: 5.3, rating: 'Medium' },
     cwe: 'CWE-307: Improper Restriction of Excessive Authentication Attempts',
     owasp: 'A07:2021 - Identification and Authentication Failures',
     likelihood: 'low', impact: 'low', confidence: 'medium',
@@ -307,6 +358,9 @@ const VULN_DETAILS = {
     ],
   },
   v18: {
+    cves: ['CVE-2020-1938', 'CVE-2020-1939', 'CVE-2020-1940'],
+    findingType: 'Informational',
+    cvss: null,
     cwe: 'CWE-532: Insertion of Sensitive Information into Log File',
     owasp: 'A09:2021 - Security Logging and Monitoring Failures',
     likelihood: 'low', impact: 'low', confidence: 'low',
