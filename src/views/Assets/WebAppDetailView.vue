@@ -206,9 +206,9 @@ const tableRef = ref(null)
 
 const columns = [
   { key: 'check', label: '', width: '48px', align: 'center' },
-  { key: '__index', label: '#', width: '44px', dim: true, mono: true },
-  { key: 'name', label: 'Vulnerability Name', width: '26%', truncate: true },
-  { key: 'lastModified', label: 'Last Modified', width: '130px', dim: true },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'name', label: 'Vulnerability Name', width: '30%', truncate: true },
+  { key: 'lastModified', label: 'Last Modified', width: '130px', dim: true, truncate: true},
   { key: 'severity', label: 'Severity', width: '100px', align: 'center' },
   { key: 'cycle', label: 'Validation Cycle', width: '150px', align: 'center' },
   { key: 'action', label: 'Actions', width: '70px', align: 'center' },
@@ -443,7 +443,6 @@ function downloadReport() {
             <IconCheck v-if="isChecked(row.id)" :size="13" />
           </button>
         </template>
-        <template #cell-no="{ index }">{{ String(index + 1).padStart(2, '0') }}</template>
         <template #cell-severity="{ row }">
           <span
             class="sev-pill"
