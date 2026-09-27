@@ -13,10 +13,10 @@ const { data, loading } = useFetch(() => get('/company/audit-log'))
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'dateTime', label: 'Date and Time', width: '16%' },
-  { key: 'actor', label: 'Actor', width: '14%', bold: true },
-  { key: 'action', label: 'Activity', width: '16%' },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'dateTime', label: 'Date and Time', width: '16%', truncate: true},
+  { key: 'actor', label: 'Actor', width: '14%', bold: true, truncate: true},
+  { key: 'action', label: 'Activity', width: '16%', truncate: true},
   { key: 'detail', label: 'Detail', width: '43%', dim: true, truncate: true },
   { key: 'view', label: 'Action', width: '32px', align: 'center' },
 ]

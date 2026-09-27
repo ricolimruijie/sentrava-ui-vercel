@@ -13,11 +13,11 @@ const { data, loading } = useFetch(() => get('/company/probes'))
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'name', label: 'Probe Name', width: '24%', bold: true, mono: true },
-  { key: 'ip', label: 'IP Address', width: '18%', mono: true, dim: true },
-  { key: 'lastSeen', label: 'Last Checked', width: '21%', dim: true },
-  { key: 'status', label: 'Status', width: '16%', align: 'center' },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'name', label: 'Probe Name', width: '28%', bold: true, mono: true, truncate: true},
+  { key: 'ip', label: 'IP Address', width: '20%', mono: true, dim: true, truncate: true},
+  { key: 'lastSeen', label: 'Last Checked', width: '24%', dim: true, truncate: true},
+  { key: 'status', label: 'Status', width: '18%', align: 'center' },
   { key: 'action', label: 'Action', width: '32px', align: 'center' },
 ]
 

@@ -11,7 +11,7 @@ import AuditLogTab from './tabs/AuditLogTab.vue'
 import ProbeBoxTab from './tabs/ProbeBoxTab.vue'
 import {
   IconBuildingSkyscraper, IconChartBar, IconUsers, IconFileText,
-  IconChevronDown, IconPower, IconSearch, IconDotsVertical,
+  IconChevronDown, IconChevronRight, IconPower, IconSearch, IconDotsVertical,
   IconPencil, IconUserMinus, IconUserPlus, IconSitemap, IconTrash,
   IconX, IconCheck, IconAt, IconMail, IconShield, IconBuilding,
 } from '@tabler/icons-vue'
@@ -85,10 +85,10 @@ watch(() => route.query.tab, (val) => {
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: '#', width: '32px', dim: true },
+  { key: '__index', label: '#', width: '24px', dim: true },
   { key: 'name', label: 'Name', width: '25%' },
-  { key: 'email', label: 'Email Address', width: '23%', dim: true },
-  { key: 'company', label: 'Company', width: '27%', dim: true },
+  { key: 'email', label: 'Email Address', width: '23%', dim: true, truncate: true},
+  { key: 'company', label: 'Company', width: '27%', dim: true, truncate: true},
   { key: 'role', label: 'Role', width: '12%', align: 'center' },
   { key: 'action', label: 'Action', width: '32px', align: 'center' },
 ]
@@ -133,10 +133,12 @@ const filteredMembers = computed(() => {
 watch([roleFilter, search], () => tableRef.value?.pagination.goTo(1))
 
 function startActivationDate() {
+  closeLiquidMenu(true)
   openStartActivationModal()
 }
 
 function openQuotaInfo() {
+  closeLiquidMenu(true)
   showQuotaModal.value = true
 }
 const showQuotaModal = ref(false)
@@ -248,23 +250,42 @@ function submitStartActivation() {
   }, 500)
 }
 
-// Company configuration dropdown — teleported to <body> and positioned from
-// the clicked button's rect, matching the row action-menu pattern below.
-const showConfigMenu = ref(false)
-const configMenuPos = ref({ top: 0, left: 0 })
+// Liquid action menu — goo filter fuses the circular trigger button and the
+// panel into one shape (see references/liquid-menu.html). Unlike the
+// teleported row menus, button and panel must share one container.
+const liquidOpen = ref(false)
+const liquidClosing = ref(false)
+const configSubOpen = ref(false)
+let liquidTimer = null
 
-function toggleConfigMenu(event) {
-  if (showConfigMenu.value) {
-    showConfigMenu.value = false
-    return
-  }
-  const rect = event.currentTarget.getBoundingClientRect()
-  configMenuPos.value = { top: rect.bottom + 8, left: rect.right - 220 }
-  showConfigMenu.value = true
+function openLiquidMenu() {
+  clearTimeout(liquidTimer)
+  liquidClosing.value = false
+  liquidOpen.value = true
 }
 
-function closeConfigMenu() {
-  showConfigMenu.value = false
+function closeLiquidMenu(instant = false) {
+  if (!liquidOpen.value && !liquidClosing.value) {
+    configSubOpen.value = false
+    return
+  }
+  if (instant) {
+    clearTimeout(liquidTimer)
+    liquidOpen.value = false
+    liquidClosing.value = false
+    configSubOpen.value = false
+    return
+  }
+  liquidOpen.value = false
+  liquidClosing.value = true
+  configSubOpen.value = false
+  clearTimeout(liquidTimer)
+  liquidTimer = setTimeout(() => { liquidClosing.value = false }, 440)
+}
+
+function toggleLiquidMenu() {
+  if (liquidOpen.value) closeLiquidMenu()
+  else openLiquidMenu()
 }
 
 // ── Edit company name modal — same idle/loading/saved flow as the API Keys
@@ -275,7 +296,7 @@ const editNameState = ref('idle') // 'idle' | 'loading' | 'saved'
 const canSaveName = computed(() => editNameValue.value.trim().length > 0)
 
 function editCompanyName() {
-  closeConfigMenu()
+  closeLiquidMenu(true)
   editNameValue.value = company.value?.name ?? ''
   editNameState.value = 'idle'
   showEditNameModal.value = true
@@ -299,7 +320,7 @@ function saveCompanyName() {
 }
 
 function addScanQuota() {
-  closeConfigMenu()
+  closeLiquidMenu(true)
   console.info('Add scan quota')
 }
 
@@ -388,12 +409,12 @@ function submitInviteUser() {
 }
 
 function inviteUser() {
-  closeConfigMenu()
+  closeLiquidMenu(true)
   openInviteUser()
 }
 
 function createSubCompany() {
-  closeConfigMenu()
+  closeLiquidMenu(true)
   console.info('Create sub company')
 }
 
@@ -419,7 +440,7 @@ function submitDeleteCompany() {
 }
 
 function deleteCompany() {
-  closeConfigMenu()
+  closeLiquidMenu(true)
   openDeleteCompany()
 }
 
@@ -507,7 +528,7 @@ function removeMember(item) {
 
 function handleClickOutside(e) {
   if (!e.target.closest('.action-menu, .action-btn')) closeMenu()
-  if (!e.target.closest('.config-menu, .btn-primary')) closeConfigMenu()
+  if (!e.target.closest('.lm')) closeLiquidMenu(true)
   if (!e.target.closest('.form-select')) {
     if (startActivationField.value) {
       animateCompanyModalHeight(() => { startActivationField.value = null })
@@ -518,61 +539,99 @@ function handleClickOutside(e) {
 
 onMounted(() => document.addEventListener('mousedown', handleClickOutside))
 onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
+
+function handleLiquidKeydown(e) {
+  if (e.key === 'Escape') closeLiquidMenu(true)
+}
+
+onMounted(() => document.addEventListener('keydown', handleLiquidKeydown))
+onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
 </script>
 
 <template>
   <div class="company">
     <div class="company-header">
       <div class="company-header__left">
-        <h1 class="company-header__title">{{ company?.name ?? '—' }}</h1>
-        <div class="company-header__meta">
-          <span><IconBuildingSkyscraper :size="14" /> {{ company?.type }}</span>
-          <span><IconChartBar :size="14" /> {{ company?.quota }} quota</span>
-          <span><IconUsers :size="14" /> {{ members?.length ?? 0 }} users</span>
-          <span><IconFileText :size="14" /> {{ company?.contractType }}</span>
+        <div class="company-header__titlewrap">
+          <div class="company-header__titlerow">
+            <h1 class="company-header__title">{{ company?.name ?? '—' }}</h1>
+            <div
+              class="lm"
+              :class="{ 'is-open': liquidOpen, 'is-closing': liquidClosing }"
+            >
+              <div class="lm-goo" aria-hidden="true">
+                <span class="lm-dot" />
+                <div class="lm-shape" />
+              </div>
+              <button
+                type="button"
+                class="lm-btn"
+                aria-label="Company actions"
+                aria-haspopup="menu"
+                :aria-expanded="liquidOpen"
+                @click="toggleLiquidMenu"
+              >
+                <IconDotsVertical :size="18" />
+              </button>
+              <div class="lm-list" role="menu">
+                <button type="button" class="lm-item" role="menuitem" @click="startActivationDate">
+                  <IconPower :size="18" />
+                  <span>Start activation date</span>
+                </button>
+                <button type="button" class="lm-item" role="menuitem" @click="openQuotaInfo">
+                  <IconFileText :size="18" />
+                  <span>Quota information</span>
+                </button>
+                <div class="lm-row">
+                  <button type="button" class="lm-item" role="menuitem" @click.stop="configSubOpen = !configSubOpen">
+                    <IconSitemap :size="18" />
+                    <span>Company configuration</span>
+                    <IconChevronRight :size="16" class="lm-chev" />
+                  </button>
+                  <div v-if="configSubOpen" class="lm-submenu">
+                    <button type="button" class="lm-item" role="menuitem" @click="editCompanyName">
+                      <IconPencil :size="18" />
+                      <span>Edit company name</span>
+                    </button>
+                    <button type="button" class="lm-item" role="menuitem" @click="addScanQuota">
+                      <IconChartBar :size="18" />
+                      <span>Add scan quota</span>
+                    </button>
+                    <button type="button" class="lm-item" role="menuitem" @click="inviteUser">
+                      <IconUserPlus :size="18" />
+                      <span>Invite user</span>
+                    </button>
+                    <button type="button" class="lm-item" role="menuitem" @click="createSubCompany">
+                      <IconSitemap :size="18" />
+                      <span>Create sub company</span>
+                    </button>
+                    <button type="button" class="lm-item lm-item--danger" role="menuitem" @click="deleteCompany">
+                      <IconTrash :size="18" />
+                      <span>Delete company</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="company-header__meta">
+            <span><IconBuildingSkyscraper :size="14" /> {{ company?.type }}</span>
+            <span><IconChartBar :size="14" /> {{ company?.quota }} quota</span>
+            <span><IconUsers :size="14" /> {{ members?.length ?? 0 }} users</span>
+            <span><IconFileText :size="14" /> {{ company?.contractType }}</span>
+          </div>
         </div>
-      </div>
-
-      <div class="company-header__right">
-        <button type="button" class="btn-activation" @click="startActivationDate">
-          <IconPower :size="16" />
-          Start activation date
-        </button>
-        <button type="button" class="btn-activation" @click="openQuotaInfo">
-          <IconFileText :size="16" />
-          Quota information
-        </button>
-        <button type="button" class="btn-primary" @click="toggleConfigMenu($event)">
-          Company configuration
-          <IconChevronDown :size="16" class="btn-primary__chevron" :class="{ 'btn-primary__chevron--open': showConfigMenu }" />
-        </button>
       </div>
     </div>
 
-    <Teleport to="body">
-      <div v-if="showConfigMenu" class="config-menu" :style="{ top: `${configMenuPos.top}px`, left: `${configMenuPos.left}px` }">
-        <button type="button" class="config-menu__item" @click="editCompanyName">
-          <IconPencil :size="15" />
-          Edit company name
-        </button>
-        <button type="button" class="config-menu__item" @click="addScanQuota">
-          <IconChartBar :size="15" />
-          Add scan quota
-        </button>
-        <button type="button" class="config-menu__item" @click="inviteUser">
-          <IconUserPlus :size="15" />
-          Invite user
-        </button>
-        <button type="button" class="config-menu__item" @click="createSubCompany">
-          <IconSitemap :size="15" />
-          Create sub company
-        </button>
-        <button type="button" class="config-menu__item config-menu__item--danger" @click="deleteCompany">
-          <IconTrash :size="15" />
-          Delete company
-        </button>
-      </div>
-    </Teleport>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <filter id="lm-goo">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="5" />
+          <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" />
+        </filter>
+      </defs>
+    </svg>
 
     <Teleport to="body">
       <Transition name="modal-fade">
@@ -1146,9 +1205,22 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
   &__left {
     display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 220px;
+  }
+
+  &__titlewrap {
+    display: flex;
     flex-direction: column;
     gap: 6px;
-    min-width: 220px;
+    min-width: 0;
+  }
+
+  &__titlerow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   &__title {
@@ -1233,79 +1305,181 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   }
 }
 
-.btn-primary {
+// ── Liquid action menu (references/liquid-menu.html) ─────────────────────────
+// Goo filter fuses the trigger circle and the panel into one liquid shape.
+// Panel grows downward from the button centre, same as the reference.
+.lm {
+  position: relative;
   display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.lm-btn {
+  position: relative;
+  z-index: 2;
+  width: 38px;
   height: 38px;
-  padding: 0 18px;
-  border-radius: var(--glacia-radius-pill);
-  border: none;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--glacia-red);
   color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
   box-shadow: 0 6px 20px rgba(255, 37, 41, 0.4);
-  transition: background 0.15s, box-shadow 0.15s;
+  transition: background 160ms ease;
 
   &:hover {
     background: #e01e22;
-    box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5);
-  }
-
-  &__chevron {
-    transition: transform 0.2s ease;
-
-    &--open {
-      transform: rotate(180deg);
-    }
   }
 }
 
-// Teleported to <body>, so this is positioned via fixed top/left (see
-// configMenuPos in script) rather than relative to its DOM parent.
-.config-menu {
-  position: fixed;
-  width: 220px;
+.lm-goo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 308px;
+  height: 182px;
+  pointer-events: none;
+  filter: url(#lm-goo) drop-shadow(0 18px 24px rgba(16, 24, 32, 0.18));
+}
+
+.lm-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--glacia-red);
+}
+
+.lm-shape,
+.lm-list {
+  width: 264px;
+  transform-origin: -13px 19px; // = button centre
+}
+
+.lm-shape {
+  position: absolute;
+  left: 32px;
+  top: 0;
+  height: 176px;
+  border-radius: 20px;
   background: #fff;
+}
+
+.lm-list {
+  position: absolute;
+  left: 32px;
+  top: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  // Solid backing identical to the flyout — the goo shape alone can't be
+  // trusted to cover the list in every browser's filter region.
+  background: #fff;
+  border-radius: 20px;
+}
+
+.lm:not(.is-open):not(.is-closing) .lm-goo > .lm-shape,
+.lm:not(.is-open):not(.is-closing) .lm-list {
+  display: none;
+}
+
+.lm.is-open .lm-shape {
+  animation: lm-grow 760ms cubic-bezier(0.3, 0.8, 0.35, 1) both;
+}
+.lm.is-open .lm-list {
+  animation: lm-grow 760ms cubic-bezier(0.3, 0.8, 0.35, 1) both, lm-show 760ms ease both;
+}
+.lm.is-closing .lm-shape {
+  animation: lm-close 440ms cubic-bezier(0.55, 0, 0.8, 0.4) both;
+}
+.lm.is-closing .lm-list {
+  animation: lm-close 440ms cubic-bezier(0.55, 0, 0.8, 0.4) both, lm-show 440ms ease reverse both;
+  pointer-events: none;
+}
+
+.lm-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 14px 8px 11px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--glacia-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease;
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.05);
+  }
+
+  span:nth-child(2) {
+    flex: 1;
+  }
+
+  &--danger {
+    color: var(--glacia-sev-critical);
+  }
+}
+
+.lm-chev {
+  color: var(--glacia-ink-dim);
+  flex-shrink: 0;
+}
+
+.lm-row {
+  position: relative;
+}
+
+.lm-submenu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 220px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--glacia-glass-border);
   border-radius: 14px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
-  overflow: hidden;
-  padding: 6px;
-  z-index: 200;
-  transform-origin: top right;
-  animation: action-menu-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 3;
+}
 
-  &__item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 9px;
-    border: none;
-    background: transparent;
-    color: var(--glacia-ink);
-    font-size: 13px;
-    font-weight: 500;
-    font-family: 'Manrope', 'Inter', sans-serif;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.13s, color 0.13s;
+@keyframes lm-grow {
+  0% { transform: scale(0.06, 0.1); }
+  45% { transform: scale(1.05, 0.94); }
+  65% { transform: scale(0.97, 1.04); }
+  82% { transform: scale(1.01, 0.99); }
+  100% { transform: scale(1); }
+}
+@keyframes lm-close {
+  0% { transform: scale(1); }
+  100% { transform: scale(0.06, 0.1); }
+}
+@keyframes lm-show {
+  0%, 28% { opacity: 0; }
+  70%, 100% { opacity: 1; }
+}
 
-    &:hover {
-      background: rgba(0, 0, 0, 0.05);
-    }
-
-    &--danger {
-      color: var(--glacia-sev-critical);
-
-      &:hover {
-        background: rgba(220, 38, 38, 0.08);
-      }
-    }
+@media (prefers-reduced-motion: reduce) {
+  .lm-shape, .lm-list {
+    animation-duration: 1ms !important;
   }
 }
 
@@ -1367,29 +1541,6 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.btn-activation {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 38px;
-  padding: 0 18px;
-  border-radius: var(--glacia-radius-pill);
-  border: none;
-  background: var(--glacia-red);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 6px 20px rgba(255, 37, 41, 0.4);
-  transition: background 0.15s, box-shadow 0.15s;
-
-  &:hover {
-    background: #e01e22;
-    box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5);
-  }
 }
 
 .member-cell {

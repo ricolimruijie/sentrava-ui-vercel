@@ -14,9 +14,9 @@ const { data, loading } = useFetch(() => get('/company/list'))
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'name', label: 'Company Name', width: '38%', bold: true },
-  { key: 'type', label: 'Type', width: '18%', dim: true },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'name', label: 'Company Name', width: '40%', bold: true, truncate: true},
+  { key: 'type', label: 'Type', width: '18%', dim: true, truncate: true},
   { key: 'users', label: 'Users', width: '12%', align: 'center' },
   { key: 'status', label: 'Status', width: '18%', align: 'center' },
   { key: 'action', label: 'Action', width: '32px', align: 'center' },
