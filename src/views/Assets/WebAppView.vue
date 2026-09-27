@@ -12,9 +12,9 @@ const router = useRouter()
 const apps = ref(getWebApps())
 
 const columns = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'name', label: 'Application name', width: '15%', truncate: true },
-  { key: 'target', label: 'Target', width: '17%', mono: true, dim: true, truncate: true },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'name', label: 'Application name', width: '16%', truncate: true },
+  { key: 'target', label: 'Target', width: '18%', mono: true, dim: true, truncate: true },
   { key: 'owner', label: 'Asset owner', width: '14%', truncate: true },
   { key: 'scanType', label: 'Scan type', width: '11%', truncate: true },
   { key: 'tags', label: 'Multi-Tags', width: '15%' },

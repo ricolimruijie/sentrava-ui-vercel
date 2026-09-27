@@ -12,13 +12,13 @@ const router = useRouter()
 const repos = ref(getSourceCodeRepos())
 
 const columns = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'repo', label: 'Repository', width: '13%', bold: true, truncate: true },
-  { key: 'branch', label: 'Branch', width: '7%', mono: true },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'repo', label: 'Repository', width: '15%', bold: true, truncate: true },
+  { key: 'branch', label: 'Branch', width: '7%', mono: true, truncate: true},
   { key: 'scanType', label: 'Scan Type', width: '12%' },
-  { key: 'owner', label: 'Asset Owner', width: '16%', truncate: true },
-  { key: 'tags', label: 'Multi-Tags', width: '18%' },
-  { key: 'status', label: 'Scanning status', width: '11%', align: 'center' },
+  { key: 'owner', label: 'Asset Owner', width: '18%', truncate: true },
+  { key: 'tags', label: 'Multi-Tags', width: '20%' },
+  { key: 'status', label: 'Scanning status', width: '12%', align: 'center' },
   { key: 'actions', label: 'Action', width: '70px', align: 'center' },
 ]
 
