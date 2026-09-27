@@ -8,7 +8,7 @@ import { IconDotsVertical, IconPlus, IconWorld, IconBrowser, IconNetwork, IconCo
 
 const tabs = [
   { key: 'domain', label: 'Domain', icon: IconWorld },
-  { key: 'webapp', label: 'Web Application', icon: IconBrowser },
+  { key: 'webapp', label: 'URL', icon: IconBrowser },
   { key: 'network', label: 'Network', icon: IconNetwork },
   { key: 'source', label: 'Repository', icon: IconCode },
   { key: 'tags', label: 'Tags', icon: IconTag },
@@ -44,81 +44,81 @@ onUnmounted(() => window.removeEventListener('resize', onTabResize))
 watch(activeTab, () => nextTick(moveTabPill))
 
 const assets = ref([
-  { id: 1, domain: 'protergo.id', owner: 'Protergo Cyber Security Ampera', lastScanned: '23 June 2026', status: 'Completed', tags: [{ label: 'Production', colorId: 4 }] },
-  { id: 2, domain: 'api.protergo.id', owner: 'Protergo Cyber Security Ampera', lastScanned: '22 June 2026', status: 'Queue', tags: [{ label: 'Production', colorId: 4 }, { label: 'Load balancer', colorId: 6 }] },
-  { id: 3, domain: 'app.protergo.id', owner: 'Protergo Cyber Security Jakarta', lastScanned: '20 June 2026', status: 'Scanning', tags: [{ label: 'Internal', colorId: 10 }] },
-  { id: 4, domain: 'staging.protergo.id', owner: 'Protergo Cyber Security Surabaya', lastScanned: '18 June 2026', status: 'Queue', tags: [{ label: 'Staging', colorId: 2 }] },
-  { id: 5, domain: 'admin.protergo.id', owner: 'Protergo Fintech Solutions', lastScanned: '15 June 2026', status: 'Failed', tags: [{ label: 'Internal', colorId: 10 }] },
-  { id: 6, domain: 'vpn.protergo.id', owner: 'Protergo Cyber Security Bandung', lastScanned: '10 June 2026', status: 'Scanning', tags: [{ label: 'VPN', colorId: 8 }] },
-  { id: 7, domain: 'cdn.protergo.id', owner: 'Beta Ventures Security', lastScanned: '05 June 2026', status: 'Completed', tags: [{ label: 'CDN', colorId: 5 }] },
-  { id: 8, domain: 'partners.protergo.id', owner: 'Protergo Labs', lastScanned: '01 June 2026', status: 'Queue', tags: [] },
-  { id: 9, domain: 'blog.protergo.id', owner: 'Protergo Cyber Security Ampera', lastScanned: '28 May 2026', status: 'Completed', tags: [{ label: 'CDN', colorId: 5 }] },
-  { id: 10, domain: 'shop.protergo.id', owner: 'Protergo Cyber Security Jakarta', lastScanned: '25 May 2026', status: 'Completed', tags: [{ label: 'Production', colorId: 4 }] },
-  { id: 11, domain: 'support.protergo.id', owner: 'Protergo Cyber Security Surabaya', lastScanned: '22 May 2026', status: 'Scanning', tags: [{ label: 'Internal', colorId: 10 }] },
-  { id: 12, domain: 'docs.protergo.id', owner: 'Protergo Fintech Solutions', lastScanned: '20 May 2026', status: 'Completed', tags: [] },
-  { id: 13, domain: 'careers.protergo.id', owner: 'Protergo Cyber Security Bandung', lastScanned: '13 May 2026', status: 'Queue', tags: [{ label: 'Dev', colorId: 3 }] },
-  { id: 14, domain: 'status.protergo.id', owner: 'Beta Ventures Security', lastScanned: '15 May 2026', status: 'Failed', tags: [{ label: 'Backup', colorId: 1 }] },
+  { id: 1, domain: 'protergo.id', owner: 'Protergo Cyber Security Ampera', lastScanned: '23 June 2026', status: 'Completed', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }] },
+  { id: 2, domain: 'api.protergo.id', owner: 'Protergo Cyber Security Ampera', lastScanned: '22 June 2026', status: 'Queue', tags: [{ label: 'Internal', colorId: 10 }] },
+  { id: 3, domain: 'app.protergo.id', owner: 'Protergo Cyber Security Jakarta', lastScanned: '20 June 2026', status: 'Scanning', tags: [{ label: 'Staging', colorId: 2 }] },
+  { id: 4, domain: 'staging.protergo.id', owner: 'Protergo Cyber Security Surabaya', lastScanned: '18 June 2026', status: 'Queue', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }] },
+  { id: 5, domain: 'admin.protergo.id', owner: 'Protergo Fintech Solutions', lastScanned: '15 June 2026', status: 'Failed', tags: [{ label: 'CDN', colorId: 5 }] },
+  { id: 6, domain: 'vpn.protergo.id', owner: 'Protergo Cyber Security Bandung', lastScanned: '10 June 2026', status: 'Scanning', tags: [{ label: 'Dev', colorId: 3 }] },
+  { id: 7, domain: 'cdn.protergo.id', owner: 'Beta Ventures Security', lastScanned: '05 June 2026', status: 'Completed', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }] },
+  { id: 8, domain: 'partners.protergo.id', owner: 'Protergo Labs', lastScanned: '01 June 2026', status: 'Queue', tags: [{ label: 'Internal', colorId: 10 }] },
+  { id: 9, domain: 'blog.protergo.id', owner: 'Protergo Cyber Security Ampera', lastScanned: '28 May 2026', status: 'Completed', tags: [{ label: 'Staging', colorId: 2 }] },
+  { id: 10, domain: 'shop.protergo.id', owner: 'Protergo Cyber Security Jakarta', lastScanned: '25 May 2026', status: 'Completed', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }] },
+  { id: 11, domain: 'support.protergo.id', owner: 'Protergo Cyber Security Surabaya', lastScanned: '22 May 2026', status: 'Scanning', tags: [{ label: 'CDN', colorId: 5 }] },
+  { id: 12, domain: 'docs.protergo.id', owner: 'Protergo Fintech Solutions', lastScanned: '20 May 2026', status: 'Completed', tags: [{ label: 'Dev', colorId: 3 }] },
+  { id: 13, domain: 'careers.protergo.id', owner: 'Protergo Cyber Security Bandung', lastScanned: '13 May 2026', status: 'Queue', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }] },
+  { id: 14, domain: 'status.protergo.id', owner: 'Beta Ventures Security', lastScanned: '15 May 2026', status: 'Failed', tags: [{ label: 'Internal', colorId: 10 }] },
 ])
 
 const webapps = ref([
-  { id: 1, appName: 'Protergo Website', url: 'https://protergo.id/', owner: 'Protergo Cyber Security Ampera', basicAuth: 'Inactive', lastScanned: '03 June 2026', tags: [{ label: 'Production', colorId: 4 }], status: 'Completed' },
-  { id: 2, appName: 'Protergo Admin', url: 'https://admin.protergo.id/', owner: 'Protergo Cyber Security Jakarta', basicAuth: 'Active', lastScanned: '02 June 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Scanning' },
-  { id: 3, appName: 'API Gateway', url: 'https://api.protergo.id/v1', owner: 'Protergo Cyber Security Surabaya', basicAuth: 'Active', lastScanned: '01 June 2026', tags: [{ label: 'Load balancer', colorId: 6 }], status: 'Queue' },
-  { id: 4, appName: 'Staging Portal', url: 'https://staging.protergo.id/', owner: 'Protergo Fintech Solutions', basicAuth: 'Inactive', lastScanned: '30 May 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Queue' },
-  { id: 5, appName: 'Customer Dashboard', url: 'https://app.protergo.id/dashboard', owner: 'Protergo Cyber Security Bandung', basicAuth: 'Inactive', lastScanned: '28 May 2026', tags: [{ label: 'Dev', colorId: 3 }], status: 'Failed' },
-  { id: 6, appName: 'Billing Service', url: 'https://billing.protergo.id/', owner: 'Beta Ventures Security', basicAuth: 'Active', lastScanned: '25 May 2026', tags: [{ label: 'Production', colorId: 4 }], status: 'Scanning' },
-  { id: 7, appName: 'Partner Portal', url: 'https://partners.protergo.id/', owner: 'Protergo Labs', basicAuth: 'Inactive', lastScanned: '20 May 2026', tags: [], status: 'Completed' },
-  { id: 8, appName: 'VPN Console', url: 'https://vpn.protergo.id/admin', owner: 'Protergo Cyber Security Ampera', basicAuth: 'Active', lastScanned: '18 May 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Internal', colorId: 10 }], status: 'Queue' },
+  { id: 1, appName: 'Protergo Website', url: 'https://protergo.id/', owner: 'Protergo Cyber Security Ampera', basicAuth: 'Inactive', lastScanned: '03 June 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Completed' },
+  { id: 2, appName: 'Protergo Admin', url: 'https://admin.protergo.id/', owner: 'Protergo Cyber Security Jakarta', basicAuth: 'Active', lastScanned: '02 June 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Scanning' },
+  { id: 3, appName: 'API Gateway', url: 'https://api.protergo.id/v1', owner: 'Protergo Cyber Security Surabaya', basicAuth: 'Active', lastScanned: '01 June 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Queue' },
+  { id: 4, appName: 'Staging Portal', url: 'https://staging.protergo.id/', owner: 'Protergo Fintech Solutions', basicAuth: 'Inactive', lastScanned: '30 May 2026', tags: [{ label: 'Dev', colorId: 3 }], status: 'Queue' },
+  { id: 5, appName: 'Customer Dashboard', url: 'https://app.protergo.id/dashboard', owner: 'Protergo Cyber Security Bandung', basicAuth: 'Inactive', lastScanned: '28 May 2026', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }], status: 'Failed' },
+  { id: 6, appName: 'Billing Service', url: 'https://billing.protergo.id/', owner: 'Beta Ventures Security', basicAuth: 'Active', lastScanned: '25 May 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Scanning' },
+  { id: 7, appName: 'Partner Portal', url: 'https://partners.protergo.id/', owner: 'Protergo Labs', basicAuth: 'Inactive', lastScanned: '20 May 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Completed' },
+  { id: 8, appName: 'VPN Console', url: 'https://vpn.protergo.id/admin', owner: 'Protergo Cyber Security Ampera', basicAuth: 'Active', lastScanned: '18 May 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Queue' },
   { id: 9, appName: 'Marketing Site', url: 'https://blog.protergo.id/', owner: 'Protergo Cyber Security Jakarta', basicAuth: 'Inactive', lastScanned: '15 May 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Completed' },
-  { id: 10, appName: 'Support Center', url: 'https://support.protergo.id/', owner: 'Protergo Cyber Security Surabaya', basicAuth: 'Inactive', lastScanned: '12 May 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Completed' },
-  { id: 11, appName: 'Docs Portal', url: 'https://docs.protergo.id/', owner: 'Protergo Fintech Solutions', basicAuth: 'Inactive', lastScanned: '10 May 2026', tags: [], status: 'Scanning' },
-  { id: 12, appName: 'Careers Site', url: 'https://careers.protergo.id/', owner: 'Protergo Cyber Security Bandung', basicAuth: 'Inactive', lastScanned: '11 May 2026', tags: [{ label: 'Mail', colorId: 7 }], status: 'Queue' },
-  { id: 13, appName: 'Status Page', url: 'https://status.protergo.id/', owner: 'Beta Ventures Security', basicAuth: 'Active', lastScanned: '05 May 2026', tags: [{ label: 'Backup', colorId: 1 }], status: 'Failed' },
+  { id: 10, appName: 'Support Center', url: 'https://support.protergo.id/', owner: 'Protergo Cyber Security Surabaya', basicAuth: 'Inactive', lastScanned: '12 May 2026', tags: [{ label: 'Dev', colorId: 3 }], status: 'Completed' },
+  { id: 11, appName: 'Docs Portal', url: 'https://docs.protergo.id/', owner: 'Protergo Fintech Solutions', basicAuth: 'Inactive', lastScanned: '10 May 2026', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }], status: 'Scanning' },
+  { id: 12, appName: 'Careers Site', url: 'https://careers.protergo.id/', owner: 'Protergo Cyber Security Bandung', basicAuth: 'Inactive', lastScanned: '11 May 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Queue' },
+  { id: 13, appName: 'Status Page', url: 'https://status.protergo.id/', owner: 'Beta Ventures Security', basicAuth: 'Active', lastScanned: '05 May 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Failed' },
 ])
 
 const networks = ref([
-  { id: 1, endpoint: '163.7.16.212', endpointType: 'IP Single', owner: 'Protergo Cyber Security Ampera', lastScanned: '22 June 2026', tags: [{ label: 'Production', colorId: 4 }], status: 'Completed' },
-  { id: 2, endpoint: '172.20.0.4', endpointType: 'IP Single', owner: 'Protergo Cyber Security Ampera', lastScanned: '14 July 2026', tags: [], status: 'Completed' },
-  { id: 3, endpoint: '10.20.0.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Jakarta', lastScanned: '18 June 2026', tags: [{ label: 'Internal', colorId: 10 }, { label: 'VPN', colorId: 8 }], status: 'Scanning' },
-  { id: 4, endpoint: '192.168.1.0/24', endpointType: 'CIDR', owner: 'Protergo Labs', lastScanned: '12 June 2026', tags: [], status: 'Queue' },
-  { id: 5, endpoint: '103.150.24.10', endpointType: 'IP Single', owner: 'Protergo Cyber Security Jakarta', lastScanned: '2 July 2026', tags: [{ label: 'Production', colorId: 4 }, { label: 'CDN', colorId: 5 }], status: 'Completed' },
+  { id: 1, endpoint: '163.7.16.212', endpointType: 'IP Single', owner: 'Protergo Cyber Security Ampera', lastScanned: '22 June 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Completed' },
+  { id: 2, endpoint: '172.20.0.4', endpointType: 'IP Single', owner: 'Protergo Cyber Security Ampera', lastScanned: '14 July 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Completed' },
+  { id: 3, endpoint: '10.20.0.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Jakarta', lastScanned: '18 June 2026', tags: [{ label: 'Dev', colorId: 3 }], status: 'Scanning' },
+  { id: 4, endpoint: '192.168.1.0/24', endpointType: 'CIDR', owner: 'Protergo Labs', lastScanned: '12 June 2026', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }], status: 'Queue' },
+  { id: 5, endpoint: '103.150.24.10', endpointType: 'IP Single', owner: 'Protergo Cyber Security Jakarta', lastScanned: '2 July 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Completed' },
   { id: 6, endpoint: '45.120.8.33', endpointType: 'IP Single', owner: 'Protergo Cyber Security Surabaya', lastScanned: '28 June 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Completed' },
-  { id: 7, endpoint: '198.51.100.7', endpointType: 'IP Single', owner: 'Protergo Fintech Solutions', lastScanned: '19 June 2026', tags: [], status: 'Queue' },
-  { id: 8, endpoint: '203.0.113.52', endpointType: 'IP Single', owner: 'Protergo Cyber Security Bandung', lastScanned: '9 July 2026', tags: [{ label: 'Backup', colorId: 1 }], status: 'Failed' },
-  { id: 9, endpoint: '172.16.5.19', endpointType: 'IP Single', owner: 'Beta Ventures Security', lastScanned: '15 June 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Completed' },
-  { id: 10, endpoint: '192.0.2.88', endpointType: 'IP Single', owner: 'Protergo Labs', lastScanned: '5 July 2026', tags: [], status: 'Scanning' },
-  { id: 11, endpoint: '81.94.6.201', endpointType: 'IP Single', owner: 'Protergo Cyber Security Ampera', lastScanned: '20 June 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Mail', colorId: 7 }], status: 'Completed' },
-  { id: 12, endpoint: '10.10.40.3', endpointType: 'IP Single', owner: 'Protergo Cyber Security Jakarta', lastScanned: '1 July 2026', tags: [], status: 'Scanning' },
-  { id: 13, endpoint: '172.31.0.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Surabaya', lastScanned: '30 June 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Completed' },
-  { id: 14, endpoint: '10.0.5.0/24', endpointType: 'CIDR', owner: 'Protergo Fintech Solutions', lastScanned: '11 July 2026', tags: [{ label: 'Production', colorId: 4 }], status: 'Completed' },
-  { id: 15, endpoint: '192.168.50.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Bandung', lastScanned: '27 June 2026', tags: [], status: 'Queue' },
-  { id: 16, endpoint: '10.100.2.0/24', endpointType: 'CIDR', owner: 'Beta Ventures Security', lastScanned: '24 June 2026', tags: [{ label: 'Internal', colorId: 10 }, { label: 'Backup', colorId: 1 }], status: 'Failed' },
-  { id: 17, endpoint: '172.20.10.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Ampera', lastScanned: '3 July 2026', tags: [], status: 'Scanning' },
-  { id: 18, endpoint: '10.30.0.0/24', endpointType: 'CIDR', owner: 'Protergo Labs', lastScanned: '17 June 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Completed' },
-  { id: 19, endpoint: '192.168.200.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Jakarta', lastScanned: '29 June 2026', tags: [], status: 'Scanning' },
-  { id: 20, endpoint: '10.44.0.0/24', endpointType: 'CIDR', owner: 'Protergo Fintech Solutions', lastScanned: '7 July 2026', tags: [], status: 'Queue' },
-  { id: 21, endpoint: '66.42.51.9', endpointType: 'IP Single', owner: 'Protergo Cyber Security Jakarta', lastScanned: '12 July 2026', tags: [{ label: 'Production', colorId: 4 }], status: 'Completed' },
-  { id: 22, endpoint: '104.21.9.140', endpointType: 'IP Single', owner: 'Beta Ventures Security', lastScanned: '8 July 2026', tags: [], status: 'Scanning' },
-  { id: 23, endpoint: '172.65.0.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Ampera', lastScanned: '6 July 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Completed' },
-  { id: 24, endpoint: '10.60.0.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Bandung', lastScanned: '9 June 2026', tags: [], status: 'Queue' },
+  { id: 7, endpoint: '198.51.100.7', endpointType: 'IP Single', owner: 'Protergo Fintech Solutions', lastScanned: '19 June 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Queue' },
+  { id: 8, endpoint: '203.0.113.52', endpointType: 'IP Single', owner: 'Protergo Cyber Security Bandung', lastScanned: '9 July 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Failed' },
+  { id: 9, endpoint: '172.16.5.19', endpointType: 'IP Single', owner: 'Beta Ventures Security', lastScanned: '15 June 2026', tags: [{ label: 'Dev', colorId: 3 }], status: 'Completed' },
+  { id: 10, endpoint: '192.0.2.88', endpointType: 'IP Single', owner: 'Protergo Labs', lastScanned: '5 July 2026', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }], status: 'Scanning' },
+  { id: 11, endpoint: '81.94.6.201', endpointType: 'IP Single', owner: 'Protergo Cyber Security Ampera', lastScanned: '20 June 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Completed' },
+  { id: 12, endpoint: '10.10.40.3', endpointType: 'IP Single', owner: 'Protergo Cyber Security Jakarta', lastScanned: '1 July 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Scanning' },
+  { id: 13, endpoint: '172.31.0.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Surabaya', lastScanned: '30 June 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Completed' },
+  { id: 14, endpoint: '10.0.5.0/24', endpointType: 'CIDR', owner: 'Protergo Fintech Solutions', lastScanned: '11 July 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Completed' },
+  { id: 15, endpoint: '192.168.50.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Bandung', lastScanned: '27 June 2026', tags: [{ label: 'Dev', colorId: 3 }], status: 'Queue' },
+  { id: 16, endpoint: '10.100.2.0/24', endpointType: 'CIDR', owner: 'Beta Ventures Security', lastScanned: '24 June 2026', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }], status: 'Failed' },
+  { id: 17, endpoint: '172.20.10.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Ampera', lastScanned: '3 July 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Scanning' },
+  { id: 18, endpoint: '10.30.0.0/24', endpointType: 'CIDR', owner: 'Protergo Labs', lastScanned: '17 June 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Completed' },
+  { id: 19, endpoint: '192.168.200.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Jakarta', lastScanned: '29 June 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Scanning' },
+  { id: 20, endpoint: '10.44.0.0/24', endpointType: 'CIDR', owner: 'Protergo Fintech Solutions', lastScanned: '7 July 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Queue' },
+  { id: 21, endpoint: '66.42.51.9', endpointType: 'IP Single', owner: 'Protergo Cyber Security Jakarta', lastScanned: '12 July 2026', tags: [{ label: 'Dev', colorId: 3 }], status: 'Completed' },
+  { id: 22, endpoint: '104.21.9.140', endpointType: 'IP Single', owner: 'Beta Ventures Security', lastScanned: '8 July 2026', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }], status: 'Scanning' },
+  { id: 23, endpoint: '172.65.0.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Ampera', lastScanned: '6 July 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Completed' },
+  { id: 24, endpoint: '10.60.0.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Bandung', lastScanned: '9 June 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Queue' },
 ])
 
 const networkColumnsSingle = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'endpoint', label: 'Endpoint', width: '13%', mono: true },
-  { key: 'endpointType', label: 'Endpoint Type', width: '15%' },
-  { key: 'owner', label: 'Asset Owner', width: '21%' },
-  { key: 'lastScanned', label: 'Last Scanned', width: '12%' },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'endpoint', label: 'Endpoint', width: '13%', mono: true, truncate: true},
+  { key: 'endpointType', label: 'Endpoint Type', width: '15%', truncate: true},
+  { key: 'owner', label: 'Asset Owner', width: '21%', truncate: true},
+  { key: 'lastScanned', label: 'Last Scanned', width: '12%', truncate: true},
   { key: 'tags', label: 'Multi-Tags', width: '14%' },
   { key: 'status', label: 'Scanner Status', width: '15%', align: 'center' },
   { key: 'actions', label: 'Action', width: '32px', align: 'center' },
 ]
 const networkColumnsCidr = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'endpoint', label: 'Endpoint', width: '16%', mono: true },
-  { key: 'endpointType', label: 'Endpoint Type', width: '17%' },
-  { key: 'owner', label: 'Asset Owner', width: '25%' },
-  { key: 'lastScanned', label: 'Last Scanned', width: '14%' },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'endpoint', label: 'Endpoint', width: '16%', mono: true, truncate: true},
+  { key: 'endpointType', label: 'Endpoint Type', width: '17%', truncate: true},
+  { key: 'owner', label: 'Asset Owner', width: '25%', truncate: true},
+  { key: 'lastScanned', label: 'Last Scanned', width: '14%', truncate: true},
   { key: 'status', label: 'Scanner Status', width: '17%', align: 'center' },
   { key: 'actions', label: 'Action', width: '32px', align: 'center' },
 ]
@@ -157,26 +157,26 @@ const filteredNetworks = computed(() => {
 })
 
 const sourceCodes = ref([
-  { id: 1, repoOwner: 'protergo-ampera', repoName: 'protergo-web', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security Ampera', lastScanned: '20 June 2026', tags: [{ label: 'Production', colorId: 4 }], status: 'Completed' },
-  { id: 2, repoOwner: 'protergo', repoName: 'protergo-api', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security Ampera', lastScanned: '18 June 2026', tags: [], status: 'Completed' },
-  { id: 3, repoOwner: 'protergo-jkt', repoName: 'billing-service', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Jakarta', lastScanned: '15 June 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Scanning' },
-  { id: 4, repoOwner: 'protergo-sby', repoName: 'customer-dashboard', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Surabaya', lastScanned: '02 June 2026', tags: [], status: 'Queue' },
-  { id: 5, repoOwner: 'protergo-fintech', repoName: 'mobile-app-ios', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Fintech Solutions', lastScanned: '10 June 2026', tags: [{ label: 'Production', colorId: 4 }], status: 'Completed' },
-  { id: 6, repoOwner: 'protergo-mobile', repoName: 'mobile-app-android', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Fintech Solutions', lastScanned: '10 June 2026', tags: [], status: 'Failed' },
-  { id: 7, repoOwner: 'protergo-bdg', repoName: 'internal-tools', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Bandung', lastScanned: '05 June 2026', tags: [], status: 'Queue' },
-  { id: 8, repoOwner: 'beta-ventures', repoName: 'auth-service', gitProvider: 'GitHub', visibility: 'Private', owner: 'Beta Ventures Security', lastScanned: '01 June 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Completed' },
-  { id: 9, repoOwner: 'protergo-labs', repoName: 'payment-gateway', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Labs', lastScanned: '28 May 2026', tags: [], status: 'Completed' },
-  { id: 10, repoOwner: 'protergo-ampera', repoName: 'notification-service', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security Ampera', lastScanned: '25 May 2026', tags: [], status: 'Scanning' },
-  { id: 11, repoOwner: 'protergo-jkt', repoName: 'analytics-pipeline', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security Jakarta', lastScanned: '20 May 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Completed' },
-  { id: 12, repoOwner: 'protergo-sby', repoName: 'admin-portal', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Surabaya', lastScanned: '18 May 2026', tags: [], status: 'Queue' },
-  { id: 13, repoOwner: 'protergo-fintech', repoName: 'legacy-crm', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Fintech Solutions', lastScanned: '10 May 2026', tags: [], status: 'Scanning' },
+  { id: 1, repoOwner: 'protergo-ampera', repoName: 'protergo-web', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security Ampera', lastScanned: '20 June 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Completed' },
+  { id: 2, repoOwner: 'protergo', repoName: 'protergo-api', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security Ampera', lastScanned: '18 June 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Completed' },
+  { id: 3, repoOwner: 'protergo-jkt', repoName: 'billing-service', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Jakarta', lastScanned: '15 June 2026', tags: [{ label: 'Dev', colorId: 3 }], status: 'Scanning' },
+  { id: 4, repoOwner: 'protergo-sby', repoName: 'customer-dashboard', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Surabaya', lastScanned: '02 June 2026', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }], status: 'Queue' },
+  { id: 5, repoOwner: 'protergo-fintech', repoName: 'mobile-app-ios', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Fintech Solutions', lastScanned: '10 June 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Completed' },
+  { id: 6, repoOwner: 'protergo-mobile', repoName: 'mobile-app-android', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Fintech Solutions', lastScanned: '10 June 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Failed' },
+  { id: 7, repoOwner: 'protergo-bdg', repoName: 'internal-tools', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Bandung', lastScanned: '05 June 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Queue' },
+  { id: 8, repoOwner: 'beta-ventures', repoName: 'auth-service', gitProvider: 'GitHub', visibility: 'Private', owner: 'Beta Ventures Security', lastScanned: '01 June 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Completed' },
+  { id: 9, repoOwner: 'protergo-labs', repoName: 'payment-gateway', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Labs', lastScanned: '28 May 2026', tags: [{ label: 'Dev', colorId: 3 }], status: 'Completed' },
+  { id: 10, repoOwner: 'protergo-ampera', repoName: 'notification-service', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security Ampera', lastScanned: '25 May 2026', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }], status: 'Scanning' },
+  { id: 11, repoOwner: 'protergo-jkt', repoName: 'analytics-pipeline', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security Jakarta', lastScanned: '20 May 2026', tags: [{ label: 'Internal', colorId: 10 }], status: 'Completed' },
+  { id: 12, repoOwner: 'protergo-sby', repoName: 'admin-portal', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Surabaya', lastScanned: '18 May 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Queue' },
+  { id: 13, repoOwner: 'protergo-fintech', repoName: 'legacy-crm', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Fintech Solutions', lastScanned: '10 May 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Scanning' },
 ])
 const sourceCodeColumns = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'repoOwner', label: 'Repository', width: '14%' },
-  { key: 'gitProvider', label: 'Git Provider', width: '11%' },
-  { key: 'owner', label: 'Asset Owner', width: '19%' },
-  { key: 'lastScanned', label: 'Last Scanned', width: '12%' },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'repoOwner', label: 'Repository', width: '16%', truncate: true},
+  { key: 'gitProvider', label: 'Git Provider', width: '11%', truncate: true},
+  { key: 'owner', label: 'Asset Owner', width: '21%', truncate: true},
+  { key: 'lastScanned', label: 'Last Scanned', width: '12%', truncate: true},
   { key: 'tags', label: 'Multi-Tags', width: '13%' },
   { key: 'status', label: 'Scanner Status', width: '13%', align: 'center' },
   { key: 'actions', label: 'Action', width: '70px', align: 'center' },
@@ -193,7 +193,7 @@ const filteredSourceCodes = computed(() => {
 
 const totalLabels = {
   domain: 'Total Domain Registered',
-  webapp: 'Total Web Application Registered',
+  webapp: 'Total URL Registered',
   network: 'Total Network Registered',
   source: 'Total Repository Registered',
   tags: 'Total Tags Registered',
@@ -397,19 +397,19 @@ function submitRegisterSource() {
 }
 
 const columns = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'domain', label: 'Domain', width: '28%' },
-  { key: 'owner', label: 'Asset Owner', width: '26%' },
-  { key: 'lastScanned', label: 'Last Scanned', width: '18%' },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'domain', label: 'Domain', width: '28%', truncate: true},
+  { key: 'owner', label: 'Asset Owner', width: '26%', truncate: true},
+  { key: 'lastScanned', label: 'Last Scanned', width: '18%', truncate: true},
   { key: 'status', label: 'Scanner Status', width: '16%', align: 'center' },
   { key: 'actions', label: 'Action', width: '32px', align: 'center' },
 ]
 
 const webappColumns = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'appName', label: 'App Name', width: '16%' },
-  { key: 'owner', label: 'Asset Owner', width: '20%' },
-  { key: 'lastScanned', label: 'Last Scanned', width: '15%' },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'appName', label: 'App Name', width: '18%', truncate: true},
+  { key: 'owner', label: 'Asset Owner', width: '22%', truncate: true},
+  { key: 'lastScanned', label: 'Last Scanned', width: '15%', truncate: true},
   { key: 'tags', label: 'Multi-Tags', width: '17%' },
   { key: 'status', label: 'Scanner Status', width: '15%', align: 'center' },
   { key: 'actions', label: 'Action', width: '32px', align: 'center' },
@@ -443,9 +443,9 @@ const tagsData = ref([
   { id: 9, name: 'CDN', color: '#12967d', bg: '#def7f0', usedBy: 1 },
 ])
 const tagsColumns = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'name', label: 'Tag Name', width: '28%' },
-  { key: 'usedBy', label: 'Used By', width: '24%', align: 'center' },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'name', label: 'Tag Name', width: '44%', truncate: true},
+  { key: 'usedBy', label: 'Used By', width: '36%', align: 'center' },
   { key: 'actions', label: 'Action', width: '32px', align: 'center' },
 ]
 const filteredTags = computed(() => tagsData.value)
@@ -738,32 +738,32 @@ const subdomains37List = [
 ]
 const ips37ByDomain = {
   'api.protergo.io': [
-    { address: '103.150.24.10', tags: [{ label: 'Production', colorId: 4 }, { label: 'Backup', colorId: 1 }, { label: 'CDN', colorId: 5 }, { label: 'Load balancer', colorId: 6 }, { label: 'Staging', colorId: 2 }, { label: 'Internal', colorId: 10 }] },
-    { address: '103.150.24.11', tags: [{ label: 'Load balancer', colorId: 6 }, { label: 'Production', colorId: 4 }] },
-    { address: '103.150.24.12', tags: [{ label: 'Production', colorId: 4 }] },
-    { address: '103.150.24.13', tags: [{ label: 'Staging', colorId: 2 }, { label: 'Dev', colorId: 3 }] },
-    { address: '103.150.24.14', tags: [{ label: 'CDN', colorId: 5 }] },
-    { address: '103.150.24.15', tags: [{ label: 'Backup', colorId: 1 }, { label: 'Internal', colorId: 10 }] },
-    { address: '103.150.24.16', tags: [{ label: 'VPN', colorId: 8 }] },
-    { address: '103.150.24.17', tags: [{ label: 'Mail', colorId: 7 }] },
-    { address: '103.150.24.18', tags: [{ label: 'Production', colorId: 4 }, { label: 'CDN', colorId: 5 }] },
-    { address: '103.150.24.19', tags: [{ label: 'Dev', colorId: 3 }] },
+    { address: '103.150.24.10', tags: [] },
+    { address: '103.150.24.11', tags: [] },
+    { address: '103.150.24.12', tags: [] },
+    { address: '103.150.24.13', tags: [] },
+    { address: '103.150.24.14', tags: [] },
+    { address: '103.150.24.15', tags: [] },
+    { address: '103.150.24.16', tags: [] },
+    { address: '103.150.24.17', tags: [] },
+    { address: '103.150.24.18', tags: [] },
+    { address: '103.150.24.19', tags: [] },
   ],
-  'admin.protergo.io': [{ address: '103.150.24.12', tags: [{ label: 'Internal', colorId: 10 }] }],
-  'staging.protergo.io': [{ address: '103.150.24.20', tags: [{ label: 'Staging', colorId: 2 }] }],
-  'dev.protergo.io': [{ address: '103.150.24.21', tags: [{ label: 'Dev', colorId: 3 }] }],
-  'mail.protergo.io': [{ address: '103.150.24.30', tags: [{ label: 'Mail', colorId: 7 }] }, { address: '103.150.24.31', tags: [{ label: 'Mail', colorId: 7 }, { label: 'Backup', colorId: 1 }] }],
-  'vpn.protergo.io': [{ address: '103.150.24.40', tags: [{ label: 'Internal', colorId: 10 }, { label: 'VPN', colorId: 8 }] }],
-  'cdn.protergo.io': [{ address: '103.150.24.41', tags: [{ label: 'CDN', colorId: 5 }] }],
-  'portal.protergo.io': [{ address: '103.150.24.42', tags: [{ label: 'Production', colorId: 4 }] }],
-  'shop.protergo.io': [{ address: '103.150.24.50', tags: [{ label: 'CDN', colorId: 5 }, { label: 'Production', colorId: 4 }] }],
-  'blog.protergo.io': [{ address: '103.150.24.51', tags: [{ label: 'CDN', colorId: 5 }] }],
-  'docs.protergo.io': [{ address: '103.150.24.52', tags: [{ label: 'Internal', colorId: 10 }] }],
-  'support.protergo.io': [{ address: '103.150.24.53', tags: [{ label: 'Production', colorId: 4 }, { label: 'Internal', colorId: 10 }] }],
-  'ftp.protergo.io': [{ address: '103.150.24.54', tags: [{ label: 'Backup', colorId: 1 }] }],
-  'db.protergo.io': [{ address: '103.150.24.55', tags: [{ label: 'Internal', colorId: 10 }, { label: 'Production', colorId: 4 }] }],
-  'monitor.protergo.io': [{ address: '103.150.24.56', tags: [{ label: 'Internal', colorId: 10 }] }],
-  'auth.protergo.io': [{ address: '103.150.24.57', tags: [{ label: 'Production', colorId: 4 }, { label: 'VPN', colorId: 8 }] }],
+  'admin.protergo.io': [{ address: '103.150.24.12', tags: [] }],
+  'staging.protergo.io': [{ address: '103.150.24.20', tags: [] }],
+  'dev.protergo.io': [{ address: '103.150.24.21', tags: [] }],
+  'mail.protergo.io': [{ address: '103.150.24.30', tags: [] }, { address: '103.150.24.31', tags: [] }],
+  'vpn.protergo.io': [{ address: '103.150.24.40', tags: [] }],
+  'cdn.protergo.io': [{ address: '103.150.24.41', tags: [] }],
+  'portal.protergo.io': [{ address: '103.150.24.42', tags: [] }],
+  'shop.protergo.io': [{ address: '103.150.24.50', tags: [] }],
+  'blog.protergo.io': [{ address: '103.150.24.51', tags: [] }],
+  'docs.protergo.io': [{ address: '103.150.24.52', tags: [] }],
+  'support.protergo.io': [{ address: '103.150.24.53', tags: [] }],
+  'ftp.protergo.io': [{ address: '103.150.24.54', tags: [] }],
+  'db.protergo.io': [{ address: '103.150.24.55', tags: [] }],
+  'monitor.protergo.io': [{ address: '103.150.24.56', tags: [] }],
+  'auth.protergo.io': [{ address: '103.150.24.57', tags: [] }],
 }
 const tagColors = [
   { swatch: '#F26D6D', bg: '#FDE8E8', fg: '#E03131' }, { swatch: '#F2994A', bg: '#FDEEE0', fg: '#E8590C' },
@@ -1063,7 +1063,7 @@ function buildHost(id, endpoint, i) {
     endpoint,
     location: hostLocationPool[i % hostLocationPool.length],
     os: hostOsPool[i % hostOsPool.length],
-    tags: [{ ...hostTagPool[i % hostTagPool.length] }],
+    tags: [],
     ports: hostPortPool.slice(i % 3, (i % 3) + 3),
   }
 }
@@ -1598,7 +1598,7 @@ function submitRegisterWebapp() {
         </div>
         <div class="asset-controls__right">
           <SearchInput v-model="search" placeholder="Search…" />
-          <button type="button" class="btn-register" @click="openRegisterWebappModal"><IconPlus :size="14" /> Register Web Application</button>
+          <button type="button" class="btn-register" @click="openRegisterWebappModal"><IconPlus :size="14" /> Register URL</button>
         </div>
       </template>
       <template v-else-if="activeTab === 'network'">
@@ -2481,7 +2481,7 @@ function submitRegisterWebapp() {
         <div v-if="showRegisterWebappModal" class="modal-backdrop" @mousedown.self="closeRegisterWebappModal">
           <div class="create-modal">
             <div class="create-modal__head">
-              <h2 class="create-modal__title">Register Web Application</h2>
+              <h2 class="create-modal__title">Register URL</h2>
               <button type="button" class="create-modal__close" aria-label="Close" @click="closeRegisterWebappModal">
                 <IconX :size="20" />
               </button>
@@ -3103,10 +3103,6 @@ function submitRegisterWebapp() {
   display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px;
   border: 1px dashed var(--glacia-glass-border); background: #fff; font-size: 12px; font-weight: 500; color: var(--glacia-ink-dim); cursor: pointer;
   &:hover { border-color: var(--glacia-red); color: var(--glacia-red); }
-
-  &--icon {
-    width: 22px; height: 22px; padding: 0; justify-content: center; border-radius: 50%; border-style: solid;
-  }
 }
 
 .cell-tags {
