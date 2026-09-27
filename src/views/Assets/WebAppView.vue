@@ -4,8 +4,9 @@ import { useRouter } from 'vue-router'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
+import GlassField from '@/components/reusable/GlassField.vue'
 import { getWebApps } from '@/mocks/assets/webApp.js'
-import { IconDotsVertical, IconCirclePlus, IconChevronDown, IconCheck, IconX, IconTag, IconArrowUpRight, IconTrash } from '@tabler/icons-vue'
+import { IconDotsVertical, IconCirclePlus, IconX, IconTag, IconArrowUpRight, IconTrash } from '@tabler/icons-vue'
 
 const router = useRouter()
 
@@ -210,7 +211,6 @@ const appName = ref('')
 const appTarget = ref('')
 const appOwner = ref('')
 const appScanType = ref(null)
-const appField = ref(null)
 const appAttempted = ref(false)
 const appState = ref('idle') // 'idle' | 'loading' | 'saved'
 
@@ -219,7 +219,6 @@ function openAppModal() {
   appTarget.value = ''
   appOwner.value = ''
   appScanType.value = null
-  appField.value = null
   appAttempted.value = false
   appState.value = 'idle'
   showAppModal.value = true
@@ -227,7 +226,6 @@ function openAppModal() {
 
 function closeAppModal() {
   showAppModal.value = false
-  appField.value = null
   appAttempted.value = false
   appState.value = 'idle'
 }
@@ -376,25 +374,21 @@ function submitApp() {
               </button>
             </div>
             <div class="create-modal__body">
-              <label class="create-modal__label">Target URL<span class="create-modal__required">*</span></label>
-              <input
+              <GlassField
                 v-model="regUrl"
-                type="text"
-                class="create-modal__input"
-                :class="{ 'create-modal__input--error': regUrlAttempted && !regUrl.trim() }"
+                label="Target URL"
                 placeholder="e.g. https://protergo.id"
+                required
+                error-text="Target URL is required."
               />
-              <p v-if="regUrlAttempted && !regUrl.trim()" class="field-error">Target URL is required.</p>
 
-              <label class="create-modal__label">Asset owner<span class="create-modal__required">*</span></label>
-              <input
+              <GlassField
                 v-model="regUrlOwner"
-                type="text"
-                class="create-modal__input"
-                :class="{ 'create-modal__input--error': regUrlAttempted && !regUrlOwner.trim() }"
+                label="Asset owner"
                 placeholder="e.g. Protergo Cyber Security HQ"
+                required
+                error-text="Asset owner is required."
               />
-              <p v-if="regUrlAttempted && !regUrlOwner.trim()" class="field-error">Asset owner is required.</p>
 
               <div class="create-modal__actions">
                 <button
@@ -424,59 +418,39 @@ function submitApp() {
               </button>
             </div>
             <div class="create-modal__body">
-              <label class="create-modal__label">Application name<span class="create-modal__required">*</span></label>
-              <input
+              <GlassField
                 v-model="appName"
-                type="text"
-                class="create-modal__input"
-                :class="{ 'create-modal__input--error': appAttempted && !appName.trim() }"
+                label="Application name"
                 placeholder="e.g. Customer Portal"
+                required
+                error-text="Application name is required."
               />
-              <p v-if="appAttempted && !appName.trim()" class="field-error">Application name is required.</p>
 
-              <label class="create-modal__label">Target<span class="create-modal__required">*</span></label>
-              <input
+              <GlassField
                 v-model="appTarget"
-                type="text"
-                class="create-modal__input"
-                :class="{ 'create-modal__input--error': appAttempted && !appTarget.trim() }"
+                label="Target"
                 placeholder="e.g. https://app.protergo.id"
+                required
+                error-text="Target is required."
               />
-              <p v-if="appAttempted && !appTarget.trim()" class="field-error">Target is required.</p>
 
-              <label class="create-modal__label">Asset owner<span class="create-modal__required">*</span></label>
-              <input
+              <GlassField
                 v-model="appOwner"
-                type="text"
-                class="create-modal__input"
-                :class="{ 'create-modal__input--error': appAttempted && !appOwner.trim() }"
+                label="Asset owner"
                 placeholder="e.g. Protergo Cyber Security HQ"
+                required
+                error-text="Asset owner is required."
               />
-              <p v-if="appAttempted && !appOwner.trim()" class="field-error">Asset owner is required.</p>
 
-              <label class="create-modal__label">Scan type<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="appField = appField === 'type' ? null : 'type'">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !appScanType }">
-                    {{ scanTypeOptions.find((o) => o.value === appScanType)?.label ?? 'select scan type...' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': appField === 'type' }" />
-                </button>
-                <div class="select-panel" :class="{ open: appField === 'type' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in scanTypeOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === appScanType }"
-                      @click="appScanType = opt.value; appField = null"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <GlassField
+                v-model="appScanType"
+                type="select"
+                label="Scan type"
+                placeholder="select scan type..."
+                required
+                :options="scanTypeOptions"
+                error-text="Scan type is required."
+              />
 
               <div class="create-modal__actions">
                 <button
@@ -587,7 +561,7 @@ function submitApp() {
     border: 1px solid var(--glacia-glass-border); font-size: 13px; font-family: 'Manrope', 'Inter', sans-serif;
     outline: none; color: var(--glacia-ink);
     &::placeholder { color: var(--glacia-ink-dim); }
-    &:focus { border-color: var(--glacia-red); }
+    &:focus { border-color: #2563EB; }
   }
 
   &__list { display: flex; flex-direction: column; gap: 2px; max-height: 180px; overflow-y: auto; }
@@ -644,10 +618,11 @@ function submitApp() {
 }
 
 .tag-add {
-  display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px;
-  border: 1px dashed var(--glacia-glass-border); background: #fff; font-size: 12px; font-weight: 500;
-  font-family: 'Manrope', 'Inter', sans-serif; color: var(--glacia-ink-dim); cursor: pointer; white-space: nowrap;
-  &:hover { border-color: var(--glacia-red); color: var(--glacia-red); }
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 14px; border-radius: 999px;
+  border: 1.5px dashed #8a9ba8; background: transparent; font-size: 13px; font-weight: 500;
+  font-family: 'Manrope', 'Inter', sans-serif; color: #64748b; cursor: pointer; white-space: nowrap;
+  transition: background 0.15s ease;
+  &:hover { background: rgba(100, 116, 139, 0.08); }
 }
 
 .dim {
@@ -689,7 +664,7 @@ function submitApp() {
   &__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-shrink: 0; }
   &__title { font-family: 'Manrope', 'Inter', sans-serif; font-size: 22px; font-weight: 800; color: var(--glacia-ink); margin: 0; }
   &__close { width: 32px; height: 32px; border-radius: 8px; border: none; background: none; color: var(--glacia-ink); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; &:hover { background: rgba(0,0,0,0.05); } }
-  &__body { margin-top: 8px; overflow-y: auto; min-height: 0; flex: 1 1 auto; overscroll-behavior: contain; }
+  &__body { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; overflow-y: auto; min-height: 0; flex: 1 1 auto; overscroll-behavior: contain; }
   &__label { display: block; margin: 16px 0 8px; font-size: 14px; font-weight: 700; color: var(--glacia-ink); }
   &__required { color: var(--glacia-red); margin-left: 2px; }
   &__input {
@@ -697,10 +672,10 @@ function submitApp() {
     background: #fff; color: var(--glacia-ink); font-size: 14px; font-family: 'Manrope', 'Inter', sans-serif;
     outline: none; box-sizing: border-box; box-shadow: 0 1px 3px rgba(16,24,32,0.08);
     &::placeholder { color: var(--glacia-ink-dim); }
-    &:focus { border-color: var(--glacia-red); box-shadow: 0 2px 6px rgba(16,24,32,0.12); }
+    &:focus { border-color: #2563EB; box-shadow: 0 2px 6px rgba(16,24,32,0.12); }
     &--error { border-color: var(--glacia-sev-critical); &:focus { border-color: var(--glacia-sev-critical); } }
   }
-  &__actions { display: flex; gap: 14px; margin-top: 20px; flex-shrink: 0; }
+  &__actions { display: flex; gap: 14px; margin-top: 10px; flex-shrink: 0; }
 }
 
 .field-error { margin: 6px 0 0; font-size: 12px; line-height: 1.4; color: var(--glacia-sev-critical); }

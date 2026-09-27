@@ -5,6 +5,7 @@ import { get } from '@/utils/request'
 import { useFetch } from '@/composables/useFetch'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
+import GlassField from '@/components/reusable/GlassField.vue'
 import { IconDotsVertical, IconArrowUpRight, IconTrash, IconX, IconCheck, IconTag } from '@tabler/icons-vue'
 
 const router = useRouter()
@@ -275,11 +276,11 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
             </div>
 
             <div class="tag-modal__create">
-              <input
+              <GlassField
                 v-model="newTagText"
-                type="text"
-                class="tag-modal__input"
+                label="New tag"
                 placeholder="New tag name"
+                class="tag-modal__input"
                 @keydown.enter="addTag"
               />
               <button type="button" class="tag-modal__add" :disabled="!newTagText.trim()" @click="addTag">Add</button>
@@ -509,7 +510,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
   &__create {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
     margin-top: 12px;
   }
@@ -517,28 +518,11 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   &__input {
     flex: 1;
     min-width: 0;
-    height: 44px;
-    padding: 0 14px;
-    border-radius: 12px;
-    border: 1px solid var(--glacia-glass-border);
-    background: #fff;
-    color: var(--glacia-ink);
-    font-size: 14px;
-    font-family: 'Manrope', 'Inter', sans-serif;
-    outline: none;
-    box-sizing: border-box;
-
-    &::placeholder {
-      color: var(--glacia-ink-dim);
-    }
-
-    &:focus {
-      border-color: var(--glacia-red);
-    }
   }
 
   &__add {
-    height: 44px;
+    height: 48px;
+    margin-top: 22px;
     padding: 0 18px;
     border-radius: 12px;
     border: none;

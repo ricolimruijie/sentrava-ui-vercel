@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { get } from '@/utils/request'
 import { useFetch } from '@/composables/useFetch'
 import DataTable from '@/components/table/DataTable.vue'
+import GlassField from '@/components/reusable/GlassField.vue'
 import {
   IconCirclePlus, IconDotsVertical, IconPencil, IconKeyOff, IconX, IconCopy, IconCheck, IconAlertTriangle,
 } from '@tabler/icons-vue'
@@ -276,11 +277,12 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
             <template v-if="modalStep === 'form'">
               <p class="create-modal__note">Each account can retain up to {{ MAX_KEYS }} API Keys.</p>
 
-              <input
+              <GlassField
                 v-model="newKeyName"
-                type="text"
-                class="create-modal__input"
+                label="API key name"
                 placeholder="Name of the API key"
+                required
+                error-text="A name is required"
                 @keyup.enter="createApiKey"
               />
 
@@ -346,13 +348,12 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
               </button>
             </div>
 
-            <label class="edit-modal__label" for="edit-api-key-name">Name</label>
-            <input
-              id="edit-api-key-name"
+            <GlassField
               v-model="editName"
-              type="text"
-              class="create-modal__input"
+              label="Name"
               placeholder="API Name"
+              required
+              error-text="A name is required"
               @keyup.enter="saveEdit"
             />
 
@@ -584,6 +585,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
+    margin-bottom: 12px;
   }
 
   &__title {
@@ -623,7 +625,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   }
 
   &__note {
-    margin: 14px 0 12px;
+    margin: 0 0 12px;
     font-size: 14px;
     color: var(--glacia-ink-dim);
   }
@@ -647,7 +649,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     }
 
     &:focus {
-      border-color: var(--glacia-red);
+      border-color: #2563EB;
       box-shadow: 0 2px 6px rgba(16, 24, 32, 0.12);
     }
   }

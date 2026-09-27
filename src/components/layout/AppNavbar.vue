@@ -19,6 +19,7 @@ import {
   IconCheck,
 } from '@tabler/icons-vue'
 import DatePicker from '@/components/reusable/DatePicker.vue'
+import GlassField from '@/components/reusable/GlassField.vue'
 import Avatar from 'primevue/avatar'
 
 defineProps({
@@ -62,7 +63,7 @@ function handleClickOutside(e) {
   }
   if (!e.target.closest('.form-select')) {
     // A modal dropdown closed by outside click still tweens the height shut.
-    const modalFields = ['billing', 'domain', 'network', 'webapp', 'source', 'activationDate', 'expirationDate']
+    const modalFields = ['activationDate', 'expirationDate']
     if (showCreateCompanyModal.value && modalFields.includes(openFieldMenu.value)) {
       animateModalHeight(() => {
         openFieldMenu.value = null
@@ -260,26 +261,21 @@ function toggleActivation() {
   })
 }
 
-const fieldRefs = { domain: domainQuota, network: networkQuota, webapp: webappQuota, source: sourceQuota }
-
-// Each of the 5 fields renders its own inline menu (only one open at a
-// time via openFieldMenu), but they all funnel through this one setter.
-function selectFieldOption(value) {
+// Billing model drives whether the quota-panel section is shown at all, so
+// picking it still needs to tween the modal's height open/shut; the quota
+// fields themselves are plain GlassField selects now (floating menus don't
+// push the layout, so they need no special handling).
+function onBillingModelChange(value) {
   animateModalHeight(() => {
-    if (openFieldMenu.value === 'billing') {
-      billingModel.value = value
-      // Switching away from Contract Based clears any quotas already chosen —
-      // they're hidden and no longer part of the payload.
-      if (value !== 'contract') {
-        domainQuota.value = null
-        networkQuota.value = null
-        webappQuota.value = null
-        sourceQuota.value = null
-      }
-    } else if (fieldRefs[openFieldMenu.value]) {
-      fieldRefs[openFieldMenu.value].value = value
+    billingModel.value = value
+    // Switching away from Contract Based clears any quotas already chosen —
+    // they're hidden and no longer part of the payload.
+    if (value !== 'contract') {
+      domainQuota.value = null
+      networkQuota.value = null
+      webappQuota.value = null
+      sourceQuota.value = null
     }
-    openFieldMenu.value = null
   })
 }
 
@@ -482,142 +478,73 @@ function submitActivation() {
 
           <div class="create-modal__body">
             <template v-if="createStep === 'form'">
-            <label class="create-modal__label" for="create-company-name">Company name<span class="create-modal__required">*</span></label>
-            <input
-              id="create-company-name"
-              v-model="newCompanyName"
-              type="text"
-              class="create-modal__input"
-              placeholder="input company name..."
-            />
+            <div class="create-modal__group">
+              <GlassField
+                v-model="newCompanyName"
+                label="Company name"
+                placeholder="input company name..."
+                required
+                error-text="Company name is required"
+              />
 
-            <label class="create-modal__label">Billing model<span class="create-modal__required">*</span></label>
-            <div class="form-select">
-              <button type="button" class="form-select__trigger" @click="toggleFieldMenu('billing')">
-                <span :class="{ 'form-select__trigger-text--placeholder': !billingModel }">
-                  {{ billingOptions.find((o) => o.value === billingModel)?.label ?? 'select billing model...' }}
-                </span>
-                <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': openFieldMenu === 'billing' }" />
-              </button>
+              <GlassField
+                :model-value="billingModel"
+                type="select"
+                label="Billing model"
+                placeholder="select billing model..."
+                :options="billingOptions"
+                required
+                error-text="Choose a billing model"
+                @update:model-value="onBillingModelChange"
+              />
 
-              <div class="select-panel select-panel--billing" :class="{ open: openFieldMenu === 'billing' }">
-                <div class="form-select__inline-menu select-panel__inner">
-                  <button
-                    v-for="opt in billingOptions"
-                    :key="opt.value"
-                    type="button"
-                    class="form-select__inline-item"
-                    :class="{ 'form-select__inline-item--active': opt.value === billingModel }"
-                    @click="selectFieldOption(opt.value)"
-                  >
-                    {{ opt.label }}
-                  </button>
+              <div class="quota-panel" :class="{ 'quota-panel--open': showQuotaFields }">
+                <div class="quota-stagger-item" :class="{ 'quota-stagger-item--animate': showQuotaFields }">
+                  <GlassField
+                    v-model="domainQuota"
+                    type="select"
+                    label="Domain inspection scan quota for one month"
+                    placeholder="select quota"
+                    :options="quotaOptions"
+                    required
+                    error-text="Domain inspection quota is required"
+                  />
                 </div>
-              </div>
-            </div>
 
-            <div class="quota-panel" :class="{ 'quota-panel--open': showQuotaFields }">
-              <div class="quota-stagger-item" :class="{ 'quota-stagger-item--animate': showQuotaFields }">
-                <label class="create-modal__label">Domain inspection scan quota for one month<span class="create-modal__required">*</span></label>
-                <div class="form-select">
-                  <button type="button" class="form-select__trigger" @click="toggleFieldMenu('domain')">
-                    <span :class="{ 'form-select__trigger-text--placeholder': !domainQuota }">
-                      {{ quotaOptions.find((o) => o.value === domainQuota)?.label ?? 'select quota' }}
-                    </span>
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': openFieldMenu === 'domain' }" />
-                  </button>
-                  <div class="select-panel" :class="{ open: openFieldMenu === 'domain' }">
-                    <div class="form-select__inline-menu select-panel__inner">
-                      <button
-                        v-for="opt in quotaOptions"
-                        :key="opt.value"
-                        type="button"
-                        class="form-select__inline-item"
-                        :class="{ 'form-select__inline-item--active': opt.value === domainQuota }"
-                        @click="selectFieldOption(opt.value)"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
+                <div class="quota-stagger-item" :class="{ 'quota-stagger-item--animate': showQuotaFields }">
+                  <GlassField
+                    v-model="networkQuota"
+                    type="select"
+                    label="Network scan quota for one month"
+                    placeholder="select quota"
+                    :options="quotaOptions"
+                    required
+                    error-text="Network scan quota is required"
+                  />
                 </div>
-              </div>
 
-              <div class="quota-stagger-item" :class="{ 'quota-stagger-item--animate': showQuotaFields }">
-                <label class="create-modal__label">Network scan quota for one month<span class="create-modal__required">*</span></label>
-                <div class="form-select">
-                  <button type="button" class="form-select__trigger" @click="toggleFieldMenu('network')">
-                    <span :class="{ 'form-select__trigger-text--placeholder': !networkQuota }">
-                      {{ quotaOptions.find((o) => o.value === networkQuota)?.label ?? 'select quota' }}
-                    </span>
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': openFieldMenu === 'network' }" />
-                  </button>
-                  <div class="select-panel" :class="{ open: openFieldMenu === 'network' }">
-                    <div class="form-select__inline-menu select-panel__inner">
-                      <button
-                        v-for="opt in quotaOptions"
-                        :key="opt.value"
-                        type="button"
-                        class="form-select__inline-item"
-                        :class="{ 'form-select__inline-item--active': opt.value === networkQuota }"
-                        @click="selectFieldOption(opt.value)"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
+                <div class="quota-stagger-item" :class="{ 'quota-stagger-item--animate': showQuotaFields }">
+                  <GlassField
+                    v-model="webappQuota"
+                    type="select"
+                    label="Web application scan quota for one month"
+                    placeholder="select quota"
+                    :options="quotaOptions"
+                    required
+                    error-text="Web application scan quota is required"
+                  />
                 </div>
-              </div>
 
-              <div class="quota-stagger-item" :class="{ 'quota-stagger-item--animate': showQuotaFields }">
-                <label class="create-modal__label">Web application scan quota for one month<span class="create-modal__required">*</span></label>
-                <div class="form-select">
-                  <button type="button" class="form-select__trigger" @click="toggleFieldMenu('webapp')">
-                    <span :class="{ 'form-select__trigger-text--placeholder': !webappQuota }">
-                      {{ quotaOptions.find((o) => o.value === webappQuota)?.label ?? 'select quota' }}
-                    </span>
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': openFieldMenu === 'webapp' }" />
-                  </button>
-                  <div class="select-panel" :class="{ open: openFieldMenu === 'webapp' }">
-                    <div class="form-select__inline-menu select-panel__inner">
-                      <button
-                        v-for="opt in quotaOptions"
-                        :key="opt.value"
-                        type="button"
-                        class="form-select__inline-item"
-                        :class="{ 'form-select__inline-item--active': opt.value === webappQuota }"
-                        @click="selectFieldOption(opt.value)"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="quota-stagger-item" :class="{ 'quota-stagger-item--animate': showQuotaFields }">
-                <label class="create-modal__label">Source code scan quota for one month<span class="create-modal__required">*</span></label>
-                <div class="form-select">
-                  <button type="button" class="form-select__trigger" @click="toggleFieldMenu('source')">
-                    <span :class="{ 'form-select__trigger-text--placeholder': !sourceQuota }">
-                      {{ quotaOptions.find((o) => o.value === sourceQuota)?.label ?? 'select quota' }}
-                    </span>
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': openFieldMenu === 'source' }" />
-                  </button>
-                  <div class="select-panel" :class="{ open: openFieldMenu === 'source' }">
-                    <div class="form-select__inline-menu select-panel__inner">
-                      <button
-                        v-for="opt in quotaOptions"
-                        :key="opt.value"
-                        type="button"
-                        class="form-select__inline-item"
-                        :class="{ 'form-select__inline-item--active': opt.value === sourceQuota }"
-                        @click="selectFieldOption(opt.value)"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
+                <div class="quota-stagger-item" :class="{ 'quota-stagger-item--animate': showQuotaFields }">
+                  <GlassField
+                    v-model="sourceQuota"
+                    type="select"
+                    label="Source code scan quota for one month"
+                    placeholder="select quota"
+                    :options="quotaOptions"
+                    required
+                    error-text="Source code scan quota is required"
+                  />
                 </div>
               </div>
             </div>
@@ -1202,7 +1129,7 @@ function submitActivation() {
     }
 
     &:focus {
-      border-color: var(--glacia-red);
+      border-color: #2563EB;
       box-shadow: 0 2px 6px rgba(16, 24, 32, 0.12);
     }
   }
@@ -1224,9 +1151,20 @@ function submitActivation() {
   // No height cap or scroll here — the modal shell itself tweens its height
   // to follow this content (see animateModalHeight).
   overflow-x: hidden;
+  // Setting only overflow-x makes the browser auto-compute overflow-y as
+  // "auto" (not "visible") per spec — which would clip a GlassField
+  // dropdown menu wherever it overflows past this box. Keep it explicit.
+  overflow-y: visible;
   // Room for the dropdown menus' shadow/focus ring without clipping.
   padding: 2px 2px 0;
   margin: 0 -2px;
+}
+
+.create-modal__group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 // In-flow dropdown panel: always rendered, expands via max-height so the
@@ -1245,10 +1183,6 @@ function submitActivation() {
     margin-top: 10px;
   }
 
-  &--billing.open {
-    max-height: 170px;
-  }
-
   &__inner {
     margin-top: 0;
   }
@@ -1261,6 +1195,7 @@ function submitActivation() {
 .quota-panel {
   display: flex;
   flex-direction: column;
+  gap: 10px;
   max-height: 0;
   opacity: 0;
   overflow: hidden;
@@ -1270,27 +1205,38 @@ function submitActivation() {
     // Room for the quota dropdowns' expanding panels.
     max-height: 1000px;
     opacity: 1;
+    // GlassField's own dropdown menus float outside their trigger's box —
+    // once fully open there's nothing left to clip, so let them escape
+    // instead of being cut off by this panel's collapse-animation overflow.
+    overflow: visible;
   }
 }
 
+// A `transition` (rather than an `animation`) here so the stacking context
+// it forces only exists while opacity/transform are actually mid-change —
+// an `animation-name` forces one for as long as it stays attached (forever,
+// with fill-mode: both), which would trap each field's GlassField dropdown
+// menu inside its own item and stop it floating above the fields after it.
 .quota-stagger-item {
   opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.32s ease, transform 0.32s ease;
 
+  // The literal `none` (not `translateY(0)`, which computes to a matrix)
+  // matters: any transform value other than the literal keyword `none`
+  // still forces a stacking context, which would trap each field's
+  // GlassField dropdown inside its own item once settled.
   &--animate {
-    animation: quota-stagger-in 0.32s ease both;
+    opacity: 1;
+    transform: none;
   }
 
   // Cascading delay per field, matching the panel's own reveal so each
   // field visibly follows the one before it instead of all arriving at once.
-  &:nth-child(1).quota-stagger-item--animate { animation-delay: 0.1s; }
-  &:nth-child(2).quota-stagger-item--animate { animation-delay: 0.16s; }
-  &:nth-child(3).quota-stagger-item--animate { animation-delay: 0.22s; }
-  &:nth-child(4).quota-stagger-item--animate { animation-delay: 0.28s; }
-}
-
-@keyframes quota-stagger-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  &:nth-child(1).quota-stagger-item--animate { transition-delay: 0.1s; }
+  &:nth-child(2).quota-stagger-item--animate { transition-delay: 0.16s; }
+  &:nth-child(3).quota-stagger-item--animate { transition-delay: 0.22s; }
+  &:nth-child(4).quota-stagger-item--animate { transition-delay: 0.28s; }
 }
 
 .form-select {

@@ -4,7 +4,8 @@ import { useRoute } from 'vue-router'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
-import { IconDotsVertical, IconPlus, IconWorld, IconBrowser, IconNetwork, IconCode, IconTag, IconChevronDown, IconX, IconCheck, IconArrowUpRight, IconRefresh, IconTrash, IconSitemap, IconCircleDot, IconArrowsLeftRight, IconPencil, IconArrowRight, IconPalette } from '@tabler/icons-vue'
+import GlassField from '@/components/reusable/GlassField.vue'
+import { IconDotsVertical, IconPlus, IconWorld, IconBrowser, IconNetwork, IconCode, IconTag, IconChevronDown, IconX, IconCheck, IconArrowUpRight, IconRefresh, IconTrash, IconSitemap, IconCircleDot, IconArrowsLeftRight, IconPencil, IconArrowRight, IconPalette, IconSearch } from '@tabler/icons-vue'
 
 const tabs = [
   { key: 'domain', label: 'Domain', icon: IconWorld },
@@ -212,7 +213,6 @@ const totalCount = computed(() => {
 const showRegisterNetworkModal = ref(false)
 const regNetOwner = ref(null)
 const regNetType = ref(null) // 'single' | 'range'
-const regNetField = ref(null)
 const regNetState = ref('idle') // 'idle' | 'loading' | 'saved'
 const regNetIp = ref('')
 const regNetRange = ref('')
@@ -245,7 +245,6 @@ const regNetRangeError = computed(() => {
 function openRegisterNetworkModal() {
   regNetOwner.value = null
   regNetType.value = null
-  regNetField.value = null
   regNetState.value = 'idle'
   regNetIp.value = ''
   regNetRange.value = ''
@@ -254,18 +253,12 @@ function openRegisterNetworkModal() {
 }
 function closeRegisterNetworkModal() {
   showRegisterNetworkModal.value = false
-  regNetField.value = null
-}
-function toggleRegNetField(key) {
-  regNetField.value = regNetField.value === key ? null : key
 }
 function selectRegNetOwner(value) {
   regNetOwner.value = value
-  regNetField.value = null
 }
 function selectRegNetType(value) {
   regNetType.value = value
-  regNetField.value = null
   regNetIp.value = ''
   regNetRange.value = ''
   regNetAttempted.value = false
@@ -279,13 +272,6 @@ function onRegNetRangeInput(e) {
   const cleaned = e.target.value.replace(/[^0-9]/g, '')
   regNetRange.value = cleaned
   if (e.target.value !== cleaned) e.target.value = cleaned
-}
-function clearRegNetType() {
-  regNetType.value = null
-  regNetField.value = null
-  regNetIp.value = ''
-  regNetRange.value = ''
-  regNetAttempted.value = false
 }
 function submitRegisterNetwork() {
   if (!canRegisterNetwork.value || regNetState.value !== 'idle') return
@@ -314,7 +300,6 @@ const showRegisterSourceModal = ref(false)
 const regSrcOwner = ref(null)
 const regSrcProvider = ref(null)
 const regSrcVisibility = ref(null)
-const regSrcField = ref(null)
 const regSrcToken = ref('')
 const regSrcRepoUrl = ref('')
 const regSrcState = ref('idle') // 'idle' | 'loading' | 'saved'
@@ -341,7 +326,6 @@ function openRegisterSourceModal() {
   regSrcOwner.value = null
   regSrcProvider.value = null
   regSrcVisibility.value = null
-  regSrcField.value = null
   regSrcToken.value = ''
   regSrcRepoUrl.value = ''
   regSrcState.value = 'idle'
@@ -349,27 +333,16 @@ function openRegisterSourceModal() {
 }
 function closeRegisterSourceModal() {
   showRegisterSourceModal.value = false
-  regSrcField.value = null
-}
-function toggleRegSrcField(key) {
-  regSrcField.value = regSrcField.value === key ? null : key
 }
 function selectRegSrcOwner(value) {
   regSrcOwner.value = value
-  regSrcField.value = null
 }
 function selectRegSrcProvider(value) {
   regSrcProvider.value = value
-  regSrcField.value = null
 }
 function selectRegSrcVisibility(value) {
   regSrcVisibility.value = value
-  regSrcField.value = null
   if (value === 'public') regSrcToken.value = ''
-}
-function clearRegSrcVisibility() {
-  regSrcVisibility.value = null
-  regSrcField.value = null
 }
 function submitRegisterSource() {
   if (!canRegisterSource.value || regSrcState.value !== 'idle') return
@@ -865,16 +838,19 @@ function openDetail(row) {
   detailState.ips37NewTagText = ''
   detailState.ips37NewTagColor = 0
   detailState.ips37ColorPickerOpen = false
+  subSearch.value = ''
   showDetailModal.value = true
 }
 function closeDetail() { showDetailModal.value = false }
 
+const subSearch = ref('')
 const subdomains37 = computed(() =>
   subdomains37List.map((sd) => {
     const active = sd.name === detailState.activeSubdomain37
     return {
       name: sd.name,
       dot: sd.dot,
+      count: (ips37ByDomain[sd.name] || []).length,
       bg: active ? 'var(--coral-50)' : 'transparent',
       color: active ? 'var(--coral-600)' : 'var(--text-2)',
       select: () => {
@@ -884,6 +860,11 @@ const subdomains37 = computed(() =>
     }
   }),
 )
+const filteredSubdomains37 = computed(() => {
+  const q = subSearch.value.trim().toLowerCase()
+  if (!q) return subdomains37.value
+  return subdomains37.value.filter((sd) => sd.name.toLowerCase().includes(q))
+})
 // Scroll logic for the subdomain pane: fade hint shows only while more
 // content sits below; selecting a row scrolls it into view.
 const subListRef = ref(null)
@@ -903,11 +884,29 @@ function scrollActiveSubdomainIntoView() {
 watch(showDetailModal, (open) => {
   if (open) {
     canScrollDown.value = false
+    ipCanScrollDown.value = false
     nextTick(() => {
       if (subListRef.value) subListRef.value.scrollTop = 0
       updateSubScrollState()
+      if (ipListRef.value) ipListRef.value.scrollTop = 0
+      updateIpScrollState()
     })
   }
+})
+// Scroll cue for the IP list pane: bouncing chevron shows only while more
+// content sits below the fold.
+const ipListRef = ref(null)
+const ipCanScrollDown = ref(false)
+function updateIpScrollState() {
+  const el = ipListRef.value
+  if (!el) return
+  ipCanScrollDown.value = el.scrollHeight - el.scrollTop - el.clientHeight > 8
+}
+watch(() => detailState.activeSubdomain37, () => {
+  nextTick(() => {
+    if (ipListRef.value) ipListRef.value.scrollTop = 0
+    updateIpScrollState()
+  })
 })
 const subdomains37Count = computed(() => `${subdomains37List.length} total`)
 const hasMoreSubdomains37 = computed(() => subdomains37List.length > 6)
@@ -981,6 +980,7 @@ const ips37 = computed(() => {
         detailState.ips37NewTagText = ''
         detailState.ips37NewTagColor = 0
         detailState.ips37ColorPickerOpen = false
+        nextTick(updateIpScrollState)
       },
       newTagText: detailState.ips37NewTagText,
       onNewTagChange: (e) => { detailState.ips37NewTagText = e.target.value },
@@ -1440,7 +1440,6 @@ function confirmRescan() {
 const showRegisterModal = ref(false)
 const registerOwner = ref(null)
 const registerDomain = ref('')
-const registerField = ref(null)
 const registerState = ref('idle') // 'idle' | 'loading' | 'saved'
 const canProceedRegister = computed(() => {
   const d = registerDomain.value.trim()
@@ -1456,20 +1455,14 @@ const registerDomainError = computed(() => {
 function openRegisterModal() {
   registerOwner.value = null
   registerDomain.value = ''
-  registerField.value = null
   registerState.value = 'idle'
   showRegisterModal.value = true
 }
 function closeRegisterModal() {
   showRegisterModal.value = false
-  registerField.value = null
-}
-function toggleRegisterField(key) {
-  registerField.value = registerField.value === key ? null : key
 }
 function selectRegisterOwner(value) {
   registerOwner.value = value
-  registerField.value = null
 }
 function submitRegister() {
   if (!canProceedRegister.value || registerState.value !== 'idle') return
@@ -1496,7 +1489,6 @@ const regWAUrl = ref('')
 const regWABasic = ref(false)
 const regWAUser = ref('')
 const regWAPass = ref('')
-const regWAField = ref(null)
 const regWAState = ref('idle') // 'idle' | 'loading' | 'saved'
 const regWAUrlError = computed(() => {
   const u = regWAUrl.value.trim()
@@ -1516,20 +1508,14 @@ function openRegisterWebappModal() {
   regWABasic.value = false
   regWAUser.value = ''
   regWAPass.value = ''
-  regWAField.value = null
   regWAState.value = 'idle'
   showRegisterWebappModal.value = true
 }
 function closeRegisterWebappModal() {
   showRegisterWebappModal.value = false
-  regWAField.value = null
-}
-function toggleRegWAField(key) {
-  regWAField.value = regWAField.value === key ? null : key
 }
 function selectRegWAOwner(value) {
   regWAOwner.value = value
-  regWAField.value = null
 }
 function submitRegisterWebapp() {
   if (!canRegisterWebapp.value || regWAState.value !== 'idle') return
@@ -1864,19 +1850,30 @@ function submitRegisterWebapp() {
         <div v-if="showDetailModal" class="modal-backdrop" @mousedown.self="closeDetail">
           <div class="dv-modal">
             <div class="dv-modal__head">
-              <div>
+              <div class="dv-modal__title-row">
                 <div class="dv-modal__title">Asset details</div>
                 <div class="dv-modal__sub">{{ detailDomain }}</div>
+                <span class="dv-modal__dot" aria-hidden="true">•</span>
                 <div class="dv-modal__meta">Last scanned: {{ detailLastScanned }}</div>
               </div>
               <button type="button" class="dv-modal__close" @click="closeDetail"><IconX :size="18" /></button>
             </div>
             <div class="dv-modal__body">
               <div class="dv-subpane">
+                <div class="dv-subpane__search">
+                  <IconSearch :size="16" class="dv-subpane__search-icon" />
+                  <input
+                    v-model="subSearch"
+                    type="text"
+                    class="dv-subpane__search-input"
+                    placeholder="Filter subdomains"
+                    aria-label="Filter subdomains"
+                  />
+                </div>
                 <div class="dv-subpane__head"><span>Subdomains</span><span>{{ subdomains37Count }}</span></div>
                 <div ref="subListRef" class="dv-subpane__list" @scroll="updateSubScrollState">
                   <button
-                    v-for="sd in subdomains37"
+                    v-for="sd in filteredSubdomains37"
                     :key="sd.name"
                     type="button"
                     class="dv-sub"
@@ -1885,26 +1882,29 @@ function submitRegisterWebapp() {
                     @click="sd.select"
                   >
                     <span :style="{ color: sd.color, fontFamily: `'JetBrains Mono', 'Fira Code', monospace`, fontSize: '12.5px' }">{{ sd.name }}</span>
+                    <span class="dv-sub__count" :style="{ color: sd.color }">{{ sd.count }}</span>
                   </button>
+                  <p v-if="!filteredSubdomains37.length" class="dv-subpane__empty">No subdomains match.</p>
                 </div>
                 <div v-if="hasMoreSubdomains37 && canScrollDown" class="dv-subpane__hint"><IconChevronDown :size="16" class="dv-hint-icon" /></div>
               </div>
-              <div class="dv-ippane">
+              <div ref="ipListRef" class="dv-ippane" @scroll="updateIpScrollState">
                 <div class="dv-ippane__head">
-                  <span>IP addresses</span><span class="dv-badge">{{ ips37Count }}</span>
+                  <span>IP addresses</span><span class="dv-ippane__for">for {{ activeSubdomain37 }}</span>
                 </div>
-                <div class="dv-ippane__sub">for {{ activeSubdomain37 }}</div>
                 <div class="dv-ip-list">
-                  <div v-for="ip in ips37" :key="ip.address" class="dv-ip">
+                  <div v-for="ip in ips37" :key="ip.address" class="dv-ip" :class="{ 'dv-ip--open': ip.isConfiguring }">
                     <div class="dv-ip__main dv-ip__main--clickable" @click="ip.toggleConfig">
                       <div class="dv-ip__row">
-                        <div class="dv-ip__left">
-                          <IconSitemap :size="16" class="dv-icon" />
-                          <span class="dv-mono">{{ ip.address }}</span>
-                        </div>
-                        <button type="button" class="dv-chevron" :style="{ transform: `rotate(${ip.chevron})` }" tabindex="-1">
-                          <IconChevronDown :size="16" />
-                        </button>
+                        <span class="dv-mono">{{ ip.address }}</span>
+                        <span class="dv-ip__head-right">
+                          <span v-if="!ip.isConfiguring" class="dv-port-chips">
+                            <span v-for="p in ip.ports" :key="p.port" class="dv-port-chip">{{ p.port }}</span>
+                          </span>
+                          <button type="button" class="dv-chevron" :style="{ transform: `rotate(${ip.chevron})` }" tabindex="-1">
+                            <IconChevronDown :size="16" />
+                          </button>
+                        </span>
                       </div>
                       <div v-if="ip.hasTags" class="dv-tags">
                         <span v-for="tg in ip.tags" :key="tg.label" class="dv-tag" :style="{ background: tg.bg, color: tg.fg }">{{ tg.label }}</span>
@@ -2000,6 +2000,7 @@ function submitRegisterWebapp() {
                     </Transition>
                   </div>
                 </div>
+                <div class="dv-ip-hint" :class="{ 'is-hidden': !ipCanScrollDown }"><IconChevronDown :size="16" class="dv-hint-icon" /></div>
               </div>
             </div>
           </div>
@@ -2091,7 +2092,7 @@ function submitRegisterWebapp() {
                   </div>
                 </div>
               </div>
-              <div v-if="canScrollBranchDown" class="dv-branch-hint"><IconChevronDown :size="16" /></div>
+              <div class="dv-branch-hint" :class="{ 'is-hidden': !canScrollBranchDown }"><IconChevronDown :size="16" /></div>
             </div>
           </div>
         </div>
@@ -2402,7 +2403,7 @@ function submitRegisterWebapp() {
                   </div>
                 </div>
               </div>
-              <div v-if="canScrollSourceDown" class="dv-branch-hint"><IconChevronDown :size="16" /></div>
+              <div class="dv-branch-hint" :class="{ 'is-hidden': !canScrollSourceDown }"><IconChevronDown :size="16" /></div>
             </div>
           </div>
         </div>
@@ -2421,40 +2422,26 @@ function submitRegisterWebapp() {
             </div>
             <p class="create-modal__desc">Once the domain is registered, it will go through scanning to discover and find all endpoints that are related to the domain.</p>
 
-            <div class="create-modal__body">
-              <label class="create-modal__label">Asset Owner<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleRegisterField('owner')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !registerOwner }">
-                    {{ ownerOptions.find((o) => o.value === registerOwner)?.label ?? 'Asset Owner' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': registerField === 'owner' }" />
-                </button>
-                <div class="select-panel" :class="{ open: registerField === 'owner' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in ownerOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === registerOwner }"
-                      @click="selectRegisterOwner(opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <label class="create-modal__label">Domain<span class="create-modal__required">*</span></label>
-              <input
-                v-model="registerDomain"
-                type="text"
-                class="create-modal__input"
-                :class="{ 'create-modal__input--error': !!registerDomainError }"
-                placeholder="Input Domain"
+            <div class="create-modal__body create-modal__group">
+              <GlassField
+                type="select"
+                label="Asset Owner"
+                placeholder="Asset Owner"
+                required
+                :options="ownerOptions"
+                :model-value="registerOwner"
+                @update:model-value="selectRegisterOwner"
+                error-text="Asset Owner is required"
               />
-              <p v-if="registerDomainError" class="field-error">{{ registerDomainError }}</p>
+
+              <GlassField
+                v-model="registerDomain"
+                label="Domain"
+                placeholder="Input Domain"
+                required
+                :invalid="!!registerDomainError"
+                :error-text="registerDomainError || 'Domain is required'"
+              />
             </div>
 
             <div class="create-modal__actions">
@@ -2488,42 +2475,35 @@ function submitRegisterWebapp() {
             </div>
 
             <div class="create-modal__body">
-              <label class="create-modal__label">Asset Owner<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleRegWAField('owner')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !regWAOwner }">
-                    {{ ownerOptions.find((o) => o.value === regWAOwner)?.label ?? 'Asset Owner' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': regWAField === 'owner' }" />
-                </button>
-                <div class="select-panel" :class="{ open: regWAField === 'owner' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in ownerOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === regWAOwner }"
-                      @click="selectRegWAOwner(opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
+              <div class="create-modal__group">
+                <GlassField
+                  type="select"
+                  label="Asset Owner"
+                  placeholder="Asset Owner"
+                  required
+                  :options="ownerOptions"
+                  :model-value="regWAOwner"
+                  @update:model-value="selectRegWAOwner"
+                  error-text="Asset Owner is required"
+                />
+
+                <GlassField
+                  v-model="regWAName"
+                  label="Application Name"
+                  placeholder="Application Name"
+                  required
+                  error-text="Application Name is required"
+                />
+
+                <GlassField
+                  v-model="regWAUrl"
+                  label="Input URL"
+                  placeholder="Input URL"
+                  required
+                  :invalid="!!regWAUrlError"
+                  :error-text="regWAUrlError || 'URL is required'"
+                />
               </div>
-
-              <label class="create-modal__label">Application Name<span class="create-modal__required">*</span></label>
-              <input v-model="regWAName" type="text" class="create-modal__input" placeholder="Application Name" />
-
-              <label class="create-modal__label">Input URL<span class="create-modal__required">*</span></label>
-              <input
-                v-model="regWAUrl"
-                type="text"
-                class="create-modal__input"
-                :class="{ 'create-modal__input--error': !!regWAUrlError }"
-                placeholder="Input URL"
-              />
-              <p v-if="regWAUrlError" class="field-error">{{ regWAUrlError }}</p>
 
               <label class="create-modal__label">Authentication</label>
               <div class="basic-auth-card">
@@ -2542,10 +2522,8 @@ function submitRegisterWebapp() {
                 </div>
                 <Transition name="dv-expand">
                   <div v-if="regWABasic" class="basic-auth-card__fields">
-                    <label class="create-modal__label">Username<span class="create-modal__required">*</span></label>
-                    <input v-model="regWAUser" type="text" class="create-modal__input" placeholder="Username" />
-                    <label class="create-modal__label">Password<span class="create-modal__required">*</span></label>
-                    <input v-model="regWAPass" type="password" class="create-modal__input" placeholder="Password" />
+                    <GlassField v-model="regWAUser" label="Username" placeholder="Username" required error-text="Username is required" />
+                    <GlassField v-model="regWAPass" label="Password" placeholder="Password" input-type="password" required error-text="Password is required" />
                   </div>
                 </Transition>
               </div>
@@ -2581,99 +2559,67 @@ function submitRegisterWebapp() {
               </button>
             </div>
 
-            <div class="create-modal__body">
-              <label class="create-modal__label">Asset Owner<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleRegNetField('owner')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !regNetOwner }">
-                    {{ ownerOptions.find((o) => o.value === regNetOwner)?.label ?? 'Asset Owner' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': regNetField === 'owner' }" />
-                </button>
-                <div class="select-panel" :class="{ open: regNetField === 'owner' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in ownerOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === regNetOwner }"
-                      @click="selectRegNetOwner(opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
-              </div>
+            <div class="create-modal__body create-modal__group">
+              <GlassField
+                type="select"
+                label="Asset Owner"
+                placeholder="Asset Owner"
+                required
+                :options="ownerOptions"
+                :model-value="regNetOwner"
+                @update:model-value="selectRegNetOwner"
+                error-text="Asset Owner is required"
+              />
 
-              <label class="create-modal__label">IP Address Type<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleRegNetField('type')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !regNetType }">
-                    {{ ipTypeOptions.find((o) => o.value === regNetType)?.label ?? 'IP Address Type' }}
-                  </span>
-                  <span class="form-select__trigger-icons">
-                    <IconX v-if="regNetType" :size="16" class="form-select__clear" @click.stop="clearRegNetType" />
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': regNetField === 'type' }" />
-                  </span>
-                </button>
-                <div class="select-panel" :class="{ open: regNetField === 'type' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in ipTypeOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === regNetType }"
-                      @click="selectRegNetType(opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <GlassField
+                type="select"
+                label="IP Address Type"
+                placeholder="IP Address Type"
+                required
+                :options="ipTypeOptions"
+                :model-value="regNetType"
+                @update:model-value="selectRegNetType"
+                error-text="IP Address Type is required"
+              />
 
               <Transition name="dv-expand">
                 <div v-if="regNetType === 'single'" class="ip-field-gap">
-                  <input
-                    :value="regNetIp"
-                    @input="onRegNetIpInput"
-                    type="text"
-                    inputmode="decimal"
-                    class="create-modal__input"
-                    :class="{ 'create-modal__input--error': !!regNetIpError }"
-                    placeholder="Input IP Address*"
+                  <GlassField
+                    :model-value="regNetIp"
+                    @update:model-value="(v) => onRegNetIpInput({ target: { value: v } })"
+                    label="IP Address"
+                    placeholder="Input IP Address"
+                    required
+                    :invalid="!!regNetIpError"
+                    :error-text="regNetIpError || 'IP Address is required'"
                   />
-                  <p v-if="regNetIpError" class="field-error">{{ regNetIpError }}</p>
-                  <p v-else class="field-hint">Example: 1.xx.34.82</p>
+                  <p v-if="!regNetIpError" class="field-hint">Example: 1.xx.34.82</p>
                 </div>
                 <div v-else-if="regNetType === 'range'" class="ip-range-row ip-field-gap">
                   <div class="ip-range-row__field">
-                    <input
-                      :value="regNetIp"
-                      @input="onRegNetIpInput"
-                      type="text"
-                      inputmode="decimal"
-                      class="create-modal__input"
-                      :class="{ 'create-modal__input--error': !!regNetIpError }"
-                      placeholder="IP Address*"
+                    <GlassField
+                      :model-value="regNetIp"
+                      @update:model-value="(v) => onRegNetIpInput({ target: { value: v } })"
+                      label="IP Address"
+                      placeholder="IP Address"
+                      required
+                      :invalid="!!regNetIpError"
+                      :error-text="regNetIpError || 'IP Address is required'"
                     />
-                    <p v-if="regNetIpError" class="field-error">{{ regNetIpError }}</p>
-                    <p v-else class="field-hint">Example: 1.xx.34.0</p>
+                    <p v-if="!regNetIpError" class="field-hint">Example: 1.xx.34.0</p>
                   </div>
                   <span class="ip-range-row__sep">/</span>
                   <div class="ip-range-row__field">
-                    <input
-                      :value="regNetRange"
-                      @input="onRegNetRangeInput"
-                      type="text"
-                      inputmode="numeric"
-                      class="create-modal__input"
-                      :class="{ 'create-modal__input--error': !!regNetRangeError }"
-                      placeholder="Range*"
+                    <GlassField
+                      :model-value="regNetRange"
+                      @update:model-value="(v) => onRegNetRangeInput({ target: { value: v } })"
+                      label="Range"
+                      placeholder="Range"
+                      required
+                      :invalid="!!regNetRangeError"
+                      :error-text="regNetRangeError || 'Range is required'"
                     />
-                    <p v-if="regNetRangeError" class="field-error">{{ regNetRangeError }}</p>
-                    <p v-else class="field-hint">Example: 24</p>
+                    <p v-if="!regNetRangeError" class="field-hint">Example: 24</p>
                   </div>
                 </div>
               </Transition>
@@ -2709,96 +2655,59 @@ function submitRegisterWebapp() {
               </button>
             </div>
 
-            <div class="create-modal__body">
-              <label class="create-modal__label">Asset Owner<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleRegSrcField('owner')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !regSrcOwner }">
-                    {{ ownerOptions.find((o) => o.value === regSrcOwner)?.label ?? 'Asset Owner' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': regSrcField === 'owner' }" />
-                </button>
-                <div class="select-panel" :class="{ open: regSrcField === 'owner' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in ownerOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === regSrcOwner }"
-                      @click="selectRegSrcOwner(opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <label class="create-modal__label">Git Provider<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleRegSrcField('provider')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !regSrcProvider }">
-                    {{ gitProviderOptions.find((o) => o.value === regSrcProvider)?.label ?? 'Git Provider' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': regSrcField === 'provider' }" />
-                </button>
-                <div class="select-panel" :class="{ open: regSrcField === 'provider' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in gitProviderOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === regSrcProvider }"
-                      @click="selectRegSrcProvider(opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <label class="create-modal__label">URL Repository<span class="create-modal__required">*</span></label>
-              <input
-                v-model="regSrcRepoUrl"
-                type="text"
-                class="create-modal__input"
-                :class="{ 'create-modal__input--error': !!regSrcRepoUrlError }"
-                placeholder="URL Repository"
+            <div class="create-modal__body create-modal__group">
+              <GlassField
+                type="select"
+                label="Asset Owner"
+                placeholder="Asset Owner"
+                required
+                :options="ownerOptions"
+                :model-value="regSrcOwner"
+                @update:model-value="selectRegSrcOwner"
+                error-text="Asset Owner is required"
               />
-              <p v-if="regSrcRepoUrlError" class="field-error">{{ regSrcRepoUrlError }}</p>
 
-              <label class="create-modal__label">Repository Visibility<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleRegSrcField('visibility')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !regSrcVisibility }">
-                    {{ repoVisibilityOptions.find((o) => o.value === regSrcVisibility)?.label ?? 'Repository Visibility' }}
-                  </span>
-                  <span class="form-select__trigger-icons">
-                    <IconX v-if="regSrcVisibility" :size="16" class="form-select__clear" @click.stop="clearRegSrcVisibility" />
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': regSrcField === 'visibility' }" />
-                  </span>
-                </button>
-                <div class="select-panel" :class="{ open: regSrcField === 'visibility' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in repoVisibilityOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === regSrcVisibility }"
-                      @click="selectRegSrcVisibility(opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <GlassField
+                type="select"
+                label="Git Provider"
+                placeholder="Git Provider"
+                required
+                :options="gitProviderOptions"
+                :model-value="regSrcProvider"
+                @update:model-value="selectRegSrcProvider"
+                error-text="Git Provider is required"
+              />
+
+              <GlassField
+                v-model="regSrcRepoUrl"
+                label="URL Repository"
+                placeholder="URL Repository"
+                required
+                :invalid="!!regSrcRepoUrlError"
+                :error-text="regSrcRepoUrlError || 'URL Repository is required'"
+              />
+
+              <GlassField
+                type="select"
+                label="Repository Visibility"
+                placeholder="Repository Visibility"
+                required
+                :options="repoVisibilityOptions"
+                :model-value="regSrcVisibility"
+                @update:model-value="selectRegSrcVisibility"
+                error-text="Repository Visibility is required"
+              />
 
               <Transition name="dv-expand">
                 <div v-if="regSrcVisibility === 'private'">
-                  <label class="create-modal__label">Personal Access Token<span class="create-modal__required">*</span></label>
-                  <input v-model="regSrcToken" type="password" class="create-modal__input" placeholder="Personal Access Token" autocomplete="off" />
+                  <GlassField
+                    v-model="regSrcToken"
+                    label="Personal Access Token"
+                    placeholder="Personal Access Token"
+                    input-type="password"
+                    required
+                    error-text="Personal Access Token is required"
+                  />
                 </div>
               </Transition>
             </div>
@@ -2996,9 +2905,9 @@ function submitRegisterWebapp() {
   background: var(--glacia-glass-fill-strong);
   border: 1px solid var(--glacia-glass-border);
   border-radius: 999px;
-  align-self: flex-start;
-  width: max-content;
-  max-width: 100%;
+  align-self: stretch;
+  width: 100%;
+  max-width: 700px;
   margin-bottom: 16px;
 
   &__pill {
@@ -3009,7 +2918,7 @@ function submitRegisterWebapp() {
 
   &__item {
     position: relative; z-index: 1;
-    flex: 0 0 auto;
+    flex: 1 1 0;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     padding: 8px 16px; border-radius: 999px; border: none;
     background: transparent; font-size: 13px; font-weight: 600; font-family: 'Manrope', 'Inter', sans-serif; color: var(--glacia-ink-dim); cursor: pointer; white-space: nowrap; min-width: 0;
@@ -3100,9 +3009,10 @@ function submitRegisterWebapp() {
 }
 
 .tag-add {
-  display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px;
-  border: 1px dashed var(--glacia-glass-border); background: #fff; font-size: 12px; font-weight: 500; color: var(--glacia-ink-dim); cursor: pointer;
-  &:hover { border-color: var(--glacia-red); color: var(--glacia-red); }
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 14px; border-radius: 999px;
+  border: 1.5px dashed #8a9ba8; background: transparent; font-size: 13px; font-weight: 500; color: #64748b; cursor: pointer; white-space: nowrap;
+  transition: background 0.15s ease;
+  &:hover { background: rgba(100, 116, 139, 0.08); }
 }
 
 .cell-tags {
@@ -3132,7 +3042,7 @@ function submitRegisterWebapp() {
     border: 1px solid var(--glacia-glass-border); font-size: 13px; font-family: 'Manrope', 'Inter', sans-serif;
     outline: none; color: var(--glacia-ink);
     &::placeholder { color: var(--glacia-ink-dim); }
-    &:focus { border-color: var(--glacia-red); }
+    &:focus { border-color: #2563EB; }
   }
 
   &__list { display: flex; flex-direction: column; gap: 2px; max-height: 180px; overflow-y: auto; }
@@ -3322,9 +3232,12 @@ function submitRegisterWebapp() {
   width: 920px; max-width: 94vw; display: flex; flex-direction: column; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 24px 60px -12px rgba(16,24,32,0.32);
   &--narrow { width: 760px; }
   --coral-50: #fff2f2; --coral-600: #e53925; --text-1: #101820; --text-2: #5c6470; --text-3: #9aa5b1; --gray-50: #f7f8f9; --gray-100: #e5e7eb; --gray-200: #d1d5db; --gray-300: #d1d5db; --success: #22c55e; --ice-100: #e0f2fe; --ice-600: #0284c7; --ice-700: #0369a1; --critical: #dc2626; --font-display: 'Manrope', 'Inter', sans-serif; --font-mono: 'JetBrains Mono', monospace;
-  &__head { padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex: none; border-bottom: 1px solid var(--gray-100); }
-  &__title { font-size: 24px; font-weight: 800; font-family: 'Manrope', 'Inter', sans-serif; color: var(--text-1); margin: 0; }
-  &__sub { font-size: 12.5px; font-family: 'JetBrains Mono', 'Fira Code', monospace; color: var(--coral-600); }
+  &__head { padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex: none; border-bottom: 1px solid var(--gray-100); }
+  &__title { font-size: 20px; font-weight: 800; font-family: 'Manrope', 'Inter', sans-serif; color: var(--text-1); margin: 0; }
+  &__title-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+  &__title-row &__meta { margin-top: 0; }
+  &__dot { color: var(--gray-300); font-size: 12px; }
+  &__sub { font-size: 13px; font-weight: 700; font-family: 'JetBrains Mono', 'Fira Code', monospace; color: var(--coral-600); }
   &__meta { font-size: 12px; font-family: 'Manrope', 'Inter', sans-serif; color: var(--text-3); margin-top: 8px; }
   &__close { width: 36px; height: 36px; border-radius: 50%; background: rgba(15, 23, 42, 0.06); display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: var(--text-3); }
   &__body { display: flex; flex: 1; min-height: 0; }
@@ -3339,6 +3252,10 @@ function submitRegisterWebapp() {
 .host-detail__tags-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
 .dv-subpane {
   width: 250px; flex: none; position: relative; background: var(--gray-50); border-right: 1px solid var(--gray-100); display: flex; flex-direction: column;
+  &__search { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--gray-100); border-radius: 999px; padding: 9px 14px; margin: 16px 14px 0; }
+  &__search-icon { color: var(--text-3); flex: none; }
+  &__search-input { border: none; outline: none; background: transparent; width: 100%; font-size: 12.5px; font-family: 'Manrope', 'Inter', sans-serif; color: var(--text-1); &::placeholder { color: var(--text-3); } }
+  &__empty { font-size: 12.5px; color: var(--text-3); padding: 10px 12px; margin: 0; }
   &__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 20px; margin-top: 20px; font-size: 11px; font-weight: 700; font-family: 'Manrope', 'Inter', sans-serif; color: var(--text-3); letter-spacing: 0.06em; text-transform: uppercase; }
   &__list { padding: 14px 14px 20px; display: flex; flex-direction: column; gap: 8px; max-height: 480px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gray-200) transparent; }
   &__list::-webkit-scrollbar { width: 5px; }
@@ -3403,14 +3320,29 @@ function submitRegisterWebapp() {
 .dv-source-list .vtable { width: 100%; }
 .dv-badge--red { background: #fee2e2; color: #dc2626; }
 .dv-branch-hint {
+  // Sticky (not absolute): absolute scrolls away with the content, sticky
+  // pins to the pane's visible bottom edge. Negative top margin makes it an
+  // overlay with zero net space, and opacity (not v-if) toggles it — so
+  // showing/hiding never changes scrollHeight and can't flicker or clip.
+  // bottom pulls it over the pane padding (.dv-webapp-body: 28px) so it sits
+  // flush with the visible edge.
   position: sticky;
-  bottom: 0;
+  bottom: -28px;
+  height: 36px;
+  margin-top: -36px;
+  background: linear-gradient(to bottom, transparent, #fff 78%);
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 10px 0 2px;
-  background: linear-gradient(to bottom, transparent, #fff 70%);
-  color: var(--text-3);
   pointer-events: none;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s ease, visibility 0.25s;
+
+  &.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
 .dv-branch-hint svg { animation: subdomain-scroll-hint 1.4s ease-in-out infinite; }
 .dv-branch-list { display: flex; flex-direction: column; gap: 10px; }
@@ -3435,25 +3367,53 @@ function submitRegisterWebapp() {
 .dv-sub {
   display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-radius: 10px; cursor: pointer; border: none; text-align: left; width: 100%;
   span { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12.5px; }
+  &__count { font-size: 12px !important; font-weight: 600; font-family: 'Manrope', 'Inter', sans-serif !important; font-variant-numeric: tabular-nums; }
 }
 .dv-ippane {
-  flex: 1; padding: 26px 30px; max-height: 480px; overflow-y: auto;
-  &__head { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; font-family: 'Manrope', 'Inter', sans-serif; color: var(--text-1); }
+  flex: 1; padding: 22px 26px; max-height: 480px; overflow-y: auto; position: relative;
+  &__head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-size: 18px; font-weight: 800; font-family: 'Manrope', 'Inter', sans-serif; color: var(--text-1); }
+  &__for { font-size: 12.5px; font-weight: 500; font-family: 'JetBrains Mono', 'Fira Code', monospace; color: var(--text-3); }
   &__sub { font-size: 12px; font-family: 'Manrope', 'Inter', sans-serif; color: var(--text-3); margin-top: 4px; margin-bottom: 16px; }
   &--full .host-detail__row { margin-top: 0; }
 }
 .dv-badge { padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; font-family: 'Manrope', 'Inter', sans-serif; background: var(--gray-100); color: var(--text-2); }
-.dv-ip-list { display: flex; flex-direction: column; gap: 12px; }
-.dv-ip { border-radius: 12px; border: 1px solid var(--gray-100); overflow: hidden; }
+.dv-ip-list { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.dv-ip { border-radius: 14px; border: 1px solid var(--gray-100); overflow: hidden; background: #fff; transition: background 0.15s ease, box-shadow 0.15s ease; }
+.dv-ip--open { background: #f7f8fa; box-shadow: 0 12px 28px -14px rgba(16,24,32,0.22); }
+.dv-ip--open .dv-ip__main:hover { background: transparent; }
+.dv-ip__head-right { display: flex; align-items: center; gap: 10px; }
+.dv-port-chips { display: flex; align-items: center; gap: 6px; }
+.dv-port-chip { display: inline-flex; align-items: center; padding: 5px 13px; border-radius: 999px; background: var(--gray-50); border: 1px solid var(--gray-100); font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11.5px; font-weight: 700; color: var(--text-2); }
+.dv-ip-hint {
+  // Same overlay pattern as .dv-branch-hint. bottom pulls it over the pane
+  // padding (.dv-ippane: 22px) so it sits flush with the visible edge.
+  position: sticky;
+  bottom: -22px;
+  height: 36px;
+  margin-top: -36px;
+  background: linear-gradient(to bottom, transparent, #fff 78%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s ease, visibility 0.25s;
+
+  &.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
 .dv-ip__main { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; &:hover { background: var(--gray-50); } }
 .dv-ip__main--clickable { cursor: pointer; }
 .dv-ip__main--clickable .dv-chevron { pointer-events: none; }
 .dv-ip__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .dv-ip__left { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .dv-icon { color: var(--text-3); flex: none; }
-.dv-mono { font-size: 14px; font-family: 'JetBrains Mono', 'Fira Code', monospace; color: var(--text-1); }
+.dv-mono { font-size: 13px; font-weight: 700; font-family: 'JetBrains Mono', 'Fira Code', monospace; color: var(--text-1); }
 .dv-chevron { flex: none; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-3); border: none; background: transparent; transition: transform 0.2s ease; &:hover { background: var(--gray-100); color: var(--text-1); } }
-.dv-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-left: 26px; }
+.dv-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .dv-tag { padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; font-family: 'Manrope', 'Inter', sans-serif; white-space: nowrap; flex-shrink: 0; }
 .dv-config { padding: 16px 18px 18px; background: var(--gray-50); border-top: 1px solid var(--gray-100); display: flex; flex-direction: column; gap: 14px; }
 .dv-config--flush { border-top: none; }
@@ -3465,15 +3425,15 @@ function submitRegisterWebapp() {
 .dv-expand-enter-to, .dv-expand-leave-from { max-height: 800px; opacity: 1; }
 .dv-subtabs {
   display: inline-flex; align-items: center; gap: 4px; padding: 4px;
-  background: #eef0f2; border-radius: 12px; align-self: flex-start;
+  background: #e9edf1; border-radius: 999px; align-self: flex-start;
 }
 .dv-subtab {
-  padding: 8px 16px; border-radius: 9px; border: none; background: transparent;
-  font-size: 13px; font-weight: 600; font-family: 'Manrope', 'Inter', sans-serif;
+  padding: 7px 16px; border-radius: 999px; border: none; background: transparent;
+  font-size: 12.5px; font-weight: 600; font-family: 'Manrope', 'Inter', sans-serif;
   color: var(--text-3); cursor: pointer; white-space: nowrap;
-  &--active { background: #fff; color: var(--text-1); font-weight: 700; box-shadow: 0 1px 4px rgba(16,24,32,0.1); }
+  &--active { background: #fff; color: var(--text-1); font-weight: 700; box-shadow: 0 2px 8px rgba(16,24,32,0.12); }
 }
-.dv-ports { display: flex; flex-direction: column; gap: 14px; }
+.dv-ports { display: flex; flex-direction: column; gap: 10px; }
 .dv-ports__head {
   display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
   padding: 0; font-size: 11px; font-weight: 700; font-family: 'Manrope', 'Inter', sans-serif;
@@ -3485,13 +3445,13 @@ function submitRegisterWebapp() {
 .dv-ports__row {
   display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; align-items: center;
   min-height: 44px;
-  background: #fff; border: 1px solid var(--gray-100); border-radius: 10px; padding: 10px 14px;
-  font-size: 13px; font-family: 'Manrope', 'Inter', sans-serif; color: var(--text-2);
+  background: #fff; border: 1px solid var(--gray-100); border-radius: 12px; padding: 10px 14px;
+  font-size: 12.5px; font-family: 'Manrope', 'Inter', sans-serif; color: var(--text-2);
 }
 .dv-ports__row--tech {
   grid-template-columns: 1fr;
 }
-.dv-ports__port { font-weight: 400; color: var(--text-2); font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+.dv-ports__port { font-weight: 700; color: var(--text-1); font-family: 'JetBrains Mono', 'Fira Code', monospace; }
 .dv-ports__tech { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12.5px; }
 .dv-ports__empty { font-size: 13px; color: var(--text-3); text-align: center; padding: 12px; }
 .dv-config__title { font-size: 11px; font-weight: 700; font-family: 'Manrope', 'Inter', sans-serif; color: var(--text-3); letter-spacing: 0.06em; text-transform: uppercase; }
@@ -3525,14 +3485,15 @@ function submitRegisterWebapp() {
   &__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   &__title { font-family: 'Manrope', 'Inter', sans-serif; font-size: 26px; font-weight: 800; color: var(--glacia-ink); margin: 0; }
   &__close { width: 32px; height: 32px; border-radius: 8px; border: none; background: none; color: var(--glacia-ink-dim); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; &:hover { background: rgba(0,0,0,0.05); color: var(--glacia-ink); } }
-  &__body { margin-top: 16px; }
+  &__body { margin-top: 12px; }
+  &__group { display: flex; flex-direction: column; gap: 10px; }
   &__desc { margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--glacia-ink-dim); }
   &__label { display: block; margin: 16px 0 8px; font-size: 14px; font-weight: 700; color: var(--glacia-ink); }
   &__required { color: var(--glacia-red); margin-left: 2px; }
   &__input {
     width: 100%; height: 54px; padding: 0 18px; border-radius: 14px; border: 1px solid var(--glacia-glass-border); background: #fff; color: var(--glacia-ink); font-size: 15px; font-family: 'Manrope', 'Inter', sans-serif; outline: none; box-sizing: border-box; box-shadow: 0 1px 3px rgba(16,24,32,0.08);
     &::placeholder { color: var(--glacia-ink-dim); }
-    &:focus { border-color: var(--glacia-red); box-shadow: 0 2px 6px rgba(16,24,32,0.12); }
+    &:focus { border-color: #2563EB; box-shadow: 0 2px 6px rgba(16,24,32,0.12); }
     &--error { border-color: var(--glacia-sev-critical); box-shadow: 0 2px 6px rgba(220,38,38,0.12); &:focus { border-color: var(--glacia-sev-critical); box-shadow: 0 2px 6px rgba(220,38,38,0.18); } }
   }
   &__actions { display: flex; gap: 14px; margin-top: 20px; }
@@ -3564,6 +3525,7 @@ function submitRegisterWebapp() {
   &__fields {
     display: flex;
     flex-direction: column;
+    gap: 10px;
     overflow: hidden;
   }
 
@@ -3631,7 +3593,7 @@ function submitRegisterWebapp() {
   &__inner { margin-top: 0; }
 }
 .ip-field-gap {
-  margin-top: 16px;
+  margin-top: 0;
 }
 .ip-range-row {
   display: flex;

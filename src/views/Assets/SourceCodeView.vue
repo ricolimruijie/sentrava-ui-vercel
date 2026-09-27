@@ -5,6 +5,7 @@ import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import DateTimePicker from '@/components/reusable/DateTimePicker.vue'
+import GlassField from '@/components/reusable/GlassField.vue'
 import { IconDotsVertical, IconCirclePlus, IconScan, IconArrowUpRight, IconArrowRight, IconTrash, IconX, IconChevronDown, IconCheck, IconPlus, IconTag, IconFolder } from '@tabler/icons-vue'
 import { getSourceCodeRepos } from '@/mocks/assets/sourceCode.js'
 
@@ -215,7 +216,6 @@ const showRegisterModal = ref(false)
 const regOwner = ref(null)
 const regProvider = ref(null)
 const regVisibility = ref(null)
-const regField = ref(null) // open in-modal select: 'owner' | 'provider' | 'visibility' | null
 const regToken = ref('')
 const regRepoUrl = ref('')
 const regState = ref('idle') // 'idle' | 'loading' | 'saved'
@@ -252,7 +252,6 @@ function openRegisterModal() {
   regOwner.value = null
   regProvider.value = null
   regVisibility.value = null
-  regField.value = null
   regToken.value = ''
   regRepoUrl.value = ''
   regState.value = 'idle'
@@ -261,28 +260,6 @@ function openRegisterModal() {
 
 function closeRegisterModal() {
   showRegisterModal.value = false
-  regField.value = null
-}
-
-function toggleRegField(key) {
-  regField.value = regField.value === key ? null : key
-}
-function selectRegOwner(value) {
-  regOwner.value = value
-  regField.value = null
-}
-function selectRegProvider(value) {
-  regProvider.value = value
-  regField.value = null
-}
-function selectRegVisibility(value) {
-  regVisibility.value = value
-  regField.value = null
-  if (value === 'public') regToken.value = ''
-}
-function clearRegVisibility() {
-  regVisibility.value = null
-  regField.value = null
 }
 
 function submitRegister() {
@@ -727,96 +704,55 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
               </div>
             </div>
 
-            <div v-else class="create-modal__body">
-              <label class="create-modal__label">Asset Owner<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleRegField('owner')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !regOwner }">
-                    {{ ownerOptions.find((o) => o.value === regOwner)?.label ?? 'Asset Owner' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': regField === 'owner' }" />
-                </button>
-                <div class="select-panel" :class="{ open: regField === 'owner' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in ownerOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === regOwner }"
-                      @click="selectRegOwner(opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <label class="create-modal__label">Git Provider<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleRegField('provider')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !regProvider }">
-                    {{ gitProviderOptions.find((o) => o.value === regProvider)?.label ?? 'Git Provider' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': regField === 'provider' }" />
-                </button>
-                <div class="select-panel" :class="{ open: regField === 'provider' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in gitProviderOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === regProvider }"
-                      @click="selectRegProvider(opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <label class="create-modal__label">URL Repository<span class="create-modal__required">*</span></label>
-              <input
-                v-model="regRepoUrl"
-                type="text"
-                class="create-modal__input"
-                :class="{ 'create-modal__input--error': !!regRepoUrlError }"
-                placeholder="URL Repository"
+            <div v-else class="create-modal__body create-modal__body--fields">
+              <GlassField
+                v-model="regOwner"
+                type="select"
+                label="Asset Owner"
+                placeholder="Asset Owner"
+                required
+                :options="ownerOptions"
+                error-text="Asset owner is required."
               />
-              <p v-if="regRepoUrlError" class="field-error">{{ regRepoUrlError }}</p>
 
-              <label class="create-modal__label">Repository Visibility<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleRegField('visibility')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !regVisibility }">
-                    {{ repoVisibilityOptions.find((o) => o.value === regVisibility)?.label ?? 'Repository Visibility' }}
-                  </span>
-                  <span class="form-select__trigger-icons">
-                    <IconX v-if="regVisibility" :size="16" class="form-select__clear" @click.stop="clearRegVisibility" />
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': regField === 'visibility' }" />
-                  </span>
-                </button>
-                <div class="select-panel" :class="{ open: regField === 'visibility' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in repoVisibilityOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === regVisibility }"
-                      @click="selectRegVisibility(opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <GlassField
+                v-model="regProvider"
+                type="select"
+                label="Git Provider"
+                placeholder="Git Provider"
+                required
+                :options="gitProviderOptions"
+                error-text="Git provider is required."
+              />
+
+              <GlassField
+                v-model="regRepoUrl"
+                label="URL Repository"
+                placeholder="URL Repository"
+                required
+                :error-text="regRepoUrlError || 'URL Repository is required.'"
+              />
+
+              <GlassField
+                v-model="regVisibility"
+                type="select"
+                label="Repository Visibility"
+                placeholder="Repository Visibility"
+                required
+                :options="repoVisibilityOptions"
+                error-text="Repository visibility is required."
+              />
 
               <Transition name="dv-expand">
                 <div v-if="regVisibility === 'private'">
-                  <label class="create-modal__label">Personal Access Token<span class="create-modal__required">*</span></label>
-                  <input v-model="regToken" type="password" class="create-modal__input" placeholder="Personal Access Token" autocomplete="off" />
+                  <GlassField
+                    v-model="regToken"
+                    input-type="password"
+                    label="Personal Access Token"
+                    placeholder="Personal Access Token"
+                    required
+                    error-text="Personal access token is required."
+                  />
                 </div>
               </Transition>
             </div>
@@ -931,9 +867,10 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 }
 
 .tag-add {
-  display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px;
-  border: 1px dashed var(--glacia-glass-border); background: #fff; font-size: 12px; font-weight: 500; color: var(--glacia-ink-dim); cursor: pointer;
-  &:hover { border-color: var(--glacia-red); color: var(--glacia-red); }
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 14px; border-radius: 999px;
+  border: 1.5px dashed #8a9ba8; background: transparent; font-size: 13px; font-weight: 500; color: #64748b; cursor: pointer;
+  transition: background 0.15s ease;
+  &:hover { background: rgba(100, 116, 139, 0.08); }
 }
 
 .dv-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
@@ -961,7 +898,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     border: 1px solid var(--glacia-glass-border); font-size: 13px; font-family: 'Manrope', 'Inter', sans-serif;
     outline: none; color: var(--glacia-ink);
     &::placeholder { color: var(--glacia-ink-dim); }
-    &:focus { border-color: var(--glacia-red); }
+    &:focus { border-color: #2563EB; }
   }
 
   &__list { display: flex; flex-direction: column; gap: 2px; max-height: 180px; overflow-y: auto; }
@@ -1033,11 +970,15 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   &__title { font-family: 'Manrope', 'Inter', sans-serif; font-size: 22px; font-weight: 800; color: var(--glacia-ink); margin: 0; }
   &__close { width: 32px; height: 32px; border-radius: 8px; border: none; background: none; color: var(--glacia-ink); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; &:hover { background: rgba(0,0,0,0.05); } }
   &__body {
-    margin-top: 8px; overflow-y: auto; min-height: 0; flex: 1 1 auto; overscroll-behavior: contain;
+    margin-top: 12px; overflow-y: auto; min-height: 0; flex: 1 1 auto; overscroll-behavior: contain;
     // Scrolling stays functional as a fallback on short viewports, but the
     // track/thumb itself shouldn't visually compete with the modal content.
     scrollbar-width: none;
     &::-webkit-scrollbar { width: 0; height: 0; }
+
+    // Only the GlassField-stacked forms (Register Repository) opt into this —
+    // the Scan modal's custom .form-select rows keep their own label margins.
+    &--fields { display: flex; flex-direction: column; gap: 10px; }
   }
   &__label { display: block; margin: 16px 0 8px; font-size: 14px; font-weight: 700; color: var(--glacia-ink); }
   &__required { color: var(--glacia-red); margin-left: 2px; }
@@ -1046,7 +987,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     background: #fff; color: var(--glacia-ink); font-size: 14px; font-family: 'Manrope', 'Inter', sans-serif;
     outline: none; box-sizing: border-box; box-shadow: 0 1px 3px rgba(16,24,32,0.08);
     &::placeholder { color: var(--glacia-ink-dim); }
-    &:focus { border-color: var(--glacia-red); box-shadow: 0 2px 6px rgba(16,24,32,0.12); }
+    &:focus { border-color: #2563EB; box-shadow: 0 2px 6px rgba(16,24,32,0.12); }
     &--error { border-color: var(--glacia-sev-critical); &:focus { border-color: var(--glacia-sev-critical); } }
   }
   &__actions { display: flex; gap: 14px; margin-top: 20px; flex-shrink: 0; }

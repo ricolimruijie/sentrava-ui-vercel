@@ -504,7 +504,7 @@ function downloadReport() {
       </div>
     </Teleport>
 
-    <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" />
+    <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip />
 
     <Teleport to="body">
       <Transition name="target-panel-fade">

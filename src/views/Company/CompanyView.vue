@@ -11,12 +11,13 @@ import AuditLogTab from './tabs/AuditLogTab.vue'
 import ProbeBoxTab from './tabs/ProbeBoxTab.vue'
 import {
   IconBuildingSkyscraper, IconChartBar, IconUsers, IconFileText,
-  IconChevronDown, IconChevronRight, IconPower, IconSearch, IconDotsVertical,
+  IconChevronRight, IconChevronLeft, IconPower, IconDotsVertical,
   IconPencil, IconUserMinus, IconUserPlus, IconSitemap, IconTrash,
   IconX, IconCheck, IconAt, IconMail, IconShield, IconBuilding,
+  IconLock, IconCalendar, IconWorld, IconNetwork, IconBrowser, IconCode,
 } from '@tabler/icons-vue'
-import DatePicker from '@/components/reusable/DatePicker.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
+import GlassField from '@/components/reusable/GlassField.vue'
 import { formatDate } from '@/utils/helpers'
 
 const { data: company } = useFetch(() => get('/company/info'))
@@ -181,8 +182,11 @@ function openStartActivationModal() {
   startActivationEnabled.value = false
   startActivationDateVal.value = ''
   startExpirationDateVal.value = ''
-  startActivationField.value = null
+  startActivationField.value = 'activation'
   startActivationState.value = 'idle'
+  const now = new Date()
+  saViewYear.value = now.getFullYear()
+  saViewMonth.value = now.getMonth()
   if (companyModalEl.value) companyModalEl.value.style.height = ''
   showStartActivationModal.value = true
 }
@@ -215,25 +219,36 @@ function releaseCompanyModalHeight(e) {
   if (companyModalEl.value) companyModalEl.value.style.height = ''
 }
 function toggleStartActivationField(key) {
-  animateCompanyModalHeight(() => {
-    startActivationField.value = startActivationField.value === key ? null : key
-  })
+  // Pills select (never deselect) — the inline calendar always edits one
+  // field. Toggling to null used to silently fall back to 'activation',
+  // so days clicked after picking expiration overwrote activation.
+  startActivationField.value = key
+  nextTick(saMovePill)
 }
 function selectStartDate(field, iso) {
-  animateCompanyModalHeight(() => {
-    if (field === 'activation') {
-      startActivationDateVal.value = iso
-      if (startExpirationDateVal.value && startExpirationDateVal.value < iso) startExpirationDateVal.value = ''
-    } else {
-      startExpirationDateVal.value = iso
-    }
-    startActivationField.value = null
-  })
+  if (field === 'activation') {
+    startActivationDateVal.value = iso
+    if (startExpirationDateVal.value && startExpirationDateVal.value < iso) startExpirationDateVal.value = ''
+    // Advance to expiration so the next day click edits expiration.
+    startActivationField.value = 'expiration'
+  } else {
+    startExpirationDateVal.value = iso
+    startActivationField.value = 'expiration'
+  }
+  nextTick(saMovePill)
 }
 function toggleStartActivation() {
-  animateCompanyModalHeight(() => {
-    startActivationEnabled.value = !startActivationEnabled.value
-  })
+  // Fixed-height modal (see .sa-modal min-height) — no height animation,
+  // so toggling the switch never resizes the dialog.
+  startActivationEnabled.value = !startActivationEnabled.value
+  if (startActivationEnabled.value) {
+    if (!startActivationField.value) startActivationField.value = 'activation'
+    // Snap the calendar back to the current month when it (re)appears.
+    const now = new Date()
+    saViewYear.value = now.getFullYear()
+    saViewMonth.value = now.getMonth()
+  }
+  nextTick(saMovePill)
 }
 function submitStartActivation() {
   if (!canSaveStartActivation.value || startActivationState.value !== 'idle') return
@@ -249,6 +264,141 @@ function submitStartActivation() {
     setTimeout(closeStartActivationModal, 700)
   }, 500)
 }
+
+// ── Start Activation two-panel calendar (Image 1) ───────────────────────
+// Inline Monday-first calendar. Pills pick which field the calendar edits.
+// Month-change slide + month fade + day pop mirror the scan-config calendar.
+const saViewYear = ref(new Date().getFullYear())
+const saViewMonth = ref(new Date().getMonth())
+const saWeekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+
+const companyInitials = computed(() => {
+  const name = (company.value?.name ?? '').trim()
+  if (!name) return '—'
+  const parts = name.split(/\s+/)
+  return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase()
+})
+
+const saQuotaRows = computed(() => {
+  const q = company.value?.quota
+  const label = q != null ? String(q) : '—'
+  return [
+    { key: 'domain',  label: 'Domain inspection scan quota for one month', value: label, icon: IconWorld,   color: '#2563EB', bg: '#eff6ff' },
+    { key: 'network', label: 'Network scan quota for one month',            value: label, icon: IconNetwork, color: '#7C3AED', bg: '#f5f3ff' },
+    { key: 'webapp',  label: 'Web application scan quota for one month',    value: label, icon: IconBrowser, color: '#0D9488', bg: '#f0fdfa' },
+    { key: 'source',  label: 'Source code scan quota for one month',        value: label, icon: IconCode,    color: '#EA580C', bg: '#fff7ed' },
+  ]
+})
+
+const saMonthLabel = computed(() =>
+  new Date(saViewYear.value, saViewMonth.value, 1)
+    .toLocaleString('en-US', { month: 'long', year: 'numeric' }),
+)
+
+function saToISO(day) {
+  const mm = String(saViewMonth.value + 1).padStart(2, '0')
+  const dd = String(day).padStart(2, '0')
+  return `${saViewYear.value}-${mm}-${dd}`
+}
+
+// Monday-first cells: leading blanks + days.
+const saCells = computed(() => {
+  const firstDowSun = new Date(saViewYear.value, saViewMonth.value, 1).getDay()
+  const leading = (firstDowSun + 6) % 7
+  const daysInMonth = new Date(saViewYear.value, saViewMonth.value + 1, 0).getDate()
+  return [
+    ...Array.from({ length: leading }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ]
+})
+
+function saShiftMonth(delta) {
+  const d = new Date(saViewYear.value, saViewMonth.value + delta, 1)
+  saViewYear.value = d.getFullYear()
+  saViewMonth.value = d.getMonth()
+  saNavDir.value = delta > 0 ? 1 : -1
+  saNavN.value += 1
+  nextTick(saMovePill)
+}
+
+function saTodayISO() {
+  const t = new Date()
+  const mm = String(t.getMonth() + 1).padStart(2, '0')
+  const dd = String(t.getDate()).padStart(2, '0')
+  return `${t.getFullYear()}-${mm}-${dd}`
+}
+
+function saIsDisabled(day) {
+  const iso = saToISO(day)
+  // Past dates can't be chosen — activation can't start in the past.
+  if (iso < saTodayISO()) return true
+  const active = startActivationField.value || 'activation'
+  if (active === 'expiration' && startActivationDateVal.value) return iso < startActivationDateVal.value
+  return false
+}
+
+function saIsSelected(day) {
+  const iso = saToISO(day)
+  const active = startActivationField.value || 'activation'
+  return active === 'activation'
+    ? iso === startActivationDateVal.value
+    : iso === startExpirationDateVal.value
+}
+
+function saSelectDay(day) {
+  if (day == null || saIsDisabled(day)) return
+  const active = startActivationField.value || 'activation'
+  selectStartDate(active, saToISO(day))
+  saPickN.value += 1
+  nextTick(saMovePill)
+}
+
+function saDisplay(which) {
+  const iso = which === 'activation' ? startActivationDateVal.value : startExpirationDateVal.value
+  return iso ? formatDate(iso) : 'Select a date'
+}
+
+// Month-change slide direction/keys (same motion as scan-config calendar).
+const saNavN = ref(0)
+const saNavDir = ref(1)
+
+// ── Sliding glass pill behind the selected day (same as the scan-config
+// DateTimePicker calendar): measured cell position + spring transition,
+// alternating glide classes replay the stretch without remounting.
+const saGridRef = ref(null)
+const saPill = ref({ left: '0px', top: '0px', opacity: 0 })
+const saPickN = ref(0)
+
+function saActiveISO() {
+  const active = startActivationField.value || 'activation'
+  return active === 'activation' ? startActivationDateVal.value : startExpirationDateVal.value
+}
+
+function saMovePill() {
+  const iso = saActiveISO()
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso ?? '')
+  if (!m) {
+    saPill.value = { ...saPill.value, opacity: 0 }
+    return
+  }
+  const y = Number(m[1])
+  const mo = Number(m[2]) - 1
+  const d = Number(m[3])
+  if (y !== saViewYear.value || mo !== saViewMonth.value) {
+    saPill.value = { ...saPill.value, opacity: 0 }
+    return
+  }
+  const el = saGridRef.value?.querySelector(`[data-day="${d}"]`)
+  if (!el) {
+    saPill.value = { ...saPill.value, opacity: 0 }
+    return
+  }
+  saPill.value = { left: `${el.offsetLeft}px`, top: `${el.offsetTop}px`, opacity: 1 }
+}
+
+watch(startActivationEnabled, (on) => {
+  if (on) nextTick(saMovePill)
+})
 
 // Liquid action menu — goo filter fuses the circular trigger button and the
 // panel into one shape (see references/liquid-menu.html). Unlike the
@@ -330,8 +480,6 @@ const inviteUsername = ref('')
 const inviteEmail = ref('')
 const inviteRole = ref(null)
 const inviteLocation = ref(null)
-const inviteLocationQuery = ref('')
-const inviteField = ref(null)
 const inviteState = ref('idle') // 'idle' | 'loading' | 'saved'
 
 const inviteRoleOptions = [
@@ -346,11 +494,11 @@ const inviteLocationSource = [
   { value: 'co-7', label: 'Protergo Cyber Security Bandung',  type: 'Sub Company' },
   { value: 'co-4', label: 'Protergo Fintech Solutions',       type: 'Sub Company' },
 ]
-const filteredInviteLocations = computed(() => {
-  const q = inviteLocationQuery.value.trim().toLowerCase()
-  if (!q) return inviteLocationSource
-  return inviteLocationSource.filter((o) => o.label.toLowerCase().includes(q) || o.type.toLowerCase().includes(q))
-})
+// GlassField's select has no in-menu search, and the location list is short
+// enough (6 entries) that search isn't load-bearing — the "type" distinction
+// (Head/Sub company) that the old searchable panel showed as a badge is
+// folded into the label instead of being dropped silently.
+const inviteLocationOptions = inviteLocationSource.map((o) => ({ value: o.value, label: `${o.label} (${o.type})` }))
 
 const inviteEmailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail.value.trim()))
 const inviteUsernameError = computed(() => {
@@ -373,25 +521,11 @@ function openInviteUser() {
   inviteEmail.value = ''
   inviteRole.value = null
   inviteLocation.value = null
-  inviteLocationQuery.value = ''
-  inviteField.value = null
   inviteState.value = 'idle'
   showInviteModal.value = true
 }
 function closeInviteModal() {
   showInviteModal.value = false
-  inviteField.value = null
-  inviteLocationQuery.value = ''
-}
-function toggleInviteField(key) {
-  if (key === 'location' && inviteField.value !== 'location') inviteLocationQuery.value = ''
-  inviteField.value = inviteField.value === key ? null : key
-}
-function selectInviteOption(key, value) {
-  if (key === 'role') inviteRole.value = value
-  else if (key === 'location') inviteLocation.value = value
-  if (key === 'location') inviteLocationQuery.value = ''
-  inviteField.value = null
 }
 function submitInviteUser() {
   if (!canInvite.value || inviteState.value !== 'idle') return
@@ -529,11 +663,12 @@ function removeMember(item) {
 function handleClickOutside(e) {
   if (!e.target.closest('.action-menu, .action-btn')) closeMenu()
   if (!e.target.closest('.lm')) closeLiquidMenu(true)
-  if (!e.target.closest('.form-select')) {
-    if (startActivationField.value) {
-      animateCompanyModalHeight(() => { startActivationField.value = null })
-    }
-    if (inviteField.value) inviteField.value = null
+  // The inline SA calendar lives in .sa-modal__left (not .form-select),
+  // so clicks on its pills/days must not reset the active field —
+  // otherwise mousedown fires before the day's click and expiration
+  // picks silently fall back to activation.
+  if (!e.target.closest('.form-select') && !e.target.closest('.sa-modal__left') && startActivationField.value) {
+    animateCompanyModalHeight(() => { startActivationField.value = null })
   }
 }
 
@@ -555,10 +690,10 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
         <div class="company-header__titlewrap">
           <div class="company-header__titlerow">
             <h1 class="company-header__title">{{ company?.name ?? '—' }}</h1>
-            <div
-              class="lm"
-              :class="{ 'is-open': liquidOpen, 'is-closing': liquidClosing }"
-            >
+              <div
+                class="lm"
+                :class="{ 'is-open': liquidOpen, 'is-closing': liquidClosing }"
+              >
               <div class="lm-goo" aria-hidden="true">
                 <span class="lm-dot" />
                 <div class="lm-shape" />
@@ -582,7 +717,11 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
                   <IconFileText :size="18" />
                   <span>Quota information</span>
                 </button>
-                <div class="lm-row">
+                <div
+                  class="lm-row"
+                  @mouseenter="configSubOpen = true"
+                  @mouseleave="configSubOpen = false"
+                >
                   <button type="button" class="lm-item" role="menuitem" @click.stop="configSubOpen = !configSubOpen">
                     <IconSitemap :size="18" />
                     <span>Company configuration</span>
@@ -644,14 +783,13 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
               </button>
             </div>
 
-            <label class="edit-modal__label" for="edit-company-name">Name</label>
-            <input
-              id="edit-company-name"
+            <GlassField
               v-model="editNameValue"
-              type="text"
-              class="create-modal__input"
+              label="Name"
               placeholder="Company name"
-              @keyup.enter="saveCompanyName"
+              required
+              error-text="Company name is required"
+              @enter="canSaveName && saveCompanyName()"
             />
 
             <div class="create-modal__actions">
@@ -684,14 +822,13 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
               </button>
             </div>
 
-            <label class="edit-modal__label" for="edit-member-name">Name</label>
-            <input
-              id="edit-member-name"
+            <GlassField
               v-model="editMemberName"
-              type="text"
-              class="create-modal__input"
+              label="Name"
               placeholder="Member name"
-              @keyup.enter="saveEditMember"
+              required
+              error-text="Member name is required"
+              @enter="canSaveMember && saveEditMember()"
             />
 
             <div class="create-modal__actions">
@@ -716,98 +853,153 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     <Teleport to="body">
       <Transition name="modal-fade">
         <div v-if="showStartActivationModal" class="modal-backdrop" @mousedown.self="closeStartActivationModal">
-          <div ref="companyModalEl" class="create-modal create-modal--wide" @transitionend.self="releaseCompanyModalHeight">
-            <div class="create-modal__head">
-              <h2 class="create-modal__title">Start Activation Date</h2>
-              <button type="button" class="create-modal__close" aria-label="Close" @click="closeStartActivationModal">
-                <IconX :size="20" />
-              </button>
+          <div ref="companyModalEl" class="sa-modal" @transitionend.self="releaseCompanyModalHeight">
+            <!-- Left: date picking -->
+            <div class="sa-modal__left">
+              <h2 class="sa-modal__title">Start Activation Date</h2>
+
+              <div class="sa-company">
+                <div class="sa-company__avatar">{{ companyInitials }}</div>
+                <div class="sa-company__meta">
+                  <div class="sa-company__label">Company Name</div>
+                  <div class="sa-company__name">{{ company?.name ?? '—' }}</div>
+                </div>
+              </div>
+
+              <div class="sa-divider" />
+
+              <template v-if="startActivationEnabled">
+              <div class="sa-dates">
+                <button
+                  type="button"
+                  class="sa-date-pill"
+                  :class="{ 'sa-date-pill--active': (startActivationField || 'activation') === 'activation' }"
+                  @click="toggleStartActivationField('activation')"
+                >
+                  <span class="sa-date-pill__label">Activation date <span class="sa-required">*</span></span>
+                  <span class="sa-date-pill__value" :class="{ 'sa-date-pill__value--placeholder': !startActivationDateVal }">
+                    {{ saDisplay('activation') }}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class="sa-date-pill"
+                  :class="{ 'sa-date-pill--active': startActivationField === 'expiration' }"
+                  @click="toggleStartActivationField('expiration')"
+                >
+                  <span class="sa-date-pill__label">Expiration date <span class="sa-required">*</span></span>
+                  <span class="sa-date-pill__value" :class="{ 'sa-date-pill__value--placeholder': !startExpirationDateVal }">
+                    {{ saDisplay('expiration') }}
+                  </span>
+                </button>
+              </div>
+
+              <div class="sa-cal">
+                <div class="sa-cal__head">
+                  <span class="sa-cal__month" :key="`sam${saNavN}`">{{ saMonthLabel }}</span>
+                  <div class="sa-cal__nav">
+                    <button type="button" class="sa-cal__nav-btn" aria-label="Previous month" @click="saShiftMonth(-1)">
+                      <IconChevronLeft :size="18" />
+                    </button>
+                    <button type="button" class="sa-cal__nav-btn" aria-label="Next month" @click="saShiftMonth(1)">
+                      <IconChevronRight :size="18" />
+                    </button>
+                  </div>
+                </div>
+                <div class="sa-cal__gridwrap">
+                <div
+                  ref="saGridRef"
+                  class="sa-cal__grid"
+                  :key="`sag${saNavN}`"
+                  :class="saNavN ? (saNavDir > 0 ? 'sa-cal__grid--slide-l' : 'sa-cal__grid--slide-r') : ''"
+                >
+                  <div
+                    class="sa-cal__pill"
+                    :class="saPickN ? (saPickN % 2 ? 'sa-cal__pill--glide-a' : 'sa-cal__pill--glide-b') : ''"
+                    :style="{ left: saPill.left, top: saPill.top, opacity: saPill.opacity }"
+                  />
+                  <span v-for="d in saWeekdays" :key="d" class="sa-cal__weekday">{{ d }}</span>
+                  <template v-for="(day, i) in saCells" :key="i">
+                    <span v-if="day === null" class="sa-cal__blank" />
+                    <button
+                      v-else
+                      type="button"
+                      class="sa-cal__day"
+                      :data-day="day"
+                      :class="{ 'sa-cal__day--selected': saIsSelected(day) }"
+                      :disabled="saIsDisabled(day)"
+                      @click="saSelectDay(day)"
+                    >
+                      {{ day }}
+                    </button>
+                  </template>
+                </div>
+                </div>
+              </div>
+              </template>
+              <div v-else class="sa-empty">
+                <IconCalendar :size="30" class="sa-empty__icon" />
+                <p class="sa-empty__text">Turn on company account activation to set the activation and expiration dates.</p>
+              </div>
             </div>
 
-            <div class="create-modal__body">
-              <div class="activation-info">
-                <div class="activation-info__label">Company Name</div>
-                <div class="activation-info__value">{{ company?.name ?? '—' }}</div>
+            <!-- Right: quota + activation toggle -->
+            <div class="sa-modal__right">
+              <div class="sa-quota-head">
+                <div class="sa-quota-title">
+                  <h3>Current Quota</h3>
+                  <span class="sa-readonly"><IconLock :size="14" /> Read only</span>
+                </div>
+                <button type="button" class="sa-close" aria-label="Close" @click="closeStartActivationModal">
+                  <IconX :size="20" />
+                </button>
               </div>
 
-              <div class="activation-divider" />
+              <p class="sa-quota-desc">These are the monthly scan limits set for this company. Limits reset at the start of each month. Starting activation begins the billing cycle and applies these limits to every scan type. You can adjust these limits in the company settings.</p>
 
-              <h3 class="activation-subtitle">Current Quota</h3>
-
-              <div class="quota-grid">
-                <div class="quota-grid__field">
-                  <label class="create-modal__label">Domain inspection scan quota for one month</label>
-                  <input type="text" class="create-modal__input create-modal__input--readonly" :value="currentQuotas.domain" readonly tabindex="-1" />
-                </div>
-                <div class="quota-grid__field">
-                  <label class="create-modal__label">Network scan quota for one month</label>
-                  <input type="text" class="create-modal__input create-modal__input--readonly" :value="currentQuotas.network" readonly tabindex="-1" />
-                </div>
-                <div class="quota-grid__field">
-                  <label class="create-modal__label">Web application scan quota for one month</label>
-                  <input type="text" class="create-modal__input create-modal__input--readonly" :value="currentQuotas.webapp" readonly tabindex="-1" />
-                </div>
-                <div class="quota-grid__field">
-                  <label class="create-modal__label">Source code scan quota for one month</label>
-                  <input type="text" class="create-modal__input create-modal__input--readonly" :value="currentQuotas.source" readonly tabindex="-1" />
-                </div>
-              </div>
-
-              <div class="activation-card activation-card--spaced">
-                <div class="activation-card__row">
-                  <div class="activation-card__text">
-                    <div class="activation-card__title">Set up company account activation</div>
-                    <div class="activation-card__desc">This setup can be configured later in the company section.</div>
+              <div class="sa-quota-list">
+                <div v-for="row in saQuotaRows" :key="row.key" class="sa-quota-card">
+                  <div class="sa-quota-card__icon" :style="{ background: row.bg, color: row.color }">
+                    <component :is="row.icon" :size="18" />
                   </div>
-                  <button
-                    type="button"
-                    class="toggle-switch"
-                    :class="{ 'toggle-switch--on': startActivationEnabled }"
-                    role="switch"
-                    :aria-checked="startActivationEnabled"
-                    @click="toggleStartActivation"
-                  >
-                    <span class="toggle-switch__thumb" />
-                  </button>
-                </div>
-                <Transition name="form-select-fade">
-                  <div v-if="startActivationEnabled" class="activation-card__dates">
-                    <div class="activation-card__divider" />
-                    <label class="create-modal__label">Company account activation date<span class="create-modal__required">*</span></label>
-                    <DatePicker
-                      v-model="startActivationDateVal"
-                      :open="startActivationField === 'activation'"
-                      @toggle="toggleStartActivationField('activation')"
-                      @select="selectStartDate('activation', $event)"
-                    />
-                    <label class="create-modal__label">Company account expiration date<span class="create-modal__required">*</span></label>
-                    <DatePicker
-                      v-model="startExpirationDateVal"
-                      :open="startActivationField === 'expiration'"
-                      :min="startActivationDateVal || undefined"
-                      @toggle="toggleStartActivationField('expiration')"
-                      @select="selectStartDate('expiration', $event)"
-                    />
+                  <div class="sa-quota-card__meta">
+                    <span class="sa-quota-card__label">{{ row.label }}</span>
+                    <span class="sa-quota-card__value">{{ row.value }}</span>
                   </div>
-                </Transition>
+                </div>
               </div>
-            </div>
 
-            <div class="create-modal__actions">
-              <button type="button" class="modal-btn modal-btn--cancel" @click="closeStartActivationModal">Cancel</button>
-              <button
-                type="button"
-                class="modal-btn"
-                :class="canSaveStartActivation
-                  ? { 'modal-btn--save': true, 'modal-btn--saved': startActivationState === 'saved' }
-                  : 'modal-btn--create'"
-                :disabled="!canSaveStartActivation"
-                @click="submitStartActivation"
-              >
-                <span v-if="startActivationState === 'loading'" class="modal-btn__spinner" />
-                <IconCheck v-else-if="startActivationState === 'saved'" :size="18" class="modal-btn__check" />
-                <span v-else>Save</span>
-              </button>
+              <div class="sa-activate-card">
+                <div class="sa-activate-card__text">
+                  <div class="sa-activate-card__title">Set up company account activation</div>
+                  <div class="sa-activate-card__desc">This setup can be configured later in the company section.</div>
+                </div>
+                <button
+                  type="button"
+                  class="sa-toggle"
+                  :class="{ 'sa-toggle--on': startActivationEnabled }"
+                  role="switch"
+                  :aria-checked="startActivationEnabled"
+                  @click="toggleStartActivation"
+                >
+                  <span class="sa-toggle__thumb" />
+                </button>
+              </div>
+
+              <div class="sa-actions">
+                <button type="button" class="sa-btn sa-btn--cancel" @click="closeStartActivationModal">Cancel</button>
+                <button
+                  type="button"
+                  class="sa-btn"
+                  :class="canSaveStartActivation ? 'sa-btn--save-active' : 'sa-btn--save-idle'"
+                  :disabled="!canSaveStartActivation"
+                  @click="submitStartActivation"
+                >
+                  <span v-if="startActivationState === 'loading'" class="modal-btn__spinner modal-btn__spinner--dark" />
+                  <IconCheck v-else-if="startActivationState === 'saved'" :size="18" />
+                  <span v-else>Save</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -870,87 +1062,49 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
 
             <div class="create-modal__body invite-body">
               <div class="invite-field">
-                <label class="create-modal__label" for="invite-username">Username<span class="create-modal__required">*</span></label>
-                <input
-                  id="invite-username"
+                <GlassField
                   v-model="inviteUsername"
-                  type="text"
-                  class="create-modal__input"
-                  :class="{ 'create-modal__input--error': !!inviteUsernameError }"
+                  label="Username"
                   placeholder="input username..."
+                  required
+                  error-text="Username is required"
                 />
                 <p v-if="inviteUsernameError" class="field-error">{{ inviteUsernameError }}</p>
               </div>
 
               <div class="invite-field">
-                <label class="create-modal__label" for="invite-email">Email Address<span class="create-modal__required">*</span></label>
-                <input
-                  id="invite-email"
+                <GlassField
                   v-model="inviteEmail"
-                  type="email"
-                  class="create-modal__input"
-                  :class="{ 'create-modal__input--error': !!inviteEmailError }"
+                  label="Email Address"
                   placeholder="input email address..."
+                  asterisk
+                  :invalid="!!inviteEmailError"
                 />
-                <p v-if="inviteEmailError" class="field-error">{{ inviteEmailError }}</p>
               </div>
 
               <div class="invite-field">
-                <label class="create-modal__label">Role<span class="create-modal__required">*</span></label>
-                <div class="form-select">
-                  <button type="button" class="form-select__trigger" @click="toggleInviteField('role')">
-                    <span :class="{ 'form-select__trigger-text--placeholder': !inviteRole }">
-                      {{ inviteRoleOptions.find((o) => o.value === inviteRole)?.label ?? 'select role...' }}
-                    </span>
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': inviteField === 'role' }" />
-                  </button>
-                  <div class="select-panel" :class="{ open: inviteField === 'role' }">
-                    <div class="form-select__inline-menu select-panel__inner">
-                      <button
-                        v-for="opt in inviteRoleOptions"
-                        :key="opt.value"
-                        type="button"
-                        class="form-select__inline-item"
-                        :class="{ 'form-select__inline-item--active': opt.value === inviteRole }"
-                        @click="selectInviteOption('role', opt.value)"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <GlassField
+                  v-model="inviteRole"
+                  type="select"
+                  label="Role"
+                  placeholder="select role..."
+                  :options="inviteRoleOptions"
+                  required
+                  error-text="Choose a role"
+                />
               </div>
 
               <div class="invite-field">
-                <label class="create-modal__label">Company Location<span class="create-modal__required">*</span></label>
-                <div class="form-select">
-                  <button type="button" class="form-select__trigger" @click="toggleInviteField('location')">
-                    <span :class="{ 'form-select__trigger-text--placeholder': !inviteLocation }">
-                      {{ inviteLocationSource.find((o) => o.value === inviteLocation)?.label ?? 'select company location...' }}
-                    </span>
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': inviteField === 'location' }" />
-                  </button>
-                  <div class="select-panel" :class="{ open: inviteField === 'location' }">
-                    <div class="form-select__inline-menu select-panel__inner location-panel">
-                      <div class="location-search">
-                        <input v-model="inviteLocationQuery" type="text" class="location-search__input" placeholder="Find..." @click.stop />
-                        <IconSearch :size="18" class="location-search__icon" />
-                      </div>
-                      <button
-                        v-for="opt in filteredInviteLocations"
-                        :key="opt.value"
-                        type="button"
-                        class="form-select__inline-item location-option"
-                        :class="{ 'form-select__inline-item--active': opt.value === inviteLocation }"
-                        @click="selectInviteOption('location', opt.value)"
-                      >
-                        <span class="location-option__name">{{ opt.label }}</span>
-                        <span class="location-option__type">{{ opt.type }}</span>
-                      </button>
-                      <div v-if="!filteredInviteLocations.length" class="location-empty">No company found.</div>
-                    </div>
-                  </div>
-                </div>
+                <GlassField
+                  v-model="inviteLocation"
+                  type="select"
+                  label="Company Location"
+                  placeholder="select company location..."
+                  :options="inviteLocationOptions"
+                  :visible-rows="4"
+                  required
+                  error-text="Choose a company location"
+                />
               </div>
             </div>
 
@@ -1713,6 +1867,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
+    margin-bottom: 12px;
   }
 
   &__title {
@@ -1763,7 +1918,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     }
 
     &:focus {
-      border-color: var(--glacia-red);
+      border-color: #2563EB;
       box-shadow: 0 2px 6px rgba(16, 24, 32, 0.12);
     }
 
@@ -1800,14 +1955,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
   60%  { opacity: 1; transform: scale(1.01) translateY(0); }
   100% { transform: scale(1); }
-}
-
-.edit-modal__label {
-  display: block;
-  margin: 16px 0 8px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--glacia-ink);
 }
 
 .modal-btn {
@@ -2016,6 +2163,546 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   }
 }
 
+// ── Start Activation two-panel modal (matches Image 1) ───────────────────
+.sa-modal {
+  width: 100%;
+  max-width: 980px;
+  min-height: 640px;
+  max-height: calc(100vh - 40px);
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  animation: create-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: height 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: 760px) {
+    flex-direction: column;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+  }
+
+  &__left {
+    width: 340px;
+    flex-shrink: 0;
+    padding: 28px 26px;
+    background: linear-gradient(160deg, #f4f8ff 0%, #e9f1fd 55%, #eef3fb 100%);
+    border-right: 1px solid rgba(15, 23, 42, 0.06);
+    display: flex;
+    flex-direction: column;
+
+    @media (max-width: 760px) {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+  }
+
+  &__title {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  &__right {
+    flex: 1;
+    padding: 26px 28px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+}
+
+.sa-company {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+
+  &__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #eef4ff;
+    color: #1e3a5f;
+    font-weight: 800;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  &__name {
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.3;
+    color: #0f172a;
+  }
+}
+
+.sa-divider {
+  height: 1px;
+  background: rgba(15, 23, 42, 0.1);
+  margin: 18px 0;
+}
+
+.sa-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.sa-date-pill {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: 'Manrope', 'Inter', sans-serif;
+
+  &--active {
+    border-color: #93b4e5;
+    box-shadow: 0 0 0 1px #93b4e5;
+  }
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+  }
+
+  &__value {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--placeholder {
+      color: #64748b;
+      font-weight: 700;
+    }
+  }
+}
+
+.sa-required {
+  color: #dc2626;
+}
+
+.sa-cal {
+  margin-top: 20px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  &__month {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    animation: sa-fade 0.3s ease;
+  }
+
+  &__nav {
+    display: flex;
+    gap: 8px;
+  }
+
+  &__nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: #fff;
+    color: #0f172a;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.13s;
+
+    &:hover {
+      background: #f1f5f9;
+    }
+  }
+
+  &__gridwrap {
+    overflow: hidden; // fallback for browsers without `clip` support
+    overflow: clip;
+    overflow-clip-margin: 8px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    position: relative;
+    row-gap: 4px;
+
+    &--slide-l { animation: sa-slide-l 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    &--slide-r { animation: sa-slide-r 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  }
+
+  &__pill {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--glacia-glass-fill-strong);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 37, 41, 0.3);
+    box-shadow: inset 0 1px 0 var(--glacia-glass-highlight), 0 6px 16px -6px rgba(255, 46, 58, 0.45);
+    box-sizing: border-box;
+    transition: left 0.5s cubic-bezier(0.3, 1.35, 0.5, 1), top 0.5s cubic-bezier(0.3, 1.35, 0.5, 1), opacity 0.2s ease;
+
+    &--glide-a { animation: sa-glide-a 0.5s; }
+    &--glide-b { animation: sa-glide-b 0.5s; }
+  }
+
+  &__weekday {
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    height: 28px;
+    line-height: 28px;
+    margin-bottom: 2px;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__blank {
+    height: 34px;
+  }
+
+  &__day {
+    width: 34px;
+    height: 34px;
+    justify-self: center;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--glacia-ink);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    transition: color 0.3s ease, background-color 0.18s ease, transform 0.18s ease;
+
+    &:hover:not(:disabled):not(&--selected) {
+      color: var(--glacia-ink);
+      background-color: rgba(255, 37, 41, 0.08);
+      transform: scale(1.1);
+    }
+
+    &:active:not(:disabled):not(&--selected) {
+      transform: scale(0.94);
+    }
+
+    &--selected {
+      background: transparent;
+      color: #b91c1c;
+      font-weight: 700;
+      animation: sa-pop 0.34s;
+    }
+
+    &:disabled {
+      color: #cbd5e1;
+      cursor: default;
+    }
+  }
+}
+
+@keyframes sa-slide-l { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes sa-slide-r { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+@keyframes sa-fade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes sa-pop {
+  0% { transform: scale(0.8); animation-timing-function: cubic-bezier(0.3, 1.5, 0.5, 1); }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes sa-glide-a {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.18, 0.86); animation-timing-function: ease-out; }
+  70% { transform: scale(0.95, 1.05); }
+  100% { transform: scale(1, 1); }
+}
+@keyframes sa-glide-b {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.18, 0.86); animation-timing-function: ease-out; }
+  70% { transform: scale(0.95, 1.05); }
+  100% { transform: scale(1, 1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sa-cal * { transition: none !important; animation: none !important; }
+}
+
+.sa-quota-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sa-quota-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  h3 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 800;
+    color: #0f172a;
+  }
+}
+
+.sa-readonly {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.sa-quota-desc {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.sa-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: #f8fafc;
+  color: #0f172a;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #eef2f7;
+  }
+}
+
+.sa-quota-list {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sa-quota-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: #f8fafc;
+
+  &__icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__meta {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__label {
+    font-size: 12px;
+    line-height: 1.4;
+    color: #64748b;
+  }
+
+  &__value {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #0f172a;
+  }
+}
+
+.sa-activate-card {
+  margin-top: 18px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid #c9dcf5;
+  background: #fff;
+  box-shadow: 0 12px 28px -18px rgba(59, 110, 190, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  &__title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  &__desc {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #64748b;
+  }
+}
+
+.sa-toggle {
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+  height: 30px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(15, 23, 42, 0.12);
+  cursor: pointer;
+  transition: background 0.18s ease;
+
+  &--on {
+    background: #5b8dc6;
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(16, 24, 32, 0.25);
+    transition: transform 0.18s ease;
+
+    .sa-toggle--on & {
+      transform: translateX(22px);
+    }
+  }
+}
+
+.sa-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: auto;
+  padding-top: 28px;
+}
+
+.sa-btn {
+  flex: 1;
+  height: 52px;
+  border-radius: 16px;
+  border: none;
+  font-size: 16px;
+  font-weight: 800;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &--cancel {
+    background: #fef2f2;
+    color: #dc2626;
+
+    &:hover {
+      background: #fee2e2;
+    }
+  }
+
+  &--save-idle {
+    background: #f8fafc;
+    color: #64748b;
+    cursor: default;
+  }
+
+  &--save-active {
+    background: #ff2e3a;
+    color: #fff;
+    box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
+
+    &:hover {
+      background: #e6212c;
+    }
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.modal-btn__spinner--dark {
+  border-color: rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+}
+
+.sa-empty {
+  margin-top: auto;
+  padding-top: 120px;
+  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+
+  &__icon {
+    color: #64748b;
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #64748b;
+    max-width: 240px;
+  }
+}
+
 .form-select-fade-enter-active {
   transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -2031,8 +2718,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
 .invite-body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .field-error {
@@ -2040,79 +2727,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   font-size: 12px;
   line-height: 1.4;
   color: var(--glacia-sev-critical);
-}
-
-.invite-field .create-modal__label {
-  margin: 0 0 8px;
-}
-
-.location-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.location-search {
-  position: relative;
-
-  &__input {
-    width: 100%;
-    height: 46px;
-    padding: 0 42px 0 16px;
-    border-radius: 12px;
-    border: 1px solid var(--glacia-glass-border);
-    background: #fff;
-    color: var(--glacia-ink);
-    font-size: 14px;
-    font-family: 'Manrope', 'Inter', sans-serif;
-    outline: none;
-    box-sizing: border-box;
-    transition: border-color 0.13s, box-shadow 0.13s;
-
-    &::placeholder {
-      color: var(--glacia-ink-dim);
-    }
-
-    &:focus {
-      border-color: var(--glacia-red);
-      box-shadow: 0 2px 6px rgba(16, 24, 32, 0.08);
-    }
-  }
-
-  &__icon {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--glacia-ink-dim);
-    pointer-events: none;
-  }
-}
-
-.location-option {
-  justify-content: space-between;
-  gap: 12px;
-
-  &__name {
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  &__type {
-    flex-shrink: 0;
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--glacia-ink-dim);
-  }
-}
-
-.location-empty {
-  padding: 10px 12px;
-  font-size: 13px;
-  color: var(--glacia-ink-dim);
-  text-align: center;
 }
 
 .revoke-ack {
@@ -2321,111 +2935,12 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
 
 .create-modal__body {
   overflow-x: hidden;
+  // Setting only overflow-x makes the browser auto-compute overflow-y as
+  // "auto" (not "visible") per spec — which would clip a GlassField
+  // dropdown menu wherever it overflows past this box. Keep it explicit.
+  overflow-y: visible;
   padding: 2px 2px 0;
   margin: 0 -2px;
-}
-
-.select-panel {
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.22s ease,
-    margin-top 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &.open {
-    max-height: 300px;
-    opacity: 1;
-    margin-top: 10px;
-  }
-
-  &__inner {
-    margin-top: 0;
-  }
-}
-
-.form-select {
-  position: relative;
-
-  &__trigger {
-    width: 100%;
-    height: 54px;
-    padding: 0 18px;
-    border-radius: 14px;
-    border: 0.5px solid var(--glacia-glass-border);
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    cursor: pointer;
-    font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 15px;
-    color: var(--glacia-ink);
-    text-align: left;
-    transition: border-color 0.13s, box-shadow 0.13s;
-
-    &:hover {
-      border-color: var(--glacia-ink-dim);
-    }
-  }
-
-  &__trigger-text--placeholder {
-    color: var(--glacia-ink-dim);
-  }
-
-  &__chevron {
-    flex-shrink: 0;
-    color: var(--glacia-ink-dim);
-    transition: transform 0.2s ease;
-
-    &--open {
-      transform: rotate(180deg);
-    }
-  }
-
-  &__inline-menu {
-    margin-top: 10px;
-    padding: 8px;
-    border-radius: 16px;
-    border: 0.5px solid var(--glacia-glass-border);
-    background: #fff;
-    max-height: 260px;
-    overflow-y: auto;
-  }
-
-  &__inline-item {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: 14px 16px;
-    border-radius: 10px;
-    border: none;
-    background: transparent;
-    color: var(--glacia-ink);
-    font-size: 15px;
-    font-weight: 500;
-    font-family: 'Manrope', 'Inter', sans-serif;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.13s, color 0.13s;
-
-    & + & {
-      margin-top: 4px;
-    }
-
-    &:not(.form-select__inline-item--active):hover {
-      background: rgba(255, 37, 41, 0.06);
-    }
-
-    &--active {
-      color: var(--glacia-red);
-      font-weight: 700;
-      background: rgba(255, 37, 41, 0.08);
-    }
-  }
 }
 
 .quota-info-list {

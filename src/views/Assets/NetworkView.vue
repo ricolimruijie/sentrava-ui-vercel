@@ -5,8 +5,9 @@ import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import DateTimePicker from '@/components/reusable/DateTimePicker.vue'
+import GlassField from '@/components/reusable/GlassField.vue'
 import { getNetworks } from '@/mocks/assets/network.js'
-import { IconDotsVertical, IconCirclePlus, IconScan, IconChevronDown, IconCheck, IconX, IconArrowUpRight, IconTrash } from '@tabler/icons-vue'
+import { IconDotsVertical, IconCirclePlus, IconScan, IconCheck, IconX, IconArrowUpRight, IconTrash } from '@tabler/icons-vue'
 
 const router = useRouter()
 
@@ -100,14 +101,12 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 const showRegisterModal = ref(false)
 const regEndpoint = ref('')
 const regType = ref(null)
-const regField = ref(null)
 const regAttempted = ref(false)
 const regState = ref('idle') // 'idle' | 'loading' | 'saved'
 
 function openRegisterModal() {
   regEndpoint.value = ''
   regType.value = null
-  regField.value = null
   regAttempted.value = false
   regState.value = 'idle'
   showRegisterModal.value = true
@@ -115,7 +114,6 @@ function openRegisterModal() {
 
 function closeRegisterModal() {
   showRegisterModal.value = false
-  regField.value = null
   regAttempted.value = false
   regState.value = 'idle'
 }
@@ -143,7 +141,6 @@ const showScanModal = ref(false)
 const scanTarget = ref(null)
 const scanType = ref(null)
 const scanDate = ref('')
-const scanField = ref(null)
 const scanDateOpen = ref(false)
 const scanState = ref('idle') // 'idle' | 'loading' | 'saved'
 
@@ -156,7 +153,6 @@ function openScanModal() {
   scanTarget.value = null
   scanType.value = null
   scanDate.value = ''
-  scanField.value = null
   scanDateOpen.value = false
   scanState.value = 'idle'
   showScanModal.value = true
@@ -164,24 +160,11 @@ function openScanModal() {
 
 function closeScanModal() {
   showScanModal.value = false
-  scanField.value = null
   scanDateOpen.value = false
   scanState.value = 'idle'
 }
 
-function toggleScanField(name) {
-  scanDateOpen.value = false
-  scanField.value = scanField.value === name ? null : name
-}
-
-function pickScanField(name, value) {
-  if (name === 'target') scanTarget.value = value
-  if (name === 'type') scanType.value = value
-  scanField.value = null
-}
-
 function toggleScanDate() {
-  scanField.value = null
   scanDateOpen.value = !scanDateOpen.value
 }
 
@@ -264,38 +247,24 @@ function submitScan() {
               </button>
             </div>
             <div class="create-modal__body">
-              <label class="create-modal__label">IP Address / CIDR<span class="create-modal__required">*</span></label>
-              <input
-                v-model="regEndpoint"
-                type="text"
-                class="create-modal__input"
-                :class="{ 'create-modal__input--error': regAttempted && !regEndpoint.trim() }"
-                placeholder="e.g. 10.10.19.52 or 10.10.19.0/24"
-              />
-              <p v-if="regAttempted && !regEndpoint.trim()" class="field-error">Endpoint is required.</p>
+              <div class="create-modal__group">
+                <GlassField
+                  v-model="regEndpoint"
+                  label="IP Address / CIDR"
+                  placeholder="e.g. 10.10.19.52 or 10.10.19.0/24"
+                  required
+                  error-text="Endpoint is required."
+                />
 
-              <label class="create-modal__label">Target Type<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="regField = regField === 'type' ? null : 'type'">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !regType }">
-                    {{ targetTypeOptions.find((o) => o.value === regType)?.label ?? 'select target type...' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': regField === 'type' }" />
-                </button>
-                <div class="select-panel" :class="{ open: regField === 'type' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in targetTypeOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === regType }"
-                      @click="regType = opt.value; regField = null"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
+                <GlassField
+                  v-model="regType"
+                  type="select"
+                  label="Target Type"
+                  placeholder="select target type..."
+                  required
+                  :options="targetTypeOptions"
+                  error-text="Target type is required."
+                />
               </div>
 
               <div class="create-modal__actions">
@@ -326,54 +295,26 @@ function submitScan() {
               </button>
             </div>
             <div class="create-modal__body">
-              <div v-show="!scanDateOpen">
-                <label class="create-modal__label">Target<span class="create-modal__required">*</span></label>
-                <div class="form-select">
-                  <button type="button" class="form-select__trigger" @click="toggleScanField('target')">
-                    <span :class="{ 'form-select__trigger-text--placeholder': !scanTarget }">
-                      {{ scanTargetOptions.find((o) => o.value === scanTarget)?.label ?? 'select target...' }}
-                    </span>
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': scanField === 'target' }" />
-                  </button>
-                  <div class="select-panel" :class="{ open: scanField === 'target' }">
-                    <div class="form-select__inline-menu select-panel__inner">
-                      <button
-                        v-for="opt in scanTargetOptions"
-                        :key="opt.value"
-                        type="button"
-                        class="form-select__inline-item"
-                        :class="{ 'form-select__inline-item--active': opt.value === scanTarget }"
-                        @click="pickScanField('target', opt.value)"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+              <div v-show="!scanDateOpen" class="create-modal__group">
+                <GlassField
+                  v-model="scanTarget"
+                  type="select"
+                  label="Target"
+                  placeholder="select target..."
+                  required
+                  :options="scanTargetOptions"
+                  error-text="Target is required."
+                />
 
-                <label class="create-modal__label">Scan Type<span class="create-modal__required">*</span></label>
-                <div class="form-select">
-                  <button type="button" class="form-select__trigger" @click="toggleScanField('type')">
-                    <span :class="{ 'form-select__trigger-text--placeholder': !scanType }">
-                      {{ scanTypeOptions.find((o) => o.value === scanType)?.label ?? 'select scan type...' }}
-                    </span>
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': scanField === 'type' }" />
-                  </button>
-                  <div class="select-panel" :class="{ open: scanField === 'type' }">
-                    <div class="form-select__inline-menu select-panel__inner">
-                      <button
-                        v-for="opt in scanTypeOptions"
-                        :key="opt.value"
-                        type="button"
-                        class="form-select__inline-item"
-                        :class="{ 'form-select__inline-item--active': opt.value === scanType }"
-                        @click="pickScanField('type', opt.value)"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <GlassField
+                  v-model="scanType"
+                  type="select"
+                  label="Scan Type"
+                  placeholder="select scan type..."
+                  required
+                  :options="scanTypeOptions"
+                  error-text="Scan type is required."
+                />
               </div>
 
               <label class="create-modal__label">Date &amp; Time<span class="create-modal__required">*</span></label>
@@ -509,7 +450,7 @@ function submitScan() {
     border: 1px solid var(--glacia-glass-border); font-size: 13px; font-family: 'Manrope', 'Inter', sans-serif;
     outline: none; color: var(--glacia-ink);
     &::placeholder { color: var(--glacia-ink-dim); }
-    &:focus { border-color: var(--glacia-red); }
+    &:focus { border-color: #2563EB; }
   }
 
   &__list { display: flex; flex-direction: column; gap: 2px; max-height: 180px; overflow-y: auto; }
@@ -572,7 +513,8 @@ function submitScan() {
   &__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-shrink: 0; }
   &__title { font-family: 'Manrope', 'Inter', sans-serif; font-size: 22px; font-weight: 800; color: var(--glacia-ink); margin: 0; }
   &__close { width: 32px; height: 32px; border-radius: 8px; border: none; background: none; color: var(--glacia-ink); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; &:hover { background: rgba(0,0,0,0.05); } }
-  &__body { margin-top: 8px; overflow-y: auto; min-height: 0; flex: 1 1 auto; overscroll-behavior: contain; }
+  &__body { margin-top: 12px; overflow-y: auto; min-height: 0; flex: 1 1 auto; overscroll-behavior: contain; }
+  &__group { display: flex; flex-direction: column; gap: 10px; }
   &__label { display: block; margin: 16px 0 8px; font-size: 14px; font-weight: 700; color: var(--glacia-ink); }
   &__required { color: var(--glacia-red); margin-left: 2px; }
   &__input {
@@ -580,7 +522,7 @@ function submitScan() {
     background: #fff; color: var(--glacia-ink); font-size: 14px; font-family: 'Manrope', 'Inter', sans-serif;
     outline: none; box-sizing: border-box; box-shadow: 0 1px 3px rgba(16,24,32,0.08);
     &::placeholder { color: var(--glacia-ink-dim); }
-    &:focus { border-color: var(--glacia-red); box-shadow: 0 2px 6px rgba(16,24,32,0.12); }
+    &:focus { border-color: #2563EB; box-shadow: 0 2px 6px rgba(16,24,32,0.12); }
     &--error { border-color: var(--glacia-sev-critical); &:focus { border-color: var(--glacia-sev-critical); } }
   }
   &__actions { display: flex; gap: 14px; margin-top: 20px; flex-shrink: 0; }

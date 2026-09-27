@@ -1,16 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { h } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import AppLayout    from '@/components/layout/AppLayout.vue'
 import authRoutes   from './auth'
 import dashboardRoutes from './dashboard'
 
-// Stub placeholder for future pages
+// Stub placeholder for future pages (render function — the bundler uses the
+// runtime-only Vue build, so a `template:` string would never compile).
 const Placeholder = {
-  template: `
-    <div style="display:flex;align-items:center;justify-content:center;height:60vh;color:var(--glacia-ink-dim);font-size:14px;">
-      work in progress
-    </div>
-  `
+  render() {
+    return h(
+      'div',
+      {
+        style:
+          'display:flex;align-items:center;justify-content:center;height:60vh;color:var(--glacia-ink-dim);font-size:14px;',
+      },
+      'work in progress',
+    )
+  },
 }
 
 const appRoutes = [

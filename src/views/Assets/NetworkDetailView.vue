@@ -1021,7 +1021,7 @@ function downloadReport() {
       </div>
     </Teleport>
 
-    <VulnerabilityDetailModal v-model="showFindingModal" :item="selectedFinding" />
+    <VulnerabilityDetailModal v-model="showFindingModal" :item="selectedFinding" summary-strip />
     <Teleport to="body">
       <Transition name="target-panel-fade">
         <div v-if="showTargetDetailModal" class="target-modal" :style="{ top: `${targetDetailPos.top}px`, left: `${targetDetailPos.left}px` }">
@@ -1689,7 +1689,7 @@ function downloadReport() {
     border: 1px solid var(--glacia-glass-border); font-size: 13px; font-family: 'Manrope', 'Inter', sans-serif;
     outline: none; color: var(--glacia-ink);
     &::placeholder { color: var(--glacia-ink-dim); }
-    &:focus { border-color: var(--glacia-red); }
+    &:focus { border-color: #2563EB; }
   }
 
   &__list { display: flex; flex-direction: column; gap: 2px; max-height: 180px; overflow-y: auto; }

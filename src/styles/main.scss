@@ -106,5 +106,17 @@ body {
 
 ::-webkit-scrollbar        { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track  { background: transparent; }
-::-webkit-scrollbar-thumb  { background: rgba(0,0,0,0.14); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.14); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.24); }
+
+// ── Modal titles — single scale-down for every dialog in the app ─────────────
+// Scoped component styles set these at 26–28px; the `!important` beats the
+// scoped attribute selectors so all modal titles shrink in one place.
+.create-modal__title,
+.sa-modal__title,
+.tag-modal__title,
+.delete-modal__title,
+.dv-modal__title,
+.vd-modal__title {
+  font-size: 20px !important;
+}

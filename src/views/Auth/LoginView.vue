@@ -2,9 +2,9 @@
 import { ref, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
-import InputText from 'primevue/inputtext'
 import Button    from 'primevue/button'
 import { IconShieldSearch } from '@tabler/icons-vue'
+import GlassField from '@/components/reusable/GlassField.vue'
 
 const router = useRouter()
 const route  = useRoute()
@@ -61,31 +61,23 @@ function useDemo(account) {
 
       <!-- Form -->
       <form @submit.prevent="submit" class="login-card__form">
-        <div class="field">
-          <label for="email">Email address</label>
-          <InputText
-            id="email"
-            v-model="form.email"
-            type="email"
-            placeholder="you@company.com"
-            autocomplete="email"
-            required
-            class="w-full"
-          />
-        </div>
+        <GlassField
+          v-model="form.email"
+          label="Email address"
+          placeholder="you@company.com"
+          input-type="email"
+          required
+          error-text="Email address is required"
+        />
 
-        <div class="field">
-          <label for="password">Password</label>
-          <InputText
-            id="password"
-            v-model="form.password"
-            type="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            required
-            class="w-full"
-          />
-        </div>
+        <GlassField
+          v-model="form.password"
+          label="Password"
+          placeholder="••••••••"
+          input-type="password"
+          required
+          error-text="Password is required"
+        />
 
         <Button
           type="submit"
