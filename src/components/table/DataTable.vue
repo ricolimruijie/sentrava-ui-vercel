@@ -4,7 +4,7 @@ import { usePagination } from '@/composables/usePagination'
 import TablePagination from '@/components/table/TablePagination.vue'
 
 const props = defineProps({
-  // [{ key, label, width?, align?: 'left'|'center'|'right', mono?, truncate?, bold?, dim? }]
+  // [{ key, label, width?, align?: 'left'|'center'|'right', mono?, truncate?, bold?, dim?, compact?, padLeft?, padRight? }]
   // key === '__index' renders the row number (1-based, across pages) by default.
   columns: { type: Array, required: true },
   items: { type: Array, default: () => [] },
@@ -42,7 +42,16 @@ function keyFor(row, i) {
 // when widths are set redundantly on first-row cells too.
 function cellStyle(col) {
   const style = {}
+  // Explicit alignment always wins.
   if (col.align) style.textAlign = col.align
+  // Compact columns (e.g. checkbox) drop cell padding so content fits.
+  if (col.compact) {
+    style.padding = 0
+    if (!col.align) style.textAlign = 'center'
+  }
+  // Per-side overrides to fine-tune gutters between specific columns.
+  if (col.padLeft) style.paddingLeft = col.padLeft
+  if (col.padRight) style.paddingRight = col.padRight
   return style
 }
 
