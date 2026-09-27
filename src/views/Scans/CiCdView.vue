@@ -13,10 +13,10 @@ const { data, loading } = useFetch(() => get('/scans/history'))
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: '#', width: '32px', dim: true },
-  { key: 'dateTime', label: 'Date and Time', width: '18%' },
-  { key: 'repository', label: 'Repository', width: '24%', dim: true },
-  { key: 'branch', label: 'Branch', width: '22%', mono: true },
+  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: 'dateTime', label: 'Date and Time', width: '18%', truncate: true},
+  { key: 'repository', label: 'Repository', width: '24%', dim: true, truncate: true},
+  { key: 'branch', label: 'Branch', width: '22%', mono: true, truncate: true},
   { key: 'scanId', label: 'Scan ID', width: '12%', mono: true, truncate: true },
   { key: 'status', label: 'Scanning status', width: '15%', align: 'center' },
   { key: 'action', label: 'Action', width: '32px', align: 'center' },
