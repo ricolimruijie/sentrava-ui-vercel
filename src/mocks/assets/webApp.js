@@ -38,34 +38,41 @@ export function getWebApps() {
   })))
 }
 
-// Scan timeline entries per app — different scan types behave differently,
-// mirroring SourceCodeDetailView: manual keeps a completed history, scheduled
-// queues upcoming runs, continuous shows recurrence with an active scan.
+// Scan timeline entries per app — same shape as the source-code timelines for
+// each scan type: manual keeps a completed history with one failed run,
+// scheduled queues upcoming runs, continuous shows an active scan.
 export function getWebAppScans(appId) {
   if (appId === 2) {
-    // scheduled — upcoming runs queued
+    // scheduled — mirrors tcg-royal
     return [
-      { id: 'q1', date: '20 Jul 2026 08:00', status: 'Queue', duration: null },
-      { id: 'q2', date: '21 Jul 2026 08:00', status: 'Waiting', duration: null },
-      { id: 'q3', date: '22 Jul 2026 08:00', status: 'Waiting', duration: null },
-      { id: 's1', date: '14 Jul 2026 12:59', status: 'Completed', duration: '3m 41s' },
+      { id: 't1', date: '14 Jul 2026 12:59', status: 'Failed', duration: '2m 03s' },
+      { id: 't2', date: '15 Jul 2026 08:00', status: 'Completed', duration: '4m 15s' },
+      { id: 't3', date: '16 Jul 2026 08:00', status: 'Scanning', duration: null },
+      { id: 't4', date: '17 Jul 2026 08:00', status: 'Waiting', duration: null },
+      { id: 't5', date: '18 Jul 2026 08:00', status: 'Waiting', duration: null },
+      { id: 't6', date: '19 Jul 2026 08:00', status: 'Waiting', duration: null },
+      { id: 't7', date: '20 Jul 2026 08:00', status: 'Waiting', duration: null },
+      { id: 't8', date: '21 Jul 2026 08:00', status: 'Waiting', duration: null },
     ]
   }
   if (appId === 3) {
-    // continuous — active scan plus completed history
+    // continuous — mirrors aoc-glasshour
     return [
+      { id: 'c3', date: '09 Jul 2026 14:25', status: 'Completed', duration: '4m 52s' },
       { id: 'c1', date: '14 Jul 2026 12:59', status: 'Scanning', duration: null },
-      { id: 'c2', date: '09 Jul 2026 14:25', status: 'Completed', duration: '5m 18s' },
-      { id: 'c3', date: '03 Jul 2026 14:24', status: 'Completed', duration: '4m 47s' },
-      { id: 'c4', date: '01 Jul 2026 14:33', status: 'Completed', duration: '6m 02s' },
+      { id: 'c2', date: '20 Jul 2026 08:00', status: 'Waiting', duration: null },
     ]
   }
-  // manual (id 1) — completed history with one failed run for retry
+  // manual (id 1) — mirrors the default source-code timeline
   return [
     { id: 's1', date: '14 Jul 2026 12:59', status: 'Scanning', duration: null },
-    { id: 's2', date: '09 Jul 2026 14:25', status: 'Completed', duration: '3m 41s' },
-    { id: 's3', date: '03 Jul 2026 14:24', status: 'Failed', duration: '1m 12s' },
-    { id: 's4', date: '01 Jul 2026 14:33', status: 'Completed', duration: '4m 02s' },
+    { id: 's2', date: '09 Jul 2026 14:25', status: 'Completed', duration: '5m 10s' },
+    { id: 's3', date: '03 Jul 2026 14:24', status: 'Failed', duration: '2m 03s' },
+    { id: 's4', date: '01 Jul 2026 14:33', status: 'Completed', duration: '4m 05s' },
+    { id: 's5', date: '28 Jun 2026 11:45', status: 'Completed', duration: '6m 02s' },
+    { id: 's6', date: '25 Jun 2026 08:30', status: 'Completed', duration: '1m 44s' },
+    { id: 's7', date: '20 Jun 2026 16:00', status: 'Completed', duration: '3m 59s' },
+    { id: 's8', date: '18 Jun 2026 08:30', status: 'Completed', duration: '5m 24s' },
   ]
 }
 
@@ -185,10 +192,10 @@ const WEB_VULN_DETAILS = {
 
 // Base rows for the findings table — merged with WEB_VULN_DETAILS above.
 const BASE_WEB_VULNS = [
-    { id: 'v1', name: 'SSH Auth Methods - Detection', component: 'etc/ssh/sshd_config', line: 22, severity: 'high', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active' },
-    { id: 'v2', name: 'SSH Password-based Authentication', component: 'etc/ssh/sshd_config', line: 57, severity: 'critical', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active' },
-    { id: 'v3', name: 'SSH SHA-1 HMAC Algorithms Enabled', component: 'etc/ssh/ssh_config', line: 34, severity: 'medium', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active' },
-    { id: 'v4', name: 'OpenSSH Service - Detect', component: 'usr/sbin/sshd', line: 19, severity: 'low', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active' },
-    { id: 'v5', name: 'CAA Record', component: 'dns/zone/protergo.id', line: 41, severity: 'medium', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active' },
-    { id: 'v6', name: 'SSH Server Software Enumeration', component: 'var/log/auth.log', line: 208, severity: 'info', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active' },
+    { id: 'v1', name: 'SSH Auth Methods - Detection', component: 'etc/ssh/sshd_config', line: 22, severity: 'high', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Check result' },
+    { id: 'v2', name: 'SSH Password-based Authentication', component: 'etc/ssh/sshd_config', line: 57, severity: 'critical', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Check result' },
+    { id: 'v3', name: 'SSH SHA-1 HMAC Algorithms Enabled', component: 'etc/ssh/ssh_config', line: 34, severity: 'medium', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
+    { id: 'v4', name: 'OpenSSH Service - Detect', component: 'usr/sbin/sshd', line: 19, severity: 'low', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
+    { id: 'v5', name: 'CAA Record', component: 'dns/zone/protergo.id', line: 41, severity: 'medium', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
+    { id: 'v6', name: 'SSH Server Software Enumeration', component: 'var/log/auth.log', line: 208, severity: 'info', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
   ]

@@ -274,11 +274,17 @@ function confirmRescan() {
     }, 1500)
     return
   }
-  // Stop button: no loading — stopping is instant, then the button vanishes
-  // with the active scan gone.
+  // Stop button: loading animation, then the timeline is permanently stopped
+  // with an explanatory note in place of the button.
   if (pendingRescanType.value === 'stop') {
-    stopScanning()
-    cancelRescan()
+    if (stopLoading.value) return
+    stopLoading.value = true
+    setTimeout(() => {
+      stopScanning()
+      stopLoading.value = false
+      timelineStopped.value = true
+      cancelRescan()
+    }, 1500)
     return
   }
   // Failed-scan retry pill (see references/RetryButton.vue): confirm pops
@@ -300,6 +306,8 @@ function confirmRescan() {
 
 // ── Stop scanning (continuous scan types only) ───────────────────────────
 const hasActiveScan = computed(() => scans.value.some((s) => s.status === 'Scanning'))
+const stopLoading = ref(false)
+const timelineStopped = ref(false)
 
 function stopScanning() {
   const i = scans.value.findIndex((s) => s.status === 'Scanning')
@@ -604,8 +612,12 @@ function submitReportDownload() {
 
         <div class="scan-main__actions">
           <Transition name="rescan-swap" mode="out-in">
+            <div v-if="timelineStopped" key="stopped" class="scan-stopped-note">
+              <IconInfoCircle :size="16" class="scan-stopped-note__icon" />
+              <span>Scanning for this target has been stopped and cannot be restarted.</span>
+            </div>
             <button
-              v-if="scanInProgress"
+              v-else-if="scanInProgress"
               key="scanning"
               type="button"
               class="btn-register btn-register--block btn-register--scanning"
@@ -617,7 +629,7 @@ function submitReportDownload() {
               <button
                 type="button"
                 class="btn-register btn-register--block btn-register--cancel"
-                :disabled="rescanLoading"
+                :disabled="rescanLoading || stopLoading"
                 @click="cancelRescan"
               >
                 Cancel
@@ -625,10 +637,10 @@ function submitReportDownload() {
               <button
                 type="button"
                 class="btn-register btn-register--block btn-register--proceed"
-                :disabled="rescanLoading"
+                :disabled="rescanLoading || stopLoading"
                 @click="confirmRescan"
               >
-                <span v-if="rescanLoading" class="btn-register__spinner" aria-hidden="true" />
+                <span v-if="rescanLoading || stopLoading" class="btn-register__spinner" aria-hidden="true" />
                 <span v-else>Proceed</span>
               </button>
             </div>
@@ -801,7 +813,7 @@ function submitReportDownload() {
       </div>
     </Teleport>
 
-    <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip />
+    <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip hide-cycle-history />
 
     <Teleport to="body">
       <Transition name="modal-fade">
@@ -1551,6 +1563,24 @@ function submitReportDownload() {
     border-top-color: #fff;
     animation: btn-register-spin 0.7s linear infinite;
     flex-shrink: 0;
+  }
+}
+
+.scan-stopped-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #fef6e4;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #7c5a12;
+
+  &__icon {
+    flex-shrink: 0;
+    color: #e8a13d;
+    margin-top: 1px;
   }
 }
 

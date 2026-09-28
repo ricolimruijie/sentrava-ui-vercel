@@ -21,7 +21,6 @@ const app = computed(() => {
 })
 
 const scanTypeLabels = { manual: 'Manual Triggered', scheduled: 'Scheduled Scanning', continuous: 'Continuous Scanning' }
-const totalPaths = 26
 
 // Same palette as WebAppView/SourceCodeView so tags render identically.
 const tagColors = [
@@ -146,10 +145,28 @@ const rescanLoading = ref(false)
 const scanInProgress = ref(false)
 const retryLoadingIndex = ref(null)
 const retryDoneIndex = ref(null)
+const stopLoading = ref(false)
+const timelineStopped = ref(false)
+
+// ── Stop scanning (continuous scan types only) ───────────────────────────
+const hasActiveScan = computed(() => scans.value.some((s) => s.status === 'Scanning'))
+
+function stopScanning() {
+  const i = scans.value.findIndex((s) => s.status === 'Scanning')
+  if (i < 0) return
+  scans.value[i] = { ...scans.value[i], status: 'Completed', duration: scans.value[i].duration ?? '—' }
+  const next = scans.value.findIndex((s) => !['Scanning', 'Queue', 'Waiting'].includes(s.status))
+  selectedScan.value = Math.max(0, next)
+}
 
 function openRescanConfirm(index = null) {
   pendingRescanIndex.value = index
   pendingRescanType.value = index != null ? 'retry' : 'main'
+}
+
+function openStopConfirm() {
+  pendingRescanIndex.value = null
+  pendingRescanType.value = 'stop'
 }
 
 function cancelRescan() {
@@ -180,6 +197,19 @@ function confirmRescan() {
       rescan(pendingRescanIndex.value)
       rescanLoading.value = false
       scanInProgress.value = true
+      cancelRescan()
+    }, 1500)
+    return
+  }
+  // Stop button: loading animation, then the timeline is permanently stopped
+  // with an explanatory note in place of the button.
+  if (pendingRescanType.value === 'stop') {
+    if (stopLoading.value) return
+    stopLoading.value = true
+    setTimeout(() => {
+      stopScanning()
+      stopLoading.value = false
+      timelineStopped.value = true
       cancelRescan()
     }, 1500)
     return
@@ -227,6 +257,15 @@ const cycleCount = (cycle) => {
 // ── Filters ────────────────────────────────────────────────────────────────
 const search = ref('')
 const severityFilter = ref(null)
+const validationFilter = ref(null)
+
+const validationOptions = [
+  { value: 'Unresolved', label: 'Unresolved' },
+  { value: 'Queue', label: 'Queue' },
+  { value: 'Scanning', label: 'Scanning' },
+  { value: 'Resolved', label: 'Resolved' },
+  { value: 'Failed', label: 'Failed' },
+]
 
 const severityOptions = [
   { value: 'critical', label: 'Critical' },
@@ -252,6 +291,14 @@ const cyclePill = {
   'False positive': { bg: '#ECEEF0', color: '#5C6470' },
 }
 
+const validationPill = {
+  Unresolved: { bg: '#ECEEF0', color: '#5C6470' },
+  Queue:      { bg: '#DFF3FC', color: '#1197C2' },
+  Scanning:   { bg: '#fef3c7', color: '#b45309' },
+  Failed:     { bg: '#fee2e2', color: '#dc2626' },
+  Resolved:   { bg: '#dcfce7', color: '#16a34a' },
+}
+
 // Highest severity first, always — independent of whatever order the
 // underlying scan data arrives in.
 const severityRank = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }
@@ -261,6 +308,7 @@ const filtered = computed(() => {
   if (scans.value[selectedScan.value]?.status === 'Failed') return []
   let list = vulns.value.filter((v) => v.cycle === activeCycle.value)
   if (severityFilter.value) list = list.filter((v) => v.severity === severityFilter.value)
+  if (validationFilter.value) list = list.filter((v) => (v.validation ?? 'Unresolved') === validationFilter.value)
   const q = search.value.trim().toLowerCase()
   if (q) list = list.filter((v) => v.name.toLowerCase().includes(q) || v.component.toLowerCase().includes(q))
   return [...list].sort((a, b) => (severityRank[a.severity] ?? 99) - (severityRank[b.severity] ?? 99))
@@ -303,7 +351,7 @@ function rowClass(row) {
   return isChecked(row.id) ? 'scan-row--checked' : ''
 }
 
-watch([severityFilter, activeCycle], () => tableRef.value?.pagination.goTo(1))
+watch([severityFilter, validationFilter, activeCycle], () => tableRef.value?.pagination.goTo(1))
 watch(search, () => tableRef.value?.pagination.goTo(1))
 
 // ── Bulk edit ──────────────────────────────────────────────────────────────
@@ -362,11 +410,33 @@ function viewFinding(id) {
   showDetailModal.value = true
 }
 
-function deleteFinding(id) {
+function revalidateFinding(id) {
   closeMenu()
-  vulns.value = vulns.value.filter((v) => v.id !== id)
-  checked.value = checked.value.filter((c) => c !== id)
+  const row = vulns.value.find((v) => v.id === id)
+  if (row) row.validation = 'Queue'
 }
+
+// ── Vulnerability Resolved modal (from the Check result button) ──────────
+const showResolvedModal = ref(false)
+const resolvedRow = ref(null)
+
+function openResolvedModal(id) {
+  closeMenu()
+  resolvedRow.value = vulns.value.find((v) => v.id === id) ?? null
+  showResolvedModal.value = true
+}
+function closeResolvedModal() {
+  if (resolvedRow.value) {
+    resolvedRow.value.validation = isStillDetected.value ? 'Unresolved' : 'Resolved'
+  }
+  showResolvedModal.value = false
+  resolvedRow.value = null
+}
+function markMitigated() {
+  if (resolvedRow.value) resolvedRow.value.cycle = 'Mitigated'
+  closeResolvedModal()
+}
+const isStillDetected = computed(() => resolvedRow.value?.id === 'v1')
 
 // ── Download Report filter modal (multi-select, horizontal) ──────────────
 const showReportModal = ref(false)
@@ -592,12 +662,14 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <p class="scan-timeline__count">{{ scans.length }} scans</p>
-
         <div class="scan-main__actions">
           <Transition name="rescan-swap" mode="out-in">
+            <div v-if="timelineStopped" key="stopped" class="scan-stopped-note">
+              <IconInfoCircle :size="16" class="scan-stopped-note__icon" />
+              <span>Scanning for this target has been stopped and cannot be restarted.</span>
+            </div>
             <button
-              v-if="scanInProgress"
+              v-else-if="scanInProgress"
               key="scanning"
               type="button"
               class="btn-register btn-register--block btn-register--scanning"
@@ -605,11 +677,11 @@ onUnmounted(() => {
             >
               Scan in progress
             </button>
-            <div v-else-if="pendingRescanType === 'main'" key="confirm" class="rescan-confirm-inline">
+            <div v-else-if="pendingRescanType === 'main' || pendingRescanType === 'stop'" key="confirm" class="rescan-confirm-inline">
               <button
                 type="button"
                 class="btn-register btn-register--block btn-register--cancel"
-                :disabled="rescanLoading"
+                :disabled="rescanLoading || stopLoading"
                 @click="cancelRescan"
               >
                 Cancel
@@ -617,13 +689,22 @@ onUnmounted(() => {
               <button
                 type="button"
                 class="btn-register btn-register--block btn-register--proceed"
-                :disabled="rescanLoading"
+                :disabled="rescanLoading || stopLoading"
                 @click="confirmRescan"
               >
-                <span v-if="rescanLoading" class="btn-register__spinner" aria-hidden="true" />
+                <span v-if="rescanLoading || stopLoading" class="btn-register__spinner" aria-hidden="true" />
                 <span v-else>Proceed</span>
               </button>
             </div>
+            <button
+              v-else-if="app.scanType === 'continuous' && hasActiveScan"
+              key="stop"
+              type="button"
+              class="btn-register btn-register--block"
+              @click="openStopConfirm"
+            >
+              Stop scanning
+            </button>
             <button
               v-else-if="app.scanType === 'manual'"
               key="rescan"
@@ -663,12 +744,12 @@ onUnmounted(() => {
       <div>
           <div class="scan-main__target">
             <span class="scan-main__target-label">Target</span>
-            <h1 class="scan-main__title">{{ app.target }}</h1>
+            <h1 class="scan-main__title">{{ app.name }}</h1>
           </div>
           <div class="scan-main__meta">
-            <span>Total Path <b class="mono">{{ totalPaths }}</b></span>
+            <span>URL <b class="mono">{{ app.target }}</b></span>
             <span>Total Vulnerabilities <b class="mono">{{ vulns.length.toLocaleString() }}</b></span>
-            <span>Scan Type <b>{{ scanTypeLabels[app.scanType] ?? app.scanType }}</b></span>
+            <span>Total scan time taken <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
           </div>
         </div>
         <div class="scan-main__actions">
@@ -684,6 +765,7 @@ onUnmounted(() => {
       <div class="scan-main__controls">
         <SearchInput v-model="search" placeholder="Search vulnerabilities" />
         <FilterDropdown v-model="severityFilter" :options="severityOptions" placeholder="Severity" />
+        <FilterDropdown v-model="validationFilter" :options="validationOptions" placeholder="Validation Cycle" />
         <div class="scan-main__spacer" />
         <div class="bulk-edit">
           <button
@@ -746,10 +828,17 @@ onUnmounted(() => {
           >{{ severityPill[row.severity]?.label ?? row.severity }}</span>
         </template>
         <template #cell-cycle="{ row }">
+          <button
+            v-if="row.validation === 'Check result'"
+            type="button"
+            class="val-check-btn"
+            @click.stop="openResolvedModal(row.id)"
+          >Check result</button>
           <span
+            v-else
             class="sev-pill"
-            :style="{ background: cyclePill[row.cycle]?.bg, color: cyclePill[row.cycle]?.color }"
-          >{{ row.cycle }}</span>
+            :style="{ background: validationPill[row.validation ?? 'Unresolved']?.bg, color: validationPill[row.validation ?? 'Unresolved']?.color }"
+          >{{ row.validation ?? 'Unresolved' }}</span>
         </template>
         <template #cell-action="{ row }">
           <button type="button" class="action-btn" aria-label="Actions" @click.stop="toggleMenu(row, $event)">
@@ -791,11 +880,11 @@ onUnmounted(() => {
         </div>
         <button
           type="button"
-          class="action-menu__item action-menu__item--danger"
-          @click="deleteFinding(openMenuId)"
+          class="action-menu__item"
+          @click="revalidateFinding(openMenuId)"
         >
-          <IconTrash :size="15" />
-          Delete
+          <IconRefresh :size="15" />
+          Revalidate
         </button>
       </div>
     </Teleport>
@@ -976,6 +1065,52 @@ onUnmounted(() => {
     </Teleport>
 
     <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showResolvedModal && !isStillDetected" class="modal-backdrop" @mousedown.self="closeResolvedModal">
+          <div class="res-modal" role="dialog" aria-modal="true" aria-labelledby="res-title">
+            <div class="res-modal__icon-wrap">
+              <span class="res-modal__icon">
+                <IconCheck :size="26" />
+              </span>
+            </div>
+
+            <h2 id="res-title" class="res-modal__title">Vulnerability Resolved</h2>
+            <p class="res-modal__text">This vulnerability was not found during revalidation. Move to Mitigated?</p>
+
+            <button type="button" class="res-modal__cta" @click="markMitigated">
+              Mark as Mitigated
+            </button>
+
+            <button type="button" class="res-modal__dismiss" @click="closeResolvedModal">
+              Not now
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showResolvedModal && isStillDetected" class="modal-backdrop" @mousedown.self="closeResolvedModal">
+          <div class="alert-modal" role="dialog" aria-modal="true" aria-labelledby="alert-title">
+            <div class="alert-modal__icon-wrap">
+              <span class="alert-modal__icon">
+                <IconX :size="26" />
+              </span>
+            </div>
+
+            <h2 id="alert-title" class="alert-modal__title">Vulnerability Still Detected</h2>
+            <p class="alert-modal__text">This vulnerability was found again during revalidation. It remains unresolved.</p>
+
+            <button type="button" class="alert-modal__dismiss" @click="closeResolvedModal">
+              Close
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
       <Transition name="target-panel-fade">
         <div v-if="showTargetDetailModal" class="target-modal" :style="{ top: `${targetDetailPos.top}px`, left: `${targetDetailPos.left}px` }">
             <div class="target-modal__head">
@@ -1101,6 +1236,13 @@ onUnmounted(() => {
 }
 
 .scan-timeline {
+  &__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
   &__scrollwrap {
     position: relative;
 
@@ -1375,6 +1517,24 @@ onUnmounted(() => {
     border-top-color: #fff;
     animation: btn-register-spin 0.7s linear infinite;
     flex-shrink: 0;
+  }
+}
+
+.scan-stopped-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #fef6e4;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #7c5a12;
+
+  &__icon {
+    flex-shrink: 0;
+    color: #e8a13d;
+    margin-top: 1px;
   }
 }
 
@@ -1714,6 +1874,27 @@ onUnmounted(() => {
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.val-check-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: none;
+  background: var(--glacia-red);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 4px 12px -4px rgba(255, 37, 41, 0.5);
+  transition: background 0.13s;
+
+  &:hover {
+    background: #e01e22;
+  }
 }
 
 .action-btn {
@@ -2891,6 +3072,230 @@ onUnmounted(() => {
 @media (prefers-reduced-motion: reduce) {
   .del-modal,
   .del-modal * {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}
+
+// ── Vulnerability Resolved modal (from the Check result button) ──────────
+.res-modal {
+  position: relative;
+  width: min(360px, calc(100% - 40px));
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 40px 80px -30px rgba(16, 24, 32, 0.5);
+  padding: 36px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: res-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes res-modal-bounce {
+  0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
+  60%  { opacity: 1; transform: scale(1.01) translateY(0); }
+  100% { transform: scale(1); }
+}
+
+.res-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #f4f6f7;
+  color: var(--glacia-ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #eceff1;
+  }
+}
+
+.res-modal__icon-wrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(22, 163, 74, 0.12);
+  }
+
+  &::before {
+    inset: -8px;
+    background: rgba(22, 163, 74, 0.08);
+  }
+}
+
+.res-modal__icon {
+  position: relative;
+  z-index: 1;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #22b262;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px -6px rgba(34, 178, 98, 0.55);
+}
+
+.res-modal__title {
+  margin: 0 0 10px;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--glacia-ink);
+  letter-spacing: -0.01em;
+}
+
+.res-modal__text {
+  width: 100%;
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #64748b;
+  text-align: center;
+}
+
+.res-modal__cta {
+  width: 100%;
+  height: 42px;
+  border-radius: 12px;
+  border: none;
+  background: #ff2e3a;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -8px rgba(255, 46, 58, 0.55);
+  transition: background 0.15s;
+  margin-bottom: 16px;
+
+  &:hover {
+    background: #e6212c;
+  }
+}
+
+.res-modal__dismiss {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s;
+
+  &:hover {
+    color: var(--glacia-ink);
+  }
+}
+
+.alert-modal {
+  position: relative;
+  width: min(360px, calc(100% - 40px));
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 40px 80px -30px rgba(16, 24, 32, 0.5);
+  padding: 36px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: res-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.alert-modal__icon-wrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(255, 46, 58, 0.12);
+  }
+
+  &::before {
+    inset: -8px;
+    background: rgba(255, 46, 58, 0.08);
+  }
+}
+
+.alert-modal__icon {
+  position: relative;
+  z-index: 1;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #d5202c;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px -6px rgba(213, 32, 44, 0.55);
+}
+
+.alert-modal__title {
+  margin: 0 0 10px;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--glacia-ink);
+  letter-spacing: -0.01em;
+}
+
+.alert-modal__text {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.alert-modal__dismiss {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s;
+
+  &:hover {
+    color: var(--glacia-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .res-modal,
+  .res-modal * {
     transition-duration: 1ms !important;
     animation-duration: 1ms !important;
   }
