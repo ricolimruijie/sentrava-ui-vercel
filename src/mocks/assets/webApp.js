@@ -20,8 +20,8 @@ const EXTRA_TAGS = [
 
 const ROWS = [
   { id: 1, name: 'Website Protergo Cyber Security', target: 'https://protergo.id', owner: 'Protergo Cyber Security HQ', scanType: 'manual', status: 'Scanning', extras: [0, 4], auth: 'Inactive' },
-  { id: 2, name: 'Customer Portal', target: 'https://portal.protergo.id', owner: 'Protergo Cyber Security Jakarta', scanType: 'scheduled', status: 'Queue', extras: [1, 5], auth: 'Active' },
-  { id: 3, name: 'Billing Dashboard', target: 'https://billing.protergo.id', owner: 'Protergo Fintech Solutions', scanType: 'continuous', status: 'Completed', extras: [0, 8], recurrence: 'weekly', auth: 'Inactive' },
+  { id: 2, name: 'Customer Portal', target: 'https://portal.protergo.id', owner: 'Protergo Cyber Security Jakarta', scanType: 'scheduled', status: 'Completed', extras: [1, 5], auth: 'Active' },
+  { id: 3, name: 'Billing Dashboard', target: 'https://billing.protergo.id', owner: 'Protergo Fintech Solutions', scanType: 'continuous', status: 'Scanning', extras: [0, 8], recurrence: 'weekly', auth: 'Inactive' },
 ]
 
 export function getWebApps() {

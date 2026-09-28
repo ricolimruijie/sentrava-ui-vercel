@@ -41,6 +41,8 @@ const scanTypeOptions = [
   { value: 'singular', label: 'Singular Scanning' },
   { value: 'specified', label: 'Specified Scanning' },
   { value: 'continuous', label: 'Continuous Scanning' },
+  { value: 'manual', label: 'Manual Triggered' },
+  { value: 'scheduled', label: 'Scheduled Scanning' },
 ]
 
 // ── Filters ────────────────────────────────────────────────────────────────

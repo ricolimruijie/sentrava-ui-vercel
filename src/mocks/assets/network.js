@@ -1,18 +1,74 @@
 // Network Assessment seed data.
 export function getNetworks() {
   return structuredClone([
-    { id: 1, endpoint: '10.10.19.2/24', targetType: 'CIDR', scanType: 'continuous', registeredCount: 30, status: 'Completed', tags: [] },
-    { id: 2, endpoint: '10.10.19.52', targetType: 'IP Single', scanType: 'singular', registeredCount: 1, status: 'Completed', tags: [] },
+    { id: 1, endpoint: '10.10.19.2/24', targetType: 'CIDR', scanType: 'manual', registeredCount: 30, status: 'Completed', tags: [] },
+    { id: 3, endpoint: '10.10.20.0/24', targetType: 'CIDR', scanType: 'scheduled', registeredCount: 45, status: 'Scanning', tags: [] },
+    { id: 4, endpoint: '10.10.21.0/24', targetType: 'CIDR', scanType: 'continuous', registeredCount: 12, status: 'Queue', tags: [], recurrence: 'weekly' },
+    { id: 2, endpoint: '10.10.19.52', targetType: 'IP Single', scanType: 'manual', registeredCount: 1, status: 'Completed', tags: [] },
+    { id: 6, endpoint: '10.10.19.88', targetType: 'IP Single', scanType: 'specified', registeredCount: 1, status: 'Completed', tags: [] },
+    { id: 7, endpoint: '10.10.19.91', targetType: 'IP Single', scanType: 'continuous', registeredCount: 1, status: 'Scanning', tags: [], recurrence: 'weekly' },
   ])
 }
 
-// Scan timeline entries for the network detail page, newest first.
-export function getNetworkScans() {
-  return [
+// Scan timeline entries for the network detail page, newest first. Shaped
+// per target so the timeline reads correctly for its scan type: manual/
+// singular targets only ever show discrete user-triggered runs (no queued or
+// waiting placeholders); scheduled/specified targets show a fixed cadence
+// (past runs, the next queued slot, a future waiting slot); continuous
+// targets show an in-progress run backed by a run history.
+const NETWORK_SCANS = {
+  // manual — CIDR (10.10.19.2/24)
+  1: [
     { id: 's1', date: '9 Feb 2025 8:30 AM', status: 'Completed' },
-    { id: 's2', date: '10 Feb 2025 8:30 AM', status: 'Queue' },
-    { id: 's3', date: '11 Feb 2025 8:30 AM', status: 'Waiting' },
-  ]
+    { id: 's2', date: '3 Feb 2025 2:10 PM', status: 'Failed' },
+    { id: 's3', date: '28 Jan 2025 9:00 AM', status: 'Completed' },
+    { id: 's4', date: '21 Jan 2025 9:00 AM', status: 'Completed' },
+  ],
+  // manual — IP Single (10.10.19.52)
+  2: [
+    { id: 's1', date: '9 Feb 2025 8:30 AM', status: 'Completed' },
+    { id: 's2', date: '2 Feb 2025 8:30 AM', status: 'Completed' },
+    { id: 's3', date: '26 Jan 2025 8:30 AM', status: 'Failed' },
+  ],
+  // scheduled — CIDR (10.10.20.0/24), mirrors Web Application's Customer Portal
+  3: [
+    { id: 's1', date: '14 Jul 2026 12:59', status: 'Failed' },
+    { id: 's2', date: '15 Jul 2026 08:00', status: 'Completed' },
+    { id: 's3', date: '16 Jul 2026 08:00', status: 'Scanning' },
+    { id: 's4', date: '17 Jul 2026 08:00', status: 'Waiting' },
+    { id: 's5', date: '18 Jul 2026 08:00', status: 'Waiting' },
+    { id: 's6', date: '19 Jul 2026 08:00', status: 'Waiting' },
+    { id: 's7', date: '20 Jul 2026 08:00', status: 'Waiting' },
+    { id: 's8', date: '21 Jul 2026 08:00', status: 'Waiting' },
+  ],
+  // continuous — CIDR (10.10.21.0/24)
+  4: [
+    { id: 's1', date: '11 Feb 2025 8:30 AM', status: 'Scanning' },
+    { id: 's2', date: '4 Feb 2025 8:30 AM', status: 'Completed' },
+    { id: 's3', date: '28 Jan 2025 8:30 AM', status: 'Completed' },
+    { id: 's4', date: '21 Jan 2025 8:30 AM', status: 'Completed' },
+  ],
+  // specified — IP Single (10.10.19.88), mirrors Web Application's Customer Portal
+  6: [
+    { id: 's1', date: '14 Jul 2026 12:59', status: 'Failed' },
+    { id: 's2', date: '15 Jul 2026 08:00', status: 'Completed' },
+    { id: 's3', date: '16 Jul 2026 08:00', status: 'Scanning' },
+    { id: 's4', date: '17 Jul 2026 08:00', status: 'Waiting' },
+    { id: 's5', date: '18 Jul 2026 08:00', status: 'Waiting' },
+    { id: 's6', date: '19 Jul 2026 08:00', status: 'Waiting' },
+    { id: 's7', date: '20 Jul 2026 08:00', status: 'Waiting' },
+    { id: 's8', date: '21 Jul 2026 08:00', status: 'Waiting' },
+  ],
+  // continuous — IP Single (10.10.19.91)
+  7: [
+    { id: 's1', date: '11 Feb 2025 8:30 AM', status: 'Scanning' },
+    { id: 's2', date: '4 Feb 2025 8:30 AM', status: 'Completed' },
+    { id: 's3', date: '28 Jan 2025 8:30 AM', status: 'Completed' },
+  ],
+}
+
+export function getNetworkScans(id) {
+  return structuredClone(NETWORK_SCANS[id] ?? NETWORK_SCANS[1])
 }
 
 // Discovered endpoints for the selected network scan (30 rows, 3 pages).

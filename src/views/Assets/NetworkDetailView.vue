@@ -43,8 +43,8 @@ const scanStatusPill = {
 }
 
 // ── Scan timeline ──────────────────────────────────────────────────────────
-const scans = ref(getNetworkScans())
-const selectedScan = ref(1)
+const scans = ref(getNetworkScans(network.value.id))
+const selectedScan = ref(0)
 
 // Same dotted-timeline approach as WebAppDetailView.
 const scanDot = {
@@ -81,12 +81,118 @@ function scrollTimelineMore() {
   tlRef.value?.scrollBy({ top: 174, behavior: 'smooth' })
 }
 
-function rescan() {
+function rescan(index) {
+  if (index != null && scans.value[index]?.status === 'Failed') {
+    scans.value[index] = { ...scans.value[index], status: 'Queue' }
+    selectedScan.value = index
+    return
+  }
   const now = new Date().toLocaleString('en-US', {
     day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
   })
   scans.value.unshift({ id: `s-${Date.now()}`, date: now, status: 'Queue' })
-  selectedScan.value = 0
+  selectedScan.value += 1
+}
+
+// ── Re-scan confirmation (same inline pattern as WebAppDetailView) ────────
+const pendingRescanType = ref(null) // 'main' | 'retry' | 'stop'
+const pendingRescanIndex = ref(null)
+const rescanLoading = ref(false)
+const scanInProgress = ref(false)
+const retryLoadingIndex = ref(null)
+const retryDoneIndex = ref(null)
+const stopLoading = ref(false)
+const timelineStopped = ref(false)
+
+const hasActiveScan = computed(() => scans.value.some((s) => s.status === 'Scanning'))
+
+// The scan timeline's action button depends on the target's scan type:
+// manual/singular = user-triggered one-off scans (Re-scan button); continuous
+// = ongoing scans that can be stopped; scheduled/specified run on their own
+// schedule and show no manual control, same as WebAppDetailView.
+const scanActionKind = computed(() => {
+  const t = network.value.scanType
+  if (t === 'manual' || t === 'singular') return 'manual'
+  if (t === 'continuous') return 'continuous'
+  return 'none'
+})
+
+// Shown under the timeline heading for continuous targets.
+const recurrenceLabels = { daily: 'Daily', weekly: 'Weekly', biweekly: 'Every Two Weeks', monthly: 'Monthly' }
+const recurrenceLabel = computed(() =>
+  network.value.scanType === 'continuous' ? (recurrenceLabels[network.value.recurrence] ?? null) : null,
+)
+
+function stopScanning() {
+  const i = scans.value.findIndex((s) => s.status === 'Scanning')
+  if (i < 0) return
+  scans.value[i] = { ...scans.value[i], status: 'Completed' }
+  const next = scans.value.findIndex((s) => !['Scanning', 'Queue', 'Waiting'].includes(s.status))
+  selectedScan.value = Math.max(0, next)
+}
+
+function openRescanConfirm(index = null) {
+  pendingRescanIndex.value = index
+  pendingRescanType.value = index != null ? 'retry' : 'main'
+}
+
+function openStopConfirm() {
+  pendingRescanIndex.value = null
+  pendingRescanType.value = 'stop'
+}
+
+function cancelRescan() {
+  pendingRescanType.value = null
+  pendingRescanIndex.value = null
+}
+
+function rbState(i) {
+  if (retryDoneIndex.value === i) return 'is-done'
+  if (retryLoadingIndex.value === i) return 'is-loading'
+  if (pendingRescanType.value === 'retry' && pendingRescanIndex.value === i) return 'is-confirm'
+  return 'is-idle'
+}
+
+function rbConfirming(i) {
+  const st = rbState(i)
+  return st === 'is-confirm' || st === 'is-loading'
+}
+
+function confirmRescan() {
+  if (pendingRescanType.value === 'main') {
+    if (rescanLoading.value) return
+    rescanLoading.value = true
+    setTimeout(() => {
+      rescan(pendingRescanIndex.value)
+      rescanLoading.value = false
+      scanInProgress.value = true
+      cancelRescan()
+    }, 1500)
+    return
+  }
+  if (pendingRescanType.value === 'stop') {
+    if (stopLoading.value) return
+    stopLoading.value = true
+    setTimeout(() => {
+      stopScanning()
+      stopLoading.value = false
+      timelineStopped.value = true
+      cancelRescan()
+    }, 1500)
+    return
+  }
+  if (retryLoadingIndex.value != null || retryDoneIndex.value != null) return
+  const i = pendingRescanIndex.value
+  retryLoadingIndex.value = i
+  setTimeout(() => {
+    rescan(i)
+    retryDoneIndex.value = i
+    retryLoadingIndex.value = null
+    setTimeout(() => {
+      retryDoneIndex.value = null
+      cancelRescan()
+    }, 350)
+  }, 1200)
 }
 
 // ── Endpoints ──────────────────────────────────────────────────────────────
@@ -188,15 +294,15 @@ function manageEpTags(id) {
   epTagPos.value = { top: pos.top, left: Math.max(8, Math.min(pos.left, window.innerWidth - 288)) }
 }
 
-function closeEpTagPopover() { epTagFor.value = null }
-
-function openEpCardTagPopover(e) {
-  if (!selectedEndpoint.value) return
-  const rect = e.currentTarget.getBoundingClientRect()
-  epTagFor.value = selectedEndpoint.value.id
+// Same pattern as WebAppView's inline "Add tag" cell button.
+function openEpTagPopover(row, e) {
+  epTagFor.value = row.id
   epTagQuery.value = ''
+  const rect = e.currentTarget.getBoundingClientRect()
   epTagPos.value = { top: rect.bottom + 6, left: Math.max(8, Math.min(rect.left, window.innerWidth - 288)) }
 }
+
+function closeEpTagPopover() { epTagFor.value = null }
 
 function pickEpExistingTag(row, tag) {
   if (!row.tags.some((t) => t.label === tag.label)) row.tags.push({ label: tag.label, colorId: tag.colorId })
@@ -227,7 +333,14 @@ function openEndpointFindings(row) {
 }
 
 watch(() => route.params.id, () => {
+  scans.value = getNetworkScans(network.value.id)
   selectedScan.value = 0
+  scanInProgress.value = false
+  timelineStopped.value = false
+  pendingRescanType.value = null
+  pendingRescanIndex.value = null
+  retryLoadingIndex.value = null
+  retryDoneIndex.value = null
   router.replace({ query: {} })
 })
 
@@ -539,6 +652,7 @@ function downloadReport() {
     <aside class="scan-timeline">
       <section v-if="!selectedEndpoint" class="side-card">
         <h2 class="scan-timeline__section">Scan timeline</h2>
+        <p v-if="recurrenceLabel" class="scan-timeline__recurrence">Repeats {{ recurrenceLabel.toLowerCase() }}</p>
 
         <div class="scan-timeline__scrollwrap">
           <div ref="tlRef" class="scan-timeline__scroll" @scroll="updateTimelineHint">
@@ -548,14 +662,50 @@ function downloadReport() {
               :key="s.id"
               type="button"
               class="scan-timeline__item"
-              :class="{ 'scan-timeline__item--active': i === selectedScan }"
+              :class="{ 'scan-timeline__item--active': i === selectedScan, 'scan-timeline__item--disabled': s.status === 'Scanning' || s.status === 'Queue' || s.status === 'Waiting' }"
+              :disabled="s.status === 'Scanning' || s.status === 'Queue' || s.status === 'Waiting'"
               @click="selectedScan = i"
             >
               <span class="scan-timeline__dot" :style="{ background: scanDot[s.status] ?? '#9aa5b1' }" />
               <span class="scan-timeline__meta">
                 <span class="scan-timeline__date">{{ to24Hour(s.date) }}</span>
-                <span class="scan-timeline__status">{{ s.status }}</span>
+                <span class="scan-timeline__status">{{ rbConfirming(i) ? 'Retry this scan?' : s.status }}</span>
               </span>
+              <template v-if="s.status === 'Failed' || retryDoneIndex === i">
+                <div class="rb-pill" :class="rbState(i)">
+                  <button
+                    type="button"
+                    class="rb-sync"
+                    title="Retry scan"
+                    aria-label="Retry scan"
+                    :tabindex="rbState(i) === 'is-idle' ? 0 : -1"
+                    @click.stop="openRescanConfirm(i)"
+                  >
+                    <IconRefresh :size="12" />
+                  </button>
+                  <button
+                    type="button"
+                    class="rb-ok"
+                    title="Confirm retry"
+                    aria-label="Confirm retry"
+                    :tabindex="rbState(i) === 'is-confirm' ? 0 : -1"
+                    @click.stop="confirmRescan"
+                  >
+                    <IconCheck :size="12" class="rb-tick" />
+                    <span class="rb-spinner" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    class="rb-no"
+                    title="Cancel retry"
+                    aria-label="Cancel retry"
+                    :tabindex="rbState(i) === 'is-confirm' ? 0 : -1"
+                    @click.stop="cancelRescan"
+                  >
+                    <IconX :size="12" />
+                  </button>
+                </div>
+              </template>
             </button>
           </div>
           <button
@@ -570,9 +720,58 @@ function downloadReport() {
 
         <p class="scan-timeline__count">{{ scans.length }} scans</p>
 
-        <button type="button" class="btn-register btn-register--block" @click="rescan">
-          <IconRefresh :size="14" /> Re-scan
-        </button>
+        <Transition name="rescan-swap" mode="out-in">
+          <div v-if="timelineStopped" key="stopped" class="scan-stopped-note">
+            <IconInfoCircle :size="16" class="scan-stopped-note__icon" />
+            <span>Scanning for this target has been stopped and cannot be restarted.</span>
+          </div>
+          <button
+            v-else-if="scanInProgress"
+            key="scanning"
+            type="button"
+            class="btn-register btn-register--block btn-register--scanning"
+            disabled
+          >
+            Scan in progress
+          </button>
+          <div v-else-if="pendingRescanType === 'main' || pendingRescanType === 'stop'" key="confirm" class="rescan-confirm-inline">
+            <button
+              type="button"
+              class="btn-register btn-register--block btn-register--cancel"
+              :disabled="rescanLoading || stopLoading"
+              @click="cancelRescan"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn-register btn-register--block btn-register--proceed"
+              :disabled="rescanLoading || stopLoading"
+              @click="confirmRescan"
+            >
+              <span v-if="rescanLoading || stopLoading" class="btn-register__spinner" aria-hidden="true" />
+              <span v-else>Proceed</span>
+            </button>
+          </div>
+          <button
+            v-else-if="scanActionKind === 'continuous' && hasActiveScan"
+            key="stop"
+            type="button"
+            class="btn-register btn-register--block"
+            @click="openStopConfirm"
+          >
+            Stop scanning
+          </button>
+          <button
+            v-else-if="scanActionKind === 'manual'"
+            key="rescan"
+            type="button"
+            class="btn-register btn-register--block"
+            @click="() => openRescanConfirm()"
+          >
+            <IconRefresh :size="14" /> Re-scan
+          </button>
+        </Transition>
       </section>
 
       <section v-if="!isCidr || selectedEndpoint" class="side-card">
@@ -592,20 +791,6 @@ function downloadReport() {
             </span>
           </button>
         </div>
-      </section>
-
-      <section v-if="selectedEndpoint" class="side-card">
-        <p class="scan-timeline__section">Multi-Tags</p>
-        <div class="side-card__tag-list">
-          <span
-            v-for="t in selectedEndpoint.tags"
-            :key="t.label"
-            class="dv-tag"
-            :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }"
-          >{{ t.label }}</span>
-          <span v-if="!(selectedEndpoint.tags || []).length" class="tag-popover__empty">No tags yet.</span>
-        </div>
-        <button type="button" class="tag-add" @click="openEpCardTagPopover($event)">Manage tags</button>
       </section>
     </aside>
 
@@ -654,6 +839,7 @@ function downloadReport() {
               :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }"
             >{{ t.label }}</span>
             <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
+            <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openEpTagPopover(row, $event)">Add tag</button>
           </div>
         </template>
         <template #cell-status="{ row }">
@@ -674,32 +860,37 @@ function downloadReport() {
     <div v-else-if="selectedEndpoint" class="scan-main">
       <section class="scan-main__head">
         <div>
-          <h1 class="scan-main__title">Endpoint: {{ selectedEndpoint.endpoint }}</h1>
-          <div class="scan-main__meta">
-            <span>Date Scanned: <b>{{ scans[selectedScan]?.date }}</b></span>
-            <span class="scan-main__sep">/</span>
-            <span>Total Vulnerabilities: <b>{{ vulns.length }}</b></span>
+          <div class="scan-main__target">
+            <span class="scan-main__target-label">Endpoint</span>
+            <h1 class="scan-main__title">{{ selectedEndpoint.endpoint }}</h1>
+          </div>
+          <div class="scan-main__meta scan-main__meta--wide">
+            <span>Date Scanned <b class="mono">{{ scans[selectedScan]?.date }}</b></span>
+            <span>Total Vulnerabilities <b class="mono">{{ vulns.length }}</b></span>
           </div>
         </div>
         <div class="scan-main__actions">
+          <button type="button" class="btn-register" @click="viewEndpoint(selectedEndpoint)">
+            <IconInfoCircle :size="15" /> View detail
+          </button>
           <button type="button" class="btn-register" @click="downloadEpReport">
-            <IconDownload :size="15" /> Report
+            <IconDownload :size="15" /> Download report
           </button>
         </div>
       </section>
 
       <div class="scan-main__controls">
+        <SearchInput v-model="epSearch" placeholder="Search vulnerabilities" />
         <FilterDropdown v-model="epSeverity" :options="vulnSeverityOptions" placeholder="Severity" />
         <div class="scan-main__spacer" />
-        <SearchInput v-model="epSearch" placeholder="Search" />
         <div class="bulk-edit">
           <button
             type="button"
-            class="btn-register"
+            class="btn-glass"
             :disabled="!epChecked.length"
             @click.stop="epBulkOpen = !epBulkOpen"
           >
-            Bulk Edit <IconChevronDown :size="14" />
+            <IconPencil :size="15" /> Bulk edit
           </button>
           <div v-if="epBulkOpen && epChecked.length" class="bulk-edit__menu">
             <button
@@ -969,6 +1160,24 @@ function downloadReport() {
                     class="dv-tag"
                     :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }"
                   >{{ t.label }}</span>
+                </div>
+              </div>
+              <div class="detail-field">
+                <span class="detail-field__label">Vulnerability Cycle</span>
+                <div class="cycle-tabs">
+                  <button
+                    v-for="tab in cycleTabs"
+                    :key="tab"
+                    type="button"
+                    class="cycle-tabs__item"
+                    :class="{ 'cycle-tabs__item--active': tab === activeCycle }"
+                    @click="activeCycle = tab"
+                  >
+                    {{ tab }}
+                    <span class="cycle-tabs__count" :class="{ 'cycle-tabs__count--active': tab === activeCycle }">
+                      {{ cycleCount(tab) }}
+                    </span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1289,6 +1498,264 @@ function downloadReport() {
   &--block {
     width: 100%;
   }
+
+  &--cancel {
+    background: transparent;
+    color: var(--glacia-ink-dim);
+    box-shadow: none;
+    border: 1px solid var(--glacia-glass-border);
+
+    &:hover {
+      background: rgba(15, 23, 42, 0.06);
+      color: var(--glacia-ink);
+      box-shadow: none;
+    }
+  }
+
+  &--proceed {
+    background: var(--glacia-red);
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(255, 37, 41, 0.4);
+
+    &:hover:not(:disabled) {
+      background: #e01e22;
+      box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: default;
+    }
+  }
+
+  &--scanning {
+    background: #ECEEF0;
+    color: #5C6470;
+    box-shadow: none;
+    cursor: default;
+
+    &:hover {
+      background: #ECEEF0;
+      box-shadow: none;
+    }
+  }
+
+  &__spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    animation: btn-register-spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+}
+
+@keyframes btn-register-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.scan-timeline__recurrence {
+  margin: -6px 0 0;
+  font-size: 11.5px;
+  color: var(--glacia-ink-dim);
+}
+
+.scan-timeline__item--disabled {
+  cursor: default;
+  background: rgba(15, 23, 42, 0.05);
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.05);
+  }
+}
+
+.scan-stopped-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #fef6e4;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #7c5a12;
+
+  &__icon {
+    flex-shrink: 0;
+    color: #e8a13d;
+    margin-top: 1px;
+  }
+}
+
+// Re-scan ↔ Cancel/Proceed ↔ Scan-in-progress transform animation
+.rescan-swap-enter-active {
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.rescan-swap-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.rescan-swap-enter-from {
+  opacity: 0;
+  transform: translateY(6px) scale(0.97);
+}
+.rescan-swap-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+}
+
+// Inline re-scan confirmation (button transforms into Cancel/Proceed)
+.rescan-confirm-inline {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+
+  .btn-register {
+    flex: 1;
+  }
+}
+
+// Failed-scan retry pill — same pattern as WebAppDetailView
+.rb-pill {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border-radius: 999px;
+  background: rgba(220, 38, 38, 0.1);
+  transition: width 420ms cubic-bezier(0.65, 0, 0.35, 1), background 300ms ease,
+    opacity 260ms ease, transform 320ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.rb-pill.is-confirm {
+  width: 58px;
+  background: var(--gray-100);
+}
+.rb-pill.is-loading {
+  background: transparent;
+}
+.rb-pill.is-done {
+  background: transparent;
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.rb-pill button {
+  position: absolute;
+  border: 0;
+  padding: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rb-sync {
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  color: #dc2626;
+  transition: opacity 180ms ease, transform 360ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.rb-pill:not(.is-idle) .rb-sync {
+  opacity: 0;
+  transform: rotate(-180deg) scale(0.4);
+  pointer-events: none;
+}
+
+.rb-ok {
+  left: 2px;
+  top: 2px;
+  width: 24px;
+  height: 24px;
+  background: var(--glacia-red);
+  color: #fff;
+  box-shadow: 0 6px 14px -6px rgba(255, 37, 41, 0.55);
+  opacity: 0;
+  transform: scale(0.4);
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 380ms cubic-bezier(0.34, 1.3, 0.64, 1), background 200ms ease;
+}
+.is-confirm .rb-ok {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition-delay: 60ms;
+}
+.is-confirm .rb-ok:hover {
+  filter: brightness(0.92);
+}
+.is-loading .rb-ok {
+  opacity: 1;
+  transform: none;
+  cursor: default;
+}
+
+.rb-tick {
+  transition: opacity 180ms ease, transform 260ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.is-loading .rb-tick {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.rb-spinner {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: rb-spin 700ms linear infinite;
+  opacity: 0;
+  transition: opacity 200ms ease 120ms;
+}
+.is-loading .rb-spinner {
+  opacity: 1;
+}
+
+.rb-no {
+  left: 32px;
+  top: 2px;
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  color: #5b6470;
+  box-shadow: 0 1px 3px rgba(16, 24, 32, 0.12);
+  opacity: 0;
+  transform: scale(0.4);
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 340ms cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.is-confirm .rb-no {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition-delay: 140ms;
+}
+.is-confirm .rb-no:hover {
+  color: var(--glacia-ink);
+}
+.is-loading .rb-no {
+  transform: translateX(-14px) scale(0.3);
+}
+
+@keyframes rb-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rb-pill, .rb-pill * {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
 }
 
 .btn-glass {
@@ -1579,6 +2046,18 @@ function downloadReport() {
     flex-wrap: wrap;
   }
 
+  &__target {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  &__target-label {
+    font-size: 13px;
+    color: var(--glacia-ink-dim);
+    font-weight: 600;
+  }
+
   &__title {
     font-family: 'Manrope', 'Inter', sans-serif;
     font-size: 22px;
@@ -1596,6 +2075,10 @@ function downloadReport() {
     color: var(--glacia-ink-dim);
     flex-wrap: wrap;
     margin-top: 6px;
+
+    &--wide {
+      gap: 18px;
+    }
 
     b {
       color: var(--glacia-ink);
@@ -1660,12 +2143,11 @@ function downloadReport() {
 }
 
 .tag-add {
-  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-  padding: 7px 10px; border-radius: 999px;
-  border: 1px dashed var(--glacia-glass-border); background: #fff;
-  font-size: 12px; font-weight: 600; font-family: 'Manrope', 'Inter', sans-serif;
-  color: var(--glacia-ink-dim); cursor: pointer;
-  &:hover { border-color: var(--glacia-red); color: var(--glacia-red); }
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 14px; border-radius: 999px;
+  border: 1.5px dashed #8a9ba8; background: transparent; font-size: 13px; font-weight: 500;
+  font-family: 'Manrope', 'Inter', sans-serif; color: #64748b; cursor: pointer; white-space: nowrap;
+  transition: background 0.15s ease;
+  &:hover { background: rgba(100, 116, 139, 0.08); }
 }
 
 .dv-dot {

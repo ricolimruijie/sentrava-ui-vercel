@@ -406,7 +406,8 @@ const selectedFinding = ref(null)
 
 function viewFinding(id) {
   closeMenu()
-  selectedFinding.value = vulns.value.find((v) => v.id === id) ?? null
+  const found = vulns.value.find((v) => v.id === id) ?? null
+  selectedFinding.value = found ? { ...found, line: undefined, codeLine: undefined, url: app.value?.target, verified: true } : null
   showDetailModal.value = true
 }
 
@@ -889,7 +890,7 @@ onUnmounted(() => {
       </div>
     </Teleport>
 
-    <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip />
+    <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip hide-risk-chips hide-code-snippet heading-title="Web Application Vulnerability Details" show-revalidation-status />
 
     <Teleport to="body">
       <Transition name="modal-fade">
