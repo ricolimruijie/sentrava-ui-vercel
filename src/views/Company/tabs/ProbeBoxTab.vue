@@ -14,7 +14,7 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: '#', width: '24px', dim: true },
-  { key: 'name', label: 'Probe Name', width: '28%', bold: true, mono: true, truncate: true},
+  { key: 'name', label: 'Integration Name', width: '28%', bold: true, mono: true, truncate: true},
   { key: 'ip', label: 'IP Address', width: '20%', mono: true, dim: true, truncate: true},
   { key: 'lastSeen', label: 'Last Checked', width: '24%', dim: true, truncate: true},
   { key: 'status', label: 'Status', width: '18%', align: 'center' },
@@ -99,7 +99,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       :items="filteredData"
       :loading="loading"
       hide-pagination
-      empty-text="No probes found."
+      empty-text="No integrations found."
     >
       <template #cell-status="{ row }">
         <span class="status-pill" :style="{ background: s(row.status).bg, color: s(row.status).color }">
@@ -118,7 +118,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       <div v-if="openMenuId" class="action-menu" :style="{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }">
         <button type="button" class="action-menu__item" @click="restartProbe((data ?? []).find((i) => i.id === openMenuId))">
           <IconRefresh :size="15" />
-          Restart probe
+          Restart integration
         </button>
         <button
           type="button"
@@ -126,7 +126,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
           @click="removeProbe((data ?? []).find((i) => i.id === openMenuId))"
         >
           <IconTrash :size="15" />
-          Remove probe
+          Remove integration
         </button>
       </div>
     </Teleport>

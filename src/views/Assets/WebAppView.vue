@@ -1,12 +1,13 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
+import DateTimePicker from '@/components/reusable/DateTimePicker.vue'
 import GlassField from '@/components/reusable/GlassField.vue'
 import { getWebApps } from '@/mocks/assets/webApp.js'
-import { IconDotsVertical, IconCirclePlus, IconX, IconTag, IconArrowUpRight, IconTrash } from '@tabler/icons-vue'
+import { IconDotsVertical, IconCirclePlus, IconScan, IconX, IconTag, IconArrowUpRight, IconTrash, IconCheck, IconFolder, IconPlus, IconBuilding, IconKey, IconInfoCircle } from '@tabler/icons-vue'
 
 const router = useRouter()
 
@@ -15,7 +16,7 @@ const apps = ref(getWebApps())
 const columns = [
   { key: '__index', label: '#', width: '24px', dim: true },
   { key: 'name', label: 'Application name', width: '16%', truncate: true },
-  { key: 'target', label: 'Target', width: '18%', mono: true, dim: true, truncate: true },
+  { key: 'target', label: 'Target', width: '18%', truncate: true },
   { key: 'owner', label: 'Asset owner', width: '14%', truncate: true },
   { key: 'scanType', label: 'Scan type', width: '11%', truncate: true },
   { key: 'tags', label: 'Multi-Tags', width: '15%' },
@@ -92,8 +93,84 @@ function closeMenu() {
 
 function deleteApp(id) {
   closeMenu()
-  apps.value = apps.value.filter((a) => a.id !== id)
+  deletingApp.value = apps.value.find((a) => a.id === id) ?? null
+  deleteState.value = 'idle'
+  deleteAcknowledged.value = false
+  deleteHolding.value = false
+  showDeleteModal.value = true
 }
+
+// ── Delete application modal — same hold-to-delete as SourceCodeView ─────
+// Acknowledge checkbox → press-and-hold Delete (1000ms fill) → deleting
+// spinner → done panel. Close is blocked while deleting.
+const showDeleteModal = ref(false)
+const deletingApp = ref(null)
+const deleteState = ref('idle') // 'idle' | 'loading' | 'saved'
+const deleteAcknowledged = ref(false)
+const deleteHolding = ref(false)
+let deleteHoldTimer = null
+let deleteDoneTimer = null
+
+const deleteReady = computed(() => deleteAcknowledged.value && deleteState.value === 'idle')
+const deleteLabel = computed(() => {
+  if (deleteState.value === 'loading') return 'Deleting…'
+  if (!deleteAcknowledged.value) return 'Delete'
+  return deleteHolding.value ? 'Keep holding…' : 'Hold to delete'
+})
+const deleteHint = computed(() => {
+  if (!deleteAcknowledged.value && deleteState.value === 'idle') return 'Tick the box above to enable Delete'
+  if (deleteReady.value && !deleteHolding.value) return 'Press and hold, or hold Enter'
+  return ''
+})
+
+function closeDeleteModal() {
+  if (deleteState.value === 'loading') return
+  clearTimeout(deleteHoldTimer)
+  deleteHolding.value = false
+  showDeleteModal.value = false
+  deletingApp.value = null
+  deleteState.value = 'idle'
+  deleteAcknowledged.value = false
+}
+function toggleDeleteAck() {
+  if (deleteState.value !== 'idle') return
+  deleteAcknowledged.value = !deleteAcknowledged.value
+  deleteHolding.value = false
+}
+function doDeleteApp() {
+  clearTimeout(deleteHoldTimer)
+  deleteHolding.value = false
+  deleteState.value = 'loading'
+  deleteDoneTimer = setTimeout(() => {
+    apps.value = apps.value.filter((a) => a.id !== deletingApp.value.id)
+    deleteState.value = 'saved'
+  }, 1200)
+}
+function deleteHoldStart() {
+  if (!deleteReady.value) return
+  deleteHolding.value = true
+  clearTimeout(deleteHoldTimer)
+  deleteHoldTimer = setTimeout(doDeleteApp, 1000)
+}
+function deleteHoldEnd() {
+  if (deleteHolding.value) {
+    clearTimeout(deleteHoldTimer)
+    deleteHolding.value = false
+  }
+}
+function deleteKeyDown(e) {
+  if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
+    e.preventDefault()
+    deleteHoldStart()
+  }
+}
+function deleteKeyUp(e) {
+  if (e.key === 'Enter' || e.key === ' ') deleteHoldEnd()
+}
+onUnmounted(() => {
+  clearTimeout(deleteHoldTimer)
+  clearTimeout(deleteDoneTimer)
+})
 
 // ── Detail: dedicated page ─────────────────────────────────────────────────
 function seeDetail(id) {
@@ -106,7 +183,11 @@ const tagPopoverFor = ref(null) // app id
 const tagPopoverPos = ref({ top: 0, left: 0 })
 const tagQuery = ref('')
 const tagNewColor = ref(4)
-const createdTags = ref([])
+const createdTags = ref([
+  { label: 'Production', colorId: 4 },
+  { label: 'Staging', colorId: 1 },
+  { label: 'Dev', colorId: 3 },
+])
 const tagVocab = computed(() => {
   const m = new Map()
   apps.value.forEach((a) => (a.tags || []).forEach((t) => m.set(t.label, t.colorId)))
@@ -164,38 +245,68 @@ function handleClickOutside(e) {
 onMounted(() => document.addEventListener('mousedown', handleClickOutside))
 onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
-// ── Register URL modal ─────────────────────────────────────────────────────
+// ── Register URL modal (same fields as Asset Inventory's Register URL) ────
 const showUrlModal = ref(false)
+const regUrlOwner = ref(null)
+const regUrlName = ref('')
 const regUrl = ref('')
-const regUrlOwner = ref('')
-const regUrlAttempted = ref(false)
+const regUrlBasic = ref(false)
+const regUrlUser = ref('')
+const regUrlPass = ref('')
 const regUrlState = ref('idle') // 'idle' | 'loading' | 'saved'
 
+const ownerOptions = [
+  { value: 'Protergo Cyber Security Ampera', label: 'Protergo Cyber Security Ampera' },
+  { value: 'Protergo Cyber Security Jakarta', label: 'Protergo Cyber Security Jakarta' },
+  { value: 'Protergo Cyber Security Surabaya', label: 'Protergo Cyber Security Surabaya' },
+  { value: 'Protergo Fintech Solutions', label: 'Protergo Fintech Solutions' },
+  { value: 'Protergo Cyber Security Bandung', label: 'Protergo Cyber Security Bandung' },
+  { value: 'Beta Ventures Security', label: 'Beta Ventures Security' },
+  { value: 'Protergo Labs', label: 'Protergo Labs' },
+]
+
+const regUrlError = computed(() => {
+  const u = regUrl.value.trim()
+  if (!u) return ''
+  if (!/^(https?:\/\/)?[a-z0-9.-]+\.[a-z]{2,}(\/\S*)?$/i.test(u)) return 'Please enter a valid URL (e.g., https://example.com)'
+  return ''
+})
+const canRegisterUrl = computed(() => {
+  if (!regUrlOwner.value || !regUrlName.value.trim() || !regUrl.value.trim() || regUrlError.value) return false
+  if (regUrlBasic.value && (!regUrlUser.value.trim() || !regUrlPass.value)) return false
+  return true
+})
+
 function openUrlModal() {
+  regUrlOwner.value = null
+  regUrlName.value = ''
   regUrl.value = ''
-  regUrlOwner.value = ''
-  regUrlAttempted.value = false
+  regUrlBasic.value = false
+  regUrlUser.value = ''
+  regUrlPass.value = ''
   regUrlState.value = 'idle'
   showUrlModal.value = true
 }
 
 function closeUrlModal() {
   showUrlModal.value = false
-  regUrlAttempted.value = false
   regUrlState.value = 'idle'
 }
 
+function selectRegUrlOwner(value) {
+  regUrlOwner.value = value
+}
+
 function submitUrl() {
-  regUrlAttempted.value = true
-  if (!regUrl.value.trim() || !regUrlOwner.value.trim() || regUrlState.value !== 'idle') return
+  if (!canRegisterUrl.value || regUrlState.value !== 'idle') return
   regUrlState.value = 'loading'
   setTimeout(() => {
-    let name = regUrl.value.trim().replace(/^https?:\/\//, '').split('/')[0]
+    let name = regUrlName.value.trim()
     apps.value.unshift({
       id: Math.max(...apps.value.map((a) => a.id)) + 1,
       name,
       target: regUrl.value.trim(),
-      owner: regUrlOwner.value.trim(),
+      owner: regUrlOwner.value,
       scanType: 'manual',
       tags: [],
       status: 'NotStarted',
@@ -248,6 +359,141 @@ function submitApp() {
     setTimeout(closeAppModal, 700)
   }, 500)
 }
+
+// ── Start Scanning modal (same GlassField + DateTimePicker pattern as ──────
+// SourceCodeView): Application / target info card / Scan type / Recurrence ──
+const showScanModal = ref(false)
+const scanApp = ref(null)
+const scanType = ref(null)
+const scanRecurrence = ref(null)
+const scanDate = ref('')
+const scanDateOpen = ref(false)
+const scanState = ref('idle') // 'idle' | 'loading' | 'saved'
+
+const scanAppOptions = computed(() =>
+  apps.value.map((a) => ({ value: a.id, label: a.name })),
+)
+const selectedScanApp = computed(() => apps.value.find((a) => a.id === scanApp.value) ?? null)
+const scanAppAuthActive = computed(() => (selectedScanApp.value?.auth ?? 'Inactive') === 'Active')
+const scanRecurrenceOptions = [
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'biweekly', label: 'Every Two Weeks' },
+  { value: 'monthly', label: 'Monthly' },
+]
+const canProceedScan = computed(() => {
+  if (!scanApp.value || !scanType.value) return false
+  // Manual Triggered runs immediately — no schedule needed.
+  if (scanType.value === 'manual') return true
+  // Scheduled scans need at least one fully-picked date & time.
+  if (scanType.value === 'scheduled') {
+    return scanSchedules.value.length > 0 && scanSchedules.value.every((s) => !!s.value)
+  }
+  // Continuous scans also need a recurrence.
+  if (scanType.value === 'continuous') return !!scanDate.value && !!scanRecurrence.value
+  return !!scanDate.value
+})
+
+// ── Multiple schedules (Scheduled Scanning only) ───────────────────────────
+const scanSchedules = ref([]) // [{ id, value: 'YYYY-MM-DD HH:mm', open }]
+let scheduleSeq = 0
+const anyScheduleOpen = computed(() => scanSchedules.value.some((s) => s.open))
+// Any open picker (single or rows) collapses the rest of the form.
+const pickerOpen = computed(() => scanDateOpen.value || anyScheduleOpen.value)
+
+function addScheduleRow(open = true) {
+  scanSchedules.value = [
+    ...scanSchedules.value.map((s) => ({ ...s, open: false })),
+    { id: ++scheduleSeq, value: '', open },
+  ]
+}
+function removeScheduleRow(id) {
+  scanSchedules.value = scanSchedules.value.filter((s) => s.id !== id)
+}
+
+function toggleScheduleRow(id) {
+  scanDateOpen.value = false
+  scanSchedules.value = scanSchedules.value.map((s) =>
+    s.id === id ? { ...s, open: !s.open } : { ...s, open: false },
+  )
+  revealOpenCalendar()
+}
+
+// Scroll an opened calendar into view — the picker card is taller than the
+// modal body, so without this its Apply/Cancel footer stays cut off.
+function revealOpenCalendar() {
+  nextTick(() => {
+    document
+      .querySelector('.schedule-row .select-panel.open .dt-card')
+      ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  })
+}
+
+function selectScheduleRow(id, value) {
+  scanSchedules.value = scanSchedules.value.map((s) =>
+    s.id === id ? { ...s, value, open: false } : s,
+  )
+}
+
+function openScanModal() {
+  scanApp.value = null
+  scanType.value = null
+  scanRecurrence.value = null
+  scanSchedules.value = []
+  scanDate.value = ''
+  scanDateOpen.value = false
+  scanState.value = 'idle'
+  showScanModal.value = true
+}
+
+function closeScanModal() {
+  showScanModal.value = false
+  scanDateOpen.value = false
+  scanState.value = 'idle'
+}
+
+function pickScanField(name, value) {
+  if (name === 'app') scanApp.value = value
+  if (name === 'type') {
+    scanType.value = value
+    scanDateOpen.value = false
+    // Manual Triggered has no schedule — drop any previously picked date.
+    if (value === 'manual') {
+      scanDate.value = ''
+    }
+    // Scheduled scans collect their own list of dates.
+    if (value === 'scheduled' && scanSchedules.value.length === 0) {
+      addScheduleRow(false)
+    }
+    if (value !== 'scheduled') scanSchedules.value = []
+    // Recurrence only applies to Continuous scans.
+    if (value !== 'continuous') scanRecurrence.value = null
+  }
+  if (name === 'recurrence') scanRecurrence.value = value
+}
+
+function toggleScanDate() {
+  scanSchedules.value = scanSchedules.value.map((s) => ({ ...s, open: false }))
+  scanDateOpen.value = !scanDateOpen.value
+}
+
+function submitScan() {
+  if (!canProceedScan.value || scanState.value !== 'idle') return
+  scanState.value = 'loading'
+  setTimeout(() => {
+    const targets = scanApp.value
+      ? apps.value.filter((a) => a.id === scanApp.value)
+      : apps.value.filter((a) => a.status === 'NotStarted')
+    targets.forEach((a) => {
+      a.status = 'Scanning'
+      a.scanType = scanType.value
+      // Persist recurrence so detail views can show it on the timeline.
+      a.recurrence = scanType.value === 'continuous' ? scanRecurrence.value : null
+    })
+    scanState.value = 'saved'
+    setTimeout(closeScanModal, 700)
+  }, 500)
+}
 </script>
 
 <template>
@@ -256,7 +502,7 @@ function submitApp() {
       <h1 class="web-app__title">Web Application Assessment</h1>
       <div class="web-app__actions">
         <button type="button" class="btn-register" @click="openUrlModal"><IconCirclePlus :size="15" /> Register URL</button>
-        <button type="button" class="btn-register" @click="openAppModal"><IconCirclePlus :size="15" /> Input Application</button>
+        <button type="button" class="btn-register" @click="openScanModal"><IconScan :size="15" /> Start Scanning</button>
       </div>
     </div>
 
@@ -374,33 +620,75 @@ function submitApp() {
               </button>
             </div>
             <div class="create-modal__body">
-              <GlassField
-                v-model="regUrl"
-                label="Target URL"
-                placeholder="e.g. https://protergo.id"
-                required
-                error-text="Target URL is required."
-              />
+              <div class="create-modal__group">
+                <GlassField
+                  type="select"
+                  label="Asset Owner"
+                  placeholder="Asset Owner"
+                  required
+                  :options="ownerOptions"
+                  :model-value="regUrlOwner"
+                  @update:model-value="selectRegUrlOwner"
+                  error-text="Asset Owner is required"
+                />
 
-              <GlassField
-                v-model="regUrlOwner"
-                label="Asset owner"
-                placeholder="e.g. Protergo Cyber Security HQ"
-                required
-                error-text="Asset owner is required."
-              />
+                <GlassField
+                  v-model="regUrlName"
+                  label="Application Name"
+                  placeholder="Application Name"
+                  required
+                  error-text="Application Name is required"
+                />
 
-              <div class="create-modal__actions">
-                <button
-                  type="button"
-                  class="modal-btn"
-                  :class="regUrlState === 'saved' ? 'modal-btn--saved' : 'modal-btn--create'"
-                  :disabled="regUrlState !== 'idle'"
-                  @click="submitUrl"
-                >
-                  {{ regUrlState === 'saved' ? 'Registered' : regUrlState === 'loading' ? 'Registering…' : 'Register' }}
-                </button>
+                <GlassField
+                  v-model="regUrl"
+                  label="Input URL"
+                  placeholder="Input URL"
+                  required
+                  :invalid="!!regUrlError"
+                  :error-text="regUrlError || 'URL is required'"
+                />
               </div>
+
+              <div class="auth-block">
+                <span class="auth-block__label">Authentication</span>
+                <div class="basic-auth-card">
+                  <div class="basic-auth-card__row">
+                    <span class="basic-auth-card__title">Basic Authentication</span>
+                    <button
+                      type="button"
+                      class="toggle-switch"
+                      :class="{ 'toggle-switch--on': regUrlBasic }"
+                      role="switch"
+                      :aria-checked="regUrlBasic"
+                      @click="regUrlBasic = !regUrlBasic"
+                    >
+                      <span class="toggle-switch__thumb" />
+                    </button>
+                  </div>
+                  <Transition name="dv-expand">
+                    <div v-if="regUrlBasic" class="basic-auth-card__fields">
+                      <GlassField v-model="regUrlUser" label="Username" placeholder="Username" required error-text="Username is required" />
+                      <GlassField v-model="regUrlPass" label="Password" placeholder="Password" input-type="password" required error-text="Password is required" />
+                    </div>
+                  </Transition>
+                </div>
+              </div>
+            </div>
+
+            <div class="create-modal__actions">
+              <button type="button" class="modal-btn modal-btn--cancel" @click="closeUrlModal">Cancel</button>
+              <button
+                type="button"
+                class="modal-btn"
+                :class="canRegisterUrl ? { 'modal-btn--save': true, 'modal-btn--saved': regUrlState === 'saved' } : 'modal-btn--create'"
+                :disabled="!canRegisterUrl"
+                @click="submitUrl"
+              >
+                <span v-if="regUrlState === 'loading'" class="modal-btn__spinner" />
+                <IconCheck v-else-if="regUrlState === 'saved'" :size="18" class="modal-btn__check" />
+                <span v-else>Register</span>
+              </button>
             </div>
           </div>
         </div>
@@ -462,6 +750,228 @@ function submitApp() {
                 >
                   {{ appState === 'saved' ? 'Saved' : appState === 'loading' ? 'Saving…' : 'Save' }}
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showScanModal" class="modal-backdrop" @mousedown.self="closeScanModal">
+          <div class="create-modal">
+            <div class="create-modal__head">
+              <h2 class="create-modal__title">Web Application Scan Configuration</h2>
+              <button type="button" class="create-modal__close" aria-label="Close" @click="closeScanModal">
+                <IconX :size="20" />
+              </button>
+            </div>
+
+            <div class="create-modal__body">
+              <div v-show="!pickerOpen">
+                <div class="scan-field">
+                  <GlassField
+                    :model-value="scanApp"
+                    type="select"
+                    label="Application"
+                    placeholder="select application..."
+                    :options="scanAppOptions"
+                    :visible-rows="4"
+                    required
+                    error-text="Choose an application"
+                    @update:model-value="(v) => pickScanField('app', v)"
+                  />
+                </div>
+
+                <div v-if="selectedScanApp" class="scan-target">
+                  <div class="scan-target__hero">
+                    <span class="scan-target__eyebrow">Target</span>
+                    <h3 class="scan-target__name">{{ selectedScanApp.name }}</h3>
+                    <div class="scan-target__url">{{ selectedScanApp.target }}</div>
+                  </div>
+                  <div class="scan-target__grid">
+                    <div class="scan-target__card">
+                      <span class="scan-target__label"><IconBuilding :size="15" /> Asset Owner</span>
+                      <span class="scan-target__value">{{ selectedScanApp.owner }}</span>
+                    </div>
+                    <div class="scan-target__card">
+                      <span class="scan-target__label"><IconKey :size="15" /> Authentication</span>
+                      <span class="scan-target__value">Basic Authentication</span>
+                      <span
+                        class="scan-target__pill"
+                        :class="scanAppAuthActive ? 'scan-target__pill--active' : 'scan-target__pill--inactive'"
+                      ><span
+                        class="scan-target__dot"
+                        :class="scanAppAuthActive ? 'scan-target__dot--active' : 'scan-target__dot--inactive'"
+                      />{{ scanAppAuthActive ? 'Active' : 'Inactive' }}</span>
+                    </div>
+                  </div>
+                  <p v-if="!scanAppAuthActive" class="scan-target__notice">
+                    <IconInfoCircle :size="18" class="scan-target__notice-icon" />
+                    <span>Authentication is inactive, so only publicly reachable pages will be scanned.</span>
+                  </p>
+                </div>
+
+                <div class="scan-field">
+                  <GlassField
+                    :model-value="scanType"
+                    type="select"
+                    label="Scan type"
+                    placeholder="select scan type..."
+                    :options="scanTypeOptions"
+                    :visible-rows="4"
+                    required
+                    error-text="Choose a scan type"
+                    @update:model-value="(v) => pickScanField('type', v)"
+                  />
+                </div>
+
+                <template v-if="scanType === 'continuous'">
+                  <div class="scan-field">
+                    <GlassField
+                      :model-value="scanRecurrence"
+                      type="select"
+                      label="Recurrence"
+                      placeholder="select recurrence..."
+                      :options="scanRecurrenceOptions"
+                      :visible-rows="4"
+                      required
+                      error-text="Choose a recurrence"
+                      @update:model-value="(v) => pickScanField('recurrence', v)"
+                    />
+                  </div>
+                </template>
+              </div>
+
+              <template v-if="scanType === 'scheduled'">
+                <div v-show="!anyScheduleOpen" class="schedule-block">
+                  <span class="schedule-block__label">Scheduled Dates &amp; Times<span class="create-modal__required">*</span></span>
+                </div>
+                <div class="schedule-list">
+                  <div
+                    v-for="row in scanSchedules"
+                    :key="row.id"
+                    v-show="!anyScheduleOpen || row.open"
+                    class="schedule-row"
+                  >
+                    <DateTimePicker
+                      :model-value="row.value"
+                      :open="row.open"
+                      placeholder="select date & time..."
+                      @toggle="toggleScheduleRow(row.id)"
+                      @update:model-value="(v) => selectScheduleRow(row.id, v)"
+                    />
+                    <button
+                      v-show="!row.open"
+                      type="button"
+                      class="schedule-row__remove"
+                      aria-label="Remove schedule"
+                      @click="removeScheduleRow(row.id)"
+                    >
+                      <IconX :size="16" />
+                    </button>
+                  </div>
+                  <button v-show="!anyScheduleOpen" type="button" class="schedule-add" @click="addScheduleRow(true)">
+                    <IconPlus :size="14" /> Add date &amp; time
+                  </button>
+                </div>
+              </template>
+
+              <template v-if="scanType === 'continuous'">
+                <label v-show="!scanDateOpen" class="create-modal__label">Initial Date and Time<span class="create-modal__required">*</span></label>
+                <DateTimePicker
+                  v-model="scanDate"
+                  :open="scanDateOpen"
+                  placeholder="select date & time..."
+                  @toggle="toggleScanDate"
+                  @select="scanDateOpen = false"
+                />
+              </template>
+            </div>
+
+            <div v-show="!pickerOpen" class="create-modal__actions">
+              <button type="button" class="modal-btn modal-btn--cancel" @click="closeScanModal">Cancel</button>
+              <button
+                type="button"
+                class="modal-btn"
+                :class="canProceedScan ? { 'modal-btn--save': true, 'modal-btn--saved': scanState === 'saved' } : 'modal-btn--create'"
+                :disabled="!canProceedScan"
+                @click="submitScan"
+              >
+                <span v-if="scanState === 'loading'" class="modal-btn__spinner" />
+                <IconCheck v-else-if="scanState === 'saved'" :size="18" class="modal-btn__check" />
+                <span v-else>Proceed</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showDeleteModal" class="modal-backdrop" @mousedown.self="closeDeleteModal">
+          <div class="del-modal" role="dialog" aria-modal="true" aria-labelledby="del-title">
+            <div class="del-stack">
+              <div class="del-panel" :class="{ 'del-hidden': deleteState === 'saved' }">
+                <div class="del-head">
+                  <span class="del-tile" :class="{ 'del-tile--acked': deleteAcknowledged }">
+                    <IconTrash :size="22" />
+                  </span>
+                  <div class="del-titles">
+                    <span id="del-title" class="del-title">Delete application</span>
+                    <span class="del-repo">
+                      <IconFolder :size="14" class="del-repo__icon" /><span class="del-ellip">{{ deletingApp?.name }}</span>
+                    </span>
+                  </div>
+                  <button type="button" class="del-close" aria-label="Close" @click="closeDeleteModal">
+                    <IconX :size="18" />
+                  </button>
+                </div>
+
+                <p class="del-body">
+                  <strong>{{ deletingApp?.name }}</strong> and its scan history will be removed immediately.
+                  Once deleted, you won't be able to view or restore its findings.
+                </p>
+
+                <button
+                  type="button"
+                  class="del-ack"
+                  :class="{ 'del-ack--on': deleteAcknowledged }"
+                  role="checkbox"
+                  :aria-checked="deleteAcknowledged"
+                  @click="toggleDeleteAck"
+                >
+                  <span class="del-box"><IconCheck :size="16" class="del-tick" /></span>
+                  <span class="del-ack__text">This action is permanent and cannot be undone.</span>
+                </button>
+
+                <div class="del-actions">
+                  <button type="button" class="del-btn del-btn--cancel" @click="closeDeleteModal">Cancel</button>
+                  <button
+                    type="button"
+                    class="del-btn del-btn--delete"
+                    :class="{ 'is-ready': deleteReady, 'is-holding': deleteHolding, 'is-deleting': deleteState === 'loading' }"
+                    :aria-disabled="!deleteReady"
+                    @pointerdown="deleteHoldStart"
+                    @pointerup="deleteHoldEnd"
+                    @pointerleave="deleteHoldEnd"
+                    @keydown="deleteKeyDown"
+                    @keyup="deleteKeyUp"
+                  >
+                    <span class="del-fill" aria-hidden="true" />
+                    <span class="del-label"><span v-if="deleteState === 'loading'" class="del-spinner" aria-hidden="true" />{{ deleteLabel }}</span>
+                  </button>
+                </div>
+                <span class="del-hint">{{ deleteHint }}</span>
+              </div>
+
+              <div class="del-panel del-done" :class="{ 'is-shown': deleteState === 'saved' }">
+                <span class="del-done__icon"><IconCheck :size="28" /></span>
+                <span class="del-done__title">Application deleted</span>
+                <span class="del-done__body"><span class="del-mono">{{ deletingApp?.name }}</span> has been removed.</span>
+                <button type="button" class="del-btn del-btn--cancel del-done__btn" @click="closeDeleteModal">Done</button>
               </div>
             </div>
           </div>
@@ -680,6 +1190,267 @@ function submitApp() {
 
 .field-error { margin: 6px 0 0; font-size: 12px; line-height: 1.4; color: var(--glacia-sev-critical); }
 
+.scan-field {
+  margin-bottom: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.scan-target {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 10px;
+
+  &__hero {
+    background: #f0f5ff;
+    border: 1px solid #dbe7fd;
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+
+  &__eyebrow {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #37507a;
+  }
+
+  &__name {
+    margin: 6px 0 0;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+    line-height: 1.2;
+  }
+
+  &__url {
+    margin-top: 10px;
+    background: #fff;
+    border: 1px solid #dbe7fd;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 12px;
+    color: var(--glacia-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+
+    @media (max-width: 560px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__card {
+    background: #fff;
+    border: 1px solid #AEBEC4;
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  &__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__value {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+    line-height: 1.3;
+  }
+
+  &__pill {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+
+    &--inactive {
+      background: rgba(220, 38, 38, 0.1);
+      color: #dc2626;
+    }
+
+    &--active {
+      background: rgba(22, 163, 74, 0.12);
+      color: #16a34a;
+    }
+  }
+
+  &__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &--inactive {
+      background: #dc2626;
+    }
+
+    &--active {
+      background: #16a34a;
+    }
+  }
+
+  &__notice {
+    margin: 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: #fef6e4;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #7c5a12;
+  }
+
+  &__notice-icon {
+    flex-shrink: 0;
+    color: #e8a13d;
+    margin-top: 1px;
+  }
+}
+
+.auth-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  &__label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--glacia-ink);
+  }
+}
+
+.basic-auth-card {
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid #AEBEC4;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+    overflow: hidden;
+  }
+}
+
+.toggle-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(15, 23, 42, 0.12);
+  cursor: pointer;
+  transition: background 0.18s ease;
+
+  &--on {
+    background: var(--glacia-red);
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(16, 24, 32, 0.25);
+    transition: transform 0.18s ease;
+
+    .toggle-switch--on & {
+      transform: translateX(18px);
+    }
+  }
+}
+
+.dv-expand-enter-active, .dv-expand-leave-active {
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, padding-top 0.3s ease, padding-bottom 0.3s ease;
+  overflow: hidden;
+}
+.dv-expand-enter-from, .dv-expand-leave-to { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
+.dv-expand-enter-to, .dv-expand-leave-from { max-height: 800px; opacity: 1; }
+
+.schedule-list {
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.schedule-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  &__label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--glacia-ink);
+  }
+}
+
+.schedule-row {
+  display: flex; align-items: flex-start; gap: 8px;
+
+  > .form-select { flex: 1; min-width: 0; }
+
+  &__remove {
+    width: 34px; height: 34px; margin-top: 5px; flex-shrink: 0;
+    border-radius: 50%; border: 1px solid var(--glacia-glass-border); background: #fff;
+    color: var(--glacia-ink-dim); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    &:hover { border-color: var(--glacia-sev-critical); color: var(--glacia-sev-critical); }
+  }
+}
+
+.schedule-add {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 10px; border-radius: 12px;
+  border: 1px dashed var(--glacia-glass-border); background: #fff;
+  font-size: 13px; font-weight: 600; font-family: 'Manrope', 'Inter', sans-serif;
+  color: var(--glacia-ink-dim); cursor: pointer;
+  &:hover { border-color: var(--glacia-red); color: var(--glacia-red); }
+}
+
 .form-select {
   position: relative;
   &__trigger {
@@ -710,8 +1481,351 @@ function submitApp() {
 .modal-btn {
   flex: 1; height: 46px; border-radius: 14px; border: none; font-size: 14px; font-weight: 700;
   font-family: 'Manrope', 'Inter', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-  &--create { background: var(--glacia-red); color: #fff; box-shadow: 0 6px 20px rgba(255,37,41,0.35); }
-  &--saved { background: #16a34a; color: #fff; }
+  &--create { background: var(--glacia-glass-fill-strong); color: var(--glacia-ink-dim); border: 1px solid var(--glacia-glass-border); &:disabled { cursor: default; } }
+  &--cancel { background: rgba(220,38,38,0.06); color: var(--glacia-sev-critical); &:hover { background: rgba(220,38,38,0.12); } }
+  &--neutral { background: var(--glacia-glass-fill-strong); color: var(--glacia-ink); border: 1px solid var(--glacia-glass-border); &:hover { background: rgba(15,23,42,0.08); } }
+  &--save { background: linear-gradient(135deg, #e53925, #b91c1c); color: #fff; box-shadow: 0 8px 20px -6px rgba(229,57,37,0.4); &:disabled { opacity: 0.5; cursor: default; } }
+  &--saved { background: #16a34a; box-shadow: 0 8px 20px -6px rgba(22,163,74,0.4); }
   &:disabled { cursor: default; }
+  &__spinner { width: 15px; height: 15px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; animation: modal-btn-spin 0.7s linear infinite; }
+  &__check { animation: modal-btn-pop 0.4s ease; }
+}
+@keyframes modal-btn-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes modal-btn-pop { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
+
+// ── Delete application modal (same hold-to-delete as SourceCodeView) ──────
+.del-modal {
+  width: min(460px, calc(100% - 40px));
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--glacia-glass-border);
+  box-shadow: 0 40px 80px -30px rgba(16, 24, 32, 0.5);
+  overflow: hidden;
+  animation: del-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes del-modal-bounce {
+  0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
+  60%  { opacity: 1; transform: scale(1.01) translateY(0); }
+  100% { transform: scale(1); }
+}
+
+.del-stack { display: grid; }
+.del-panel { grid-area: 1 / 1; }
+
+.del-panel:not(.del-done) {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: opacity 260ms ease, transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.del-hidden {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+  pointer-events: none;
+}
+
+.del-head { display: flex; align-items: flex-start; gap: 14px; }
+
+.del-tile {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--glacia-sev-critical);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 420ms cubic-bezier(0.34, 1.5, 0.64, 1);
+
+  &--acked { transform: rotate(-8deg) scale(1.06); }
+}
+
+.del-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.del-title {
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 800;
+  color: var(--glacia-ink);
+}
+
+.del-repo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--glacia-ink-dim);
+
+  &__icon { flex-shrink: 0; }
+}
+
+.del-ellip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.del-close {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  padding: 0;
+  border-radius: 999px;
+  background: #eef1f4;
+  color: var(--glacia-ink-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 160ms ease;
+
+  &:hover { background: #e2e8f0; }
+}
+
+.del-body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--glacia-ink-dim);
+
+  strong { color: var(--glacia-ink); font-weight: 700; }
+}
+
+.del-ack {
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  transition: background 260ms ease, border-color 260ms ease;
+
+  &--on { border-color: var(--glacia-sev-critical); background: rgba(220, 38, 38, 0.06); }
+
+  &__text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--glacia-ink);
+    transition: color 220ms ease;
+  }
+
+  &--on &__text { color: var(--glacia-sev-critical); }
+}
+
+.del-box {
+  flex: none;
+  position: relative;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border-radius: 7px;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+
+.del-ack--on .del-box {
+  border-color: var(--glacia-sev-critical);
+  background: var(--glacia-sev-critical);
+}
+
+.del-tick {
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.3);
+  transition: opacity 160ms ease, transform 320ms cubic-bezier(0.34, 1.6, 0.64, 1);
+}
+
+.del-ack--on .del-tick {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.del-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.del-btn {
+  height: 48px;
+  border-radius: 16px;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &--cancel {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: var(--glacia-ink);
+    transition: background 160ms ease;
+
+    &:hover { background: #f1f5f9; }
+  }
+
+  &--delete {
+    position: relative;
+    overflow: hidden;
+    border: 0;
+    background: #eef1f4;
+    color: #94a3b8;
+    cursor: not-allowed;
+    user-select: none;
+    touch-action: none;
+    transition: background 260ms ease, color 260ms ease, box-shadow 260ms ease, transform 160ms ease;
+
+    &.is-ready,
+    &.is-deleting {
+      background: var(--glacia-sev-critical);
+      color: #fff;
+    }
+
+    &.is-ready {
+      cursor: pointer;
+      box-shadow: 0 10px 24px -10px rgba(220, 38, 38, 0.6);
+    }
+
+    &.is-holding { transform: scale(0.98); }
+  }
+}
+
+.del-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: #a8161f;
+  transition: width 260ms ease-out;
+}
+
+.is-holding .del-fill {
+  width: 100%;
+  transition: width 1000ms linear;
+}
+
+.is-deleting .del-fill {
+  width: 100%;
+  transition: none;
+}
+
+.del-label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.del-spinner {
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: del-spin 700ms linear infinite;
+}
+
+.del-hint {
+  font-size: 12.5px;
+  color: var(--glacia-ink-dim);
+  text-align: right;
+  margin-top: -8px;
+  min-height: 18px;
+}
+
+.del-done {
+  padding: 40px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 300ms ease 120ms, transform 420ms cubic-bezier(0.2, 0.9, 0.25, 1) 120ms;
+
+  &.is-shown {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  &__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0.4);
+    transition: transform 520ms cubic-bezier(0.34, 1.6, 0.64, 1) 220ms;
+  }
+
+  &.is-shown &__icon { transform: scale(1); }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+  }
+
+  &__body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__btn {
+    margin-top: 10px;
+    height: 44px;
+    padding: 0 24px;
+  }
+}
+
+.del-mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-weight: 600;
+  color: var(--glacia-ink);
+}
+
+@keyframes del-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .del-modal,
+  .del-modal * {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
 }
 </style>

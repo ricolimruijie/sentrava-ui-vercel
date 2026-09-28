@@ -30,7 +30,7 @@ const tabs = [
   { key: 'overview', label: 'Overview' },
   { key: 'list',      label: 'Company list' },
   { key: 'audit',      label: 'Audit log' },
-  { key: 'probe',      label: 'Probe box' },
+  { key: 'probe',      label: 'Integration' },
 ]
 // Mirrored into the `tab` query param (see router meta.tabQuery) so the
 // navbar breadcrumb can show the active tab as the current page.

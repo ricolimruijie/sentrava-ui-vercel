@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
@@ -14,10 +14,10 @@ const repos = ref(getSourceCodeRepos())
 
 const columns = [
   { key: '__index', label: '#', width: '24px', dim: true },
-  { key: 'repo', label: 'Repository', width: '15%', bold: true, truncate: true },
-  { key: 'branch', label: 'Branch', width: '7%', mono: true, truncate: true},
-  { key: 'scanType', label: 'Scan Type', width: '12%' },
+  { key: 'repo', label: 'Repository', width: '15%', truncate: true },
+  { key: 'branch', label: 'Branch', width: '7%', truncate: true},
   { key: 'owner', label: 'Asset Owner', width: '18%', truncate: true },
+  { key: 'scanType', label: 'Scan Type', width: '12%' },
   { key: 'tags', label: 'Multi-Tags', width: '20%' },
   { key: 'status', label: 'Scanning status', width: '12%', align: 'center' },
   { key: 'actions', label: 'Action', width: '70px', align: 'center' },
@@ -52,6 +52,7 @@ const gitProviderOptions = [{ value: 'GitHub', label: 'GitHub' }]
 const multiTagOptions = computed(() => {
   const vocab = new Map()
   repos.value.forEach((r) => (r.tags || []).forEach((t) => vocab.set(t.label, t.colorId)))
+  createdTags.value.forEach((t) => vocab.set(t.label, t.colorId))
   return [...vocab.keys()].sort().map((label) => ({ value: label, label }))
 })
 const statusOptions = Object.entries(statusMeta).map(([value, meta]) => ({ value, label: meta.label }))
@@ -136,6 +137,17 @@ function toggleScheduleRow(id) {
   scanSchedules.value = scanSchedules.value.map((s) =>
     s.id === id ? { ...s, open: !s.open } : { ...s, open: false },
   )
+  revealOpenCalendar()
+}
+
+// Scroll an opened calendar into view — the picker card is taller than the
+// modal body, so without this its Apply/Cancel footer stays cut off.
+function revealOpenCalendar() {
+  nextTick(() => {
+    document
+      .querySelector('.schedule-row .select-panel.open .dt-card')
+      ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  })
 }
 
 function selectScheduleRow(id, value) {
@@ -162,11 +174,6 @@ function closeScanModal() {
   scanField.value = null
   scanDateOpen.value = false
   scanState.value = 'idle'
-}
-
-function toggleScanField(name) {
-  scanDateOpen.value = false
-  scanField.value = scanField.value === name ? null : name
 }
 
 function pickScanField(name, value) {
@@ -204,7 +211,12 @@ function submitScan() {
     const targets = scanRepo.value
       ? repos.value.filter((r) => r.id === scanRepo.value)
       : repos.value.filter((r) => r.status === 'NotStarted')
-    targets.forEach((r) => { r.status = 'Scanning'; r.scanType = scanType.value })
+    targets.forEach((r) => {
+      r.status = 'Scanning'
+      r.scanType = scanType.value
+      // Persist recurrence so detail views can show it on the timeline.
+      r.recurrence = scanType.value === 'continuous' ? scanRecurrence.value : null
+    })
     scanState.value = 'saved'
     setTimeout(closeScanModal, 700)
   }, 500)
@@ -312,17 +324,100 @@ function seeDetail(id) {
   router.push(`/assets/source-code/${id}`)
 }
 
+// ── Delete repository modal — port of references/DeleteModal.vue ─────────
+// Acknowledge checkbox → press-and-hold Delete (1000ms fill) → deleting
+// spinner → done panel. Close is blocked while deleting.
+const showDeleteModal = ref(false)
+const deletingRepo = ref(null)
+const deleteState = ref('idle') // 'idle' | 'loading' | 'saved'
+const deleteAcknowledged = ref(false)
+const deleteHolding = ref(false)
+let deleteHoldTimer = null
+let deleteDoneTimer = null
+
+const deleteReady = computed(() => deleteAcknowledged.value && deleteState.value === 'idle')
+const deleteLabel = computed(() => {
+  if (deleteState.value === 'loading') return 'Deleting…'
+  if (!deleteAcknowledged.value) return 'Delete'
+  return deleteHolding.value ? 'Keep holding…' : 'Hold to delete'
+})
+const deleteHint = computed(() => {
+  if (!deleteAcknowledged.value && deleteState.value === 'idle') return 'Tick the box above to enable Delete'
+  if (deleteReady.value && !deleteHolding.value) return 'Press and hold, or hold Enter'
+  return ''
+})
+
 function deleteRepo(id) {
   closeMenu()
-  repos.value = repos.value.filter((r) => r.id !== id)
+  deletingRepo.value = repos.value.find((r) => r.id === id) ?? null
+  deleteState.value = 'idle'
+  deleteAcknowledged.value = false
+  deleteHolding.value = false
+  showDeleteModal.value = true
 }
+
+function closeDeleteModal() {
+  if (deleteState.value === 'loading') return
+  clearTimeout(deleteHoldTimer)
+  deleteHolding.value = false
+  showDeleteModal.value = false
+  deletingRepo.value = null
+  deleteState.value = 'idle'
+  deleteAcknowledged.value = false
+}
+
+function toggleDeleteAck() {
+  if (deleteState.value !== 'idle') return
+  deleteAcknowledged.value = !deleteAcknowledged.value
+  deleteHolding.value = false
+}
+
+function doDeleteRepo() {
+  clearTimeout(deleteHoldTimer)
+  deleteHolding.value = false
+  deleteState.value = 'loading'
+  deleteDoneTimer = setTimeout(() => {
+    repos.value = repos.value.filter((r) => r.id !== deletingRepo.value.id)
+    deleteState.value = 'saved'
+  }, 1200)
+}
+
+function deleteHoldStart() {
+  if (!deleteReady.value) return
+  deleteHolding.value = true
+  clearTimeout(deleteHoldTimer)
+  deleteHoldTimer = setTimeout(doDeleteRepo, 1000)
+}
+function deleteHoldEnd() {
+  if (deleteHolding.value) {
+    clearTimeout(deleteHoldTimer)
+    deleteHolding.value = false
+  }
+}
+function deleteKeyDown(e) {
+  if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
+    e.preventDefault()
+    deleteHoldStart()
+  }
+}
+function deleteKeyUp(e) {
+  if (e.key === 'Enter' || e.key === ' ') deleteHoldEnd()
+}
+onUnmounted(() => {
+  clearTimeout(deleteHoldTimer)
+  clearTimeout(deleteDoneTimer)
+})
 
 // ── Multi-Tags picker popover (same pattern as AssetInventoryView) ─────────
 const tagPopoverFor = ref(null) // repo id
 const tagPopoverPos = ref({ top: 0, left: 0 })
 const tagQuery = ref('')
 const tagNewColor = ref(4)
-const createdTags = ref([])
+const createdTags = ref([
+  { label: 'Production', colorId: 4 },
+  { label: 'Staging', colorId: 1 },
+  { label: 'Dev', colorId: 3 },
+])
 const tagVocab = computed(() => {
   const m = new Map()
   repos.value.forEach((r) => (r.tags || []).forEach((t) => m.set(t.label, t.colorId)))
@@ -509,107 +604,69 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
               <!-- The other fields step aside while any calendar is open so
                 only the Date & Time content shows; they return on Apply. -->
               <div v-show="!pickerOpen">
-              <label class="create-modal__label">Repository<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleScanField('repo')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !scanRepo }">
-                    {{ scanRepoOptions.find((o) => o.value === scanRepo)?.label ?? 'select repository...' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': scanField === 'repo' }" />
-                </button>
-                <div class="select-panel" :class="{ open: scanField === 'repo' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in scanRepoOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === scanRepo }"
-                      @click="pickScanField('repo', opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
+              <div class="scan-field">
+                <GlassField
+                  :model-value="scanRepo"
+                  type="select"
+                  label="Repository"
+                  placeholder="select repository..."
+                  :options="scanRepoOptions"
+                  :visible-rows="4"
+                  required
+                  error-text="Choose a repository"
+                  @update:model-value="(v) => pickScanField('repo', v)"
+                />
               </div>
 
-              <label class="create-modal__label">Branch<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleScanField('branch')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !scanBranch }">
-                    {{ scanBranchOptions.find((o) => o.value === scanBranch)?.label ?? 'select branch...' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': scanField === 'branch' }" />
-                </button>
-                <div class="select-panel" :class="{ open: scanField === 'branch' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in scanBranchOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === scanBranch }"
-                      @click="pickScanField('branch', opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
+              <div class="scan-field">
+                <GlassField
+                  :model-value="scanBranch"
+                  type="select"
+                  label="Branch"
+                  placeholder="select branch..."
+                  :options="scanBranchOptions"
+                  :visible-rows="4"
+                  required
+                  error-text="Choose a branch"
+                  @update:model-value="(v) => pickScanField('branch', v)"
+                />
               </div>
 
-              <label class="create-modal__label">Scan type<span class="create-modal__required">*</span></label>
-              <div class="form-select">
-                <button type="button" class="form-select__trigger" @click="toggleScanField('type')">
-                  <span :class="{ 'form-select__trigger-text--placeholder': !scanType }">
-                    {{ scanTypeOptions.find((o) => o.value === scanType)?.label ?? 'select scan type...' }}
-                  </span>
-                  <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': scanField === 'type' }" />
-                </button>
-                <div class="select-panel" :class="{ open: scanField === 'type' }">
-                  <div class="form-select__inline-menu select-panel__inner">
-                    <button
-                      v-for="opt in scanTypeOptions"
-                      :key="opt.value"
-                      type="button"
-                      class="form-select__inline-item"
-                      :class="{ 'form-select__inline-item--active': opt.value === scanType }"
-                      @click="pickScanField('type', opt.value)"
-                    >
-                      {{ opt.label }}
-                    </button>
-                  </div>
-                </div>
+              <div class="scan-field">
+                <GlassField
+                  :model-value="scanType"
+                  type="select"
+                  label="Scan type"
+                  placeholder="select scan type..."
+                  :options="scanTypeOptions"
+                  :visible-rows="4"
+                  required
+                  error-text="Choose a scan type"
+                  @update:model-value="(v) => pickScanField('type', v)"
+                />
               </div>
 
               <template v-if="scanType === 'continuous'">
-                <label class="create-modal__label">Recurrence<span class="create-modal__required">*</span></label>
-                <div class="form-select">
-                  <button type="button" class="form-select__trigger" @click="toggleScanField('recurrence')">
-                    <span :class="{ 'form-select__trigger-text--placeholder': !scanRecurrence }">
-                      {{ scanRecurrenceOptions.find((o) => o.value === scanRecurrence)?.label ?? 'select recurrence...' }}
-                    </span>
-                    <IconChevronDown :size="18" class="form-select__chevron" :class="{ 'form-select__chevron--open': scanField === 'recurrence' }" />
-                  </button>
-                  <div class="select-panel" :class="{ open: scanField === 'recurrence' }">
-                    <div class="form-select__inline-menu select-panel__inner">
-                      <button
-                        v-for="opt in scanRecurrenceOptions"
-                        :key="opt.value"
-                        type="button"
-                        class="form-select__inline-item"
-                        :class="{ 'form-select__inline-item--active': opt.value === scanRecurrence }"
-                        @click="pickScanField('recurrence', opt.value)"
-                      >
-                        {{ opt.label }}
-                      </button>
-                    </div>
-                  </div>
+                <div class="scan-field">
+                  <GlassField
+                    :model-value="scanRecurrence"
+                    type="select"
+                    label="Recurrence"
+                    placeholder="select recurrence..."
+                    :options="scanRecurrenceOptions"
+                    :visible-rows="4"
+                    required
+                    error-text="Choose a recurrence"
+                    @update:model-value="(v) => pickScanField('recurrence', v)"
+                  />
                 </div>
               </template>
               </div>
 
               <template v-if="scanType === 'scheduled'">
-                <label v-show="!anyScheduleOpen" class="create-modal__label">Scheduled Dates &amp; Times<span class="create-modal__required">*</span></label>
+                <div v-show="!anyScheduleOpen" class="schedule-block">
+                  <span class="schedule-block__label">Scheduled Dates &amp; Times<span class="create-modal__required">*</span></span>
+                </div>
                 <div class="schedule-list">
                   <div
                     v-for="row in scanSchedules"
@@ -775,6 +832,76 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
                 <span v-if="regState === 'loading'" class="modal-btn__spinner" />
                 <span v-else>Proceed</span>
               </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showDeleteModal" class="modal-backdrop" @mousedown.self="closeDeleteModal">
+          <div class="del-modal" role="dialog" aria-modal="true" aria-labelledby="del-title">
+            <div class="del-stack">
+              <div class="del-panel" :class="{ 'del-hidden': deleteState === 'saved' }">
+                <div class="del-head">
+                  <span class="del-tile" :class="{ 'del-tile--acked': deleteAcknowledged }">
+                    <IconTrash :size="22" />
+                  </span>
+                  <div class="del-titles">
+                    <span id="del-title" class="del-title">Delete repository</span>
+                    <span class="del-repo">
+                      <IconFolder :size="14" class="del-repo__icon" /><span class="del-ellip">{{ deletingRepo?.repo }}</span>
+                    </span>
+                  </div>
+                  <button type="button" class="del-close" aria-label="Close" @click="closeDeleteModal">
+                    <IconX :size="18" />
+                  </button>
+                </div>
+
+                <p class="del-body">
+                  <strong>{{ deletingRepo?.repo }}</strong> and its scan history will be removed immediately.
+                  Once deleted, you won't be able to view or restore its findings.
+                </p>
+
+                <button
+                  type="button"
+                  class="del-ack"
+                  :class="{ 'del-ack--on': deleteAcknowledged }"
+                  role="checkbox"
+                  :aria-checked="deleteAcknowledged"
+                  @click="toggleDeleteAck"
+                >
+                  <span class="del-box"><IconCheck :size="16" class="del-tick" /></span>
+                  <span class="del-ack__text">This action is permanent and cannot be undone.</span>
+                </button>
+
+                <div class="del-actions">
+                  <button type="button" class="del-btn del-btn--cancel" @click="closeDeleteModal">Cancel</button>
+                  <button
+                    type="button"
+                    class="del-btn del-btn--delete"
+                    :class="{ 'is-ready': deleteReady, 'is-holding': deleteHolding, 'is-deleting': deleteState === 'loading' }"
+                    :aria-disabled="!deleteReady"
+                    @pointerdown="deleteHoldStart"
+                    @pointerup="deleteHoldEnd"
+                    @pointerleave="deleteHoldEnd"
+                    @keydown="deleteKeyDown"
+                    @keyup="deleteKeyUp"
+                  >
+                    <span class="del-fill" aria-hidden="true" />
+                    <span class="del-label"><span v-if="deleteState === 'loading'" class="del-spinner" aria-hidden="true" />{{ deleteLabel }}</span>
+                  </button>
+                </div>
+                <span class="del-hint">{{ deleteHint }}</span>
+              </div>
+
+              <div class="del-panel del-done" :class="{ 'is-shown': deleteState === 'saved' }">
+                <span class="del-done__icon"><IconCheck :size="28" /></span>
+                <span class="del-done__title">Repository deleted</span>
+                <span class="del-done__body"><span class="del-mono">{{ deletingRepo?.repo }}</span> has been removed.</span>
+                <button type="button" class="del-btn del-btn--cancel del-done__btn" @click="closeDeleteModal">Done</button>
+              </div>
             </div>
           </div>
         </div>
@@ -968,7 +1095,16 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   overflow: hidden;
   &__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-shrink: 0; }
   &__title { font-family: 'Manrope', 'Inter', sans-serif; font-size: 22px; font-weight: 800; color: var(--glacia-ink); margin: 0; }
-  &__close { width: 32px; height: 32px; border-radius: 8px; border: none; background: none; color: var(--glacia-ink); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; &:hover { background: rgba(0,0,0,0.05); } }
+  &__close {
+    width: 32px; height: 32px; border-radius: 8px; border: none; background: none; color: var(--glacia-ink); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    &:hover { background: rgba(0,0,0,0.05); }
+    &--circle { border-radius: 50%; background: rgba(15,23,42,0.06); &:hover { background: rgba(15,23,42,0.1); } }
+  }
+  // Flex-column children here don't margin-collapse like API Keys' block
+  // layout does — only the top margin, so it doesn't stack with
+  // .revoke-ack's own 24px top margin below it.
+  &__note { margin: 12px 0 0; font-size: 14px; line-height: 1.5; color: var(--glacia-ink-dim); }
   &__body {
     margin-top: 12px; overflow-y: auto; min-height: 0; flex: 1 1 auto; overscroll-behavior: contain;
     // Scrolling stays functional as a fallback on short viewports, but the
@@ -976,8 +1112,8 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     scrollbar-width: none;
     &::-webkit-scrollbar { width: 0; height: 0; }
 
-    // Only the GlassField-stacked forms (Register Repository) opt into this —
-    // the Scan modal's custom .form-select rows keep their own label margins.
+    // GlassField-stacked forms (Register Repository, Scan modal) stack
+    // with a uniform gap.
     &--fields { display: flex; flex-direction: column; gap: 10px; }
   }
   &__label { display: block; margin: 16px 0 8px; font-size: 14px; font-weight: 700; color: var(--glacia-ink); }
@@ -995,6 +1131,14 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 }
 
 .field-error { margin: 6px 0 0; font-size: 12px; line-height: 1.4; color: var(--glacia-sev-critical); }
+
+.scan-field {
+  margin-bottom: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
 
 .reg-success {
   display: flex;
@@ -1157,6 +1301,18 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   display: flex; flex-direction: column; gap: 10px;
 }
 
+.schedule-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  &__label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--glacia-ink);
+  }
+}
+
 .schedule-row {
   display: flex; align-items: flex-start; gap: 8px;
 
@@ -1184,6 +1340,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   font-family: 'Manrope', 'Inter', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
   &--create { background: var(--glacia-glass-fill-strong); color: var(--glacia-ink-dim); border: 1px solid var(--glacia-glass-border); &:disabled { cursor: default; } }
   &--cancel { background: rgba(220,38,38,0.06); color: var(--glacia-sev-critical); &:hover { background: rgba(220,38,38,0.12); } }
+  &--neutral { background: var(--glacia-glass-fill-strong); color: var(--glacia-ink); border: 1px solid var(--glacia-glass-border); &:hover { background: rgba(15,23,42,0.08); } }
   &--save { background: linear-gradient(135deg, #e53925, #b91c1c); color: #fff; box-shadow: 0 8px 20px -6px rgba(229,57,37,0.4); &:disabled { opacity: 0.5; cursor: default; } }
   &--saved { background: #16a34a; box-shadow: 0 8px 20px -6px rgba(22,163,74,0.4); }
   &:disabled { cursor: default; }
@@ -1192,4 +1349,372 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 }
 @keyframes modal-btn-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes modal-btn-pop { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
+
+.del-modal {
+  width: min(460px, calc(100% - 40px));
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--glacia-glass-border);
+  box-shadow: 0 40px 80px -30px rgba(16, 24, 32, 0.5);
+  overflow: hidden;
+  animation: del-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes del-modal-bounce {
+  0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
+  60%  { opacity: 1; transform: scale(1.01) translateY(0); }
+  100% { transform: scale(1); }
+}
+
+.del-stack {
+  display: grid;
+}
+
+.del-panel {
+  grid-area: 1 / 1;
+}
+
+.del-panel:not(.del-done) {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: opacity 260ms ease, transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.del-hidden {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+  pointer-events: none;
+}
+
+.del-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.del-tile {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--glacia-sev-critical);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 420ms cubic-bezier(0.34, 1.5, 0.64, 1);
+
+  &--acked {
+    transform: rotate(-8deg) scale(1.06);
+  }
+}
+
+.del-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.del-title {
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 800;
+  color: var(--glacia-ink);
+}
+
+.del-repo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--glacia-ink-dim);
+
+  &__icon {
+    flex-shrink: 0;
+  }
+}
+
+.del-ellip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.del-close {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  padding: 0;
+  border-radius: 999px;
+  background: #eef1f4;
+  color: var(--glacia-ink-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 160ms ease;
+
+  &:hover {
+    background: #e2e8f0;
+  }
+}
+
+.del-body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--glacia-ink-dim);
+
+  strong {
+    color: var(--glacia-ink);
+    font-weight: 700;
+  }
+}
+
+.del-ack {
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  transition: background 260ms ease, border-color 260ms ease;
+
+  &--on {
+    border-color: var(--glacia-sev-critical);
+    background: rgba(220, 38, 38, 0.06);
+  }
+
+  &__text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--glacia-ink);
+    transition: color 220ms ease;
+  }
+
+  &--on &__text {
+    color: var(--glacia-sev-critical);
+  }
+}
+
+.del-box {
+  flex: none;
+  position: relative;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border-radius: 7px;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+
+.del-ack--on .del-box {
+  border-color: var(--glacia-sev-critical);
+  background: var(--glacia-sev-critical);
+}
+
+.del-tick {
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.3);
+  transition: opacity 160ms ease, transform 320ms cubic-bezier(0.34, 1.6, 0.64, 1);
+}
+
+.del-ack--on .del-tick {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.del-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.del-btn {
+  height: 48px;
+  border-radius: 16px;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &--cancel {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: var(--glacia-ink);
+    transition: background 160ms ease;
+
+    &:hover {
+      background: #f1f5f9;
+    }
+  }
+
+  &--delete {
+    position: relative;
+    overflow: hidden;
+    border: 0;
+    background: #eef1f4;
+    color: #94a3b8;
+    cursor: not-allowed;
+    user-select: none;
+    touch-action: none;
+    transition: background 260ms ease, color 260ms ease, box-shadow 260ms ease, transform 160ms ease;
+
+    &.is-ready,
+    &.is-deleting {
+      background: var(--glacia-sev-critical);
+      color: #fff;
+    }
+
+    &.is-ready {
+      cursor: pointer;
+      box-shadow: 0 10px 24px -10px rgba(220, 38, 38, 0.6);
+    }
+
+    &.is-holding {
+      transform: scale(0.98);
+    }
+  }
+}
+
+.del-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: #a8161f;
+  transition: width 260ms ease-out;
+}
+
+.is-holding .del-fill {
+  width: 100%;
+  transition: width 1000ms linear;
+}
+
+.is-deleting .del-fill {
+  width: 100%;
+  transition: none;
+}
+
+.del-label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.del-spinner {
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: del-spin 700ms linear infinite;
+}
+
+.del-hint {
+  font-size: 12.5px;
+  color: var(--glacia-ink-dim);
+  text-align: right;
+  margin-top: -8px;
+  min-height: 18px;
+}
+
+.del-done {
+  padding: 40px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 300ms ease 120ms, transform 420ms cubic-bezier(0.2, 0.9, 0.25, 1) 120ms;
+
+  &.is-shown {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  &__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0.4);
+    transition: transform 520ms cubic-bezier(0.34, 1.6, 0.64, 1) 220ms;
+  }
+
+  &.is-shown &__icon {
+    transform: scale(1);
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+  }
+
+  &__body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__btn {
+    margin-top: 10px;
+    height: 44px;
+    padding: 0 24px;
+  }
+}
+
+.del-mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-weight: 600;
+  color: var(--glacia-ink);
+}
+
+@keyframes del-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .del-modal,
+  .del-modal * {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}
 </style>

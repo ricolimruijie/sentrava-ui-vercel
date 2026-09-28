@@ -68,21 +68,27 @@ const severityCounts = computed(() => {
 
 // Splits "14 Jul 2026 12:59" into date/time parts for the Target Details modal.
 const selectedScanParts = computed(() => {
-  const raw = scans.value[selectedScan.value]?.date ?? ''
-  const m = raw.match(/^(.*)\s(\d{1,2}:\d{2}\s?[AP]M)$/i) ?? raw.match(/^(.*)\s(\d{1,2}:\d{2})$/)
-  return m ? { date: m[1], time: m[2] } : { date: raw, time: '' }
+  // Same 24-hour rendering as the scan timeline.
+  const converted = to24Hour(scans.value[selectedScan.value]?.date ?? '')
+  const m = converted.match(/^(.*)\s(\d{1,2}:\d{2})$/)
+  return m ? { date: m[1], time: m[2] } : { date: converted, time: '' }
 })
 
 function deleteScanTimeline() {
   if (!scans.value.length) return
   scans.value.splice(selectedScan.value, 1)
-  selectedScan.value = 0
+  // Land on the first selectable scan (skip in-progress/queued rows).
+  const i = scans.value.findIndex((s) => !['Scanning', 'Queue', 'Waiting'].includes(s.status))
+  selectedScan.value = Math.max(0, i)
   closeTargetDetailModal()
 }
 
 // ── Scan timeline ──────────────────────────────────────────────────────────
-const scans = ref(getWebAppScans())
-const selectedScan = ref(0)
+const scans = ref(getWebAppScans(app.value.id))
+// Default to the first selectable scan (skip in-progress/queued rows).
+const selectedScan = ref(Math.max(0, getWebAppScans(app.value.id).findIndex(
+  (s) => !['Scanning', 'Queue', 'Waiting'].includes(s.status),
+)))
 
 // Timeline entries are stored as "9 Feb 2025 8:30 AM" — rewrite the trailing
 // 12-hour time into 24-hour, same as the calendar's time picker.
@@ -120,13 +126,86 @@ function scrollTimelineMore() {
   tlRef.value?.scrollBy({ top: 174, behavior: 'smooth' })
 }
 
-function rescan() {
+function rescan(index) {
+  if (index != null && scans.value[index]?.status === 'Failed') {
+    scans.value[index] = { ...scans.value[index], status: 'Queue', duration: null }
+    selectedScan.value = index
+    return
+  }
   const now = new Date().toLocaleString('en-US', {
     day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
   })
   scans.value.unshift({ id: `s-${Date.now()}`, date: now, status: 'Queue' })
-  selectedScan.value = 0
+  selectedScan.value += 1
 }
+
+// ── Re-scan confirmation (inline: button transforms into Cancel/Proceed) ──
+const pendingRescanType = ref(null) // 'main' | 'retry'
+const pendingRescanIndex = ref(null)
+const rescanLoading = ref(false)
+const scanInProgress = ref(false)
+const retryLoadingIndex = ref(null)
+const retryDoneIndex = ref(null)
+
+function openRescanConfirm(index = null) {
+  pendingRescanIndex.value = index
+  pendingRescanType.value = index != null ? 'retry' : 'main'
+}
+
+function cancelRescan() {
+  pendingRescanType.value = null
+  pendingRescanIndex.value = null
+}
+
+// Retry pill visual state per timeline row.
+function rbState(i) {
+  if (retryDoneIndex.value === i) return 'is-done'
+  if (retryLoadingIndex.value === i) return 'is-loading'
+  if (pendingRescanType.value === 'retry' && pendingRescanIndex.value === i) return 'is-confirm'
+  return 'is-idle'
+}
+
+function rbConfirming(i) {
+  const st = rbState(i)
+  return st === 'is-confirm' || st === 'is-loading'
+}
+
+function confirmRescan() {
+  // Main button: loading animation, then the scan starts and the button
+  // becomes a grey disabled "Scan in progress".
+  if (pendingRescanType.value === 'main') {
+    if (rescanLoading.value) return
+    rescanLoading.value = true
+    setTimeout(() => {
+      rescan(pendingRescanIndex.value)
+      rescanLoading.value = false
+      scanInProgress.value = true
+      cancelRescan()
+    }, 1500)
+    return
+  }
+  // Failed-scan retry pill: confirm pops the pair, loading collapses x
+  // toward check and spins, done fades the pill out as the status flips
+  // to Queue and unmounts it.
+  if (retryLoadingIndex.value != null || retryDoneIndex.value != null) return
+  const i = pendingRescanIndex.value
+  retryLoadingIndex.value = i
+  setTimeout(() => {
+    rescan(i)
+    retryDoneIndex.value = i
+    retryLoadingIndex.value = null
+    setTimeout(() => {
+      retryDoneIndex.value = null
+      cancelRescan()
+    }, 350)
+  }, 1200)
+}
+
+// Shown under the timeline heading for continuous apps.
+const recurrenceLabels = { daily: 'Daily', weekly: 'Weekly', biweekly: 'Every Two Weeks', monthly: 'Monthly' }
+const recurrenceLabel = computed(() =>
+  app.value.scanType === 'continuous' ? (recurrenceLabels[app.value.recurrence] ?? null) : null,
+)
 
 onMounted(() => {
   updateTimelineHint()
@@ -139,7 +218,11 @@ const cycleTabs = ['Active', 'Fixing', 'Mitigated', 'Tolerated', 'False positive
 const activeCycle = ref('Active')
 
 const vulns = ref(getWebAppVulns())
-const cycleCount = (cycle) => vulns.value.filter((v) => v.cycle === cycle).length
+const cycleCount = (cycle) => {
+  // A failed scan produced no findings — every cycle reads 0 there.
+  if (scans.value[selectedScan.value]?.status === 'Failed') return 0
+  return vulns.value.filter((v) => v.cycle === cycle).length
+}
 
 // ── Filters ────────────────────────────────────────────────────────────────
 const search = ref('')
@@ -174,6 +257,8 @@ const cyclePill = {
 const severityRank = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }
 
 const filtered = computed(() => {
+  // A failed scan produced no findings.
+  if (scans.value[selectedScan.value]?.status === 'Failed') return []
   let list = vulns.value.filter((v) => v.cycle === activeCycle.value)
   if (severityFilter.value) list = list.filter((v) => v.severity === severityFilter.value)
   const q = search.value.trim().toLowerCase()
@@ -283,20 +368,153 @@ function deleteFinding(id) {
   checked.value = checked.value.filter((c) => c !== id)
 }
 
-// ── Header actions ─────────────────────────────────────────────────────────
-function downloadReport() {
-  const rows = [['No', 'Vulnerability Name', 'Component', 'Line', 'Severity', 'Last Modified', 'Modified By']]
-  filtered.value.forEach((v, i) => {
-    rows.push([i + 1, `"${v.name.replace(/"/g, '""')}"`, v.component, v.line, severityPill[v.severity]?.label ?? v.severity, v.lastModified, v.modifiedBy])
-  })
-  const blob = new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `scan-report-${app.value.name.replace(/\s+/g, '-').toLowerCase()}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
+// ── Download Report filter modal (multi-select, horizontal) ──────────────
+const showReportModal = ref(false)
+const repSev = ref([])
+const repCycle = ref([])
+
+function toggleRepSev(v) {
+  repSev.value = repSev.value.includes(v)
+    ? repSev.value.filter((x) => x !== v)
+    : [...repSev.value, v]
 }
+function toggleRepCycle(v) {
+  repCycle.value = repCycle.value.includes(v)
+    ? repCycle.value.filter((x) => x !== v)
+    : [...repCycle.value, v]
+}
+function selectAllRepSev() {
+  repSev.value = severityOptions.map((o) => o.value)
+}
+function selectAllRepCycle() {
+  repCycle.value = [...cycleTabs]
+}
+
+// Each option's own count (across all findings, not the current filter) and
+// a mini bar sized relative to the busiest option in its own column.
+const repSevCounts = computed(() =>
+  Object.fromEntries(severityOptions.map((o) => [o.value, vulns.value.filter((v) => v.severity === o.value).length])),
+)
+const repCycleCounts = computed(() =>
+  Object.fromEntries(cycleTabs.map((t) => [t, vulns.value.filter((v) => v.cycle === t).length])),
+)
+const repSevMax = computed(() => Math.max(1, ...Object.values(repSevCounts.value)))
+const repCycleMax = computed(() => Math.max(1, ...Object.values(repCycleCounts.value)))
+const repRows = computed(() => {
+  // A failed scan produced no findings.
+  if (scans.value[selectedScan.value]?.status === 'Failed') return []
+  return vulns.value
+    .filter((v) =>
+      repSev.value.includes(v.severity) &&
+      repCycle.value.includes(v.cycle),
+    )
+    .sort((a, b) => (severityRank[a.severity] ?? 99) - (severityRank[b.severity] ?? 99))
+})
+function openReportModal() {
+  repSev.value = []
+  repCycle.value = []
+  reportDownloadState.value = 'idle'
+  showReportModal.value = true
+}
+const reportDownloadState = ref('idle') // 'idle' | 'loading'
+
+function submitReportDownload() {
+  if (!repRows.value.length || reportDownloadState.value !== 'idle') return
+  reportDownloadState.value = 'loading'
+  setTimeout(() => {
+    const rows = [['No', 'Vulnerability Name', 'Component', 'Line', 'Severity', 'Last Modified', 'Modified By']]
+    repRows.value.forEach((v, i) => {
+      rows.push([i + 1, `"${v.name.replace(/"/g, '""')}"`, v.component, v.line, severityPill[v.severity]?.label ?? v.severity, v.lastModified, v.modifiedBy])
+    })
+    const blob = new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `scan-report-${app.value.name.replace(/\s+/g, '-').toLowerCase()}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    reportDownloadState.value = 'idle'
+    showReportModal.value = false
+  }, 600)
+}
+
+// ── Delete timeline modal (hold-to-delete, like SourceCodeDetailView) ──────
+const showDelTlModal = ref(false)
+const delTlState = ref('idle') // 'idle' | 'loading' | 'saved'
+const delTlAck = ref(false)
+const delTlHolding = ref(false)
+let delTlHoldTimer = null
+let delTlDoneTimer = null
+
+const delTlScanLabel = computed(() => {
+  const s = scans.value[selectedScan.value]
+  return s ? to24Hour(s.date) : ''
+})
+const delTlReady = computed(() => delTlAck.value && delTlState.value === 'idle')
+const delTlButtonLabel = computed(() => {
+  if (delTlState.value === 'loading') return 'Deleting…'
+  if (!delTlAck.value) return 'Delete'
+  return delTlHolding.value ? 'Keep holding…' : 'Hold to delete'
+})
+const delTlHint = computed(() => {
+  if (!delTlAck.value && delTlState.value === 'idle') return 'Tick the box above to enable Delete'
+  if (delTlReady.value && !delTlHolding.value) return 'Press and hold, or hold Enter'
+  return ''
+})
+
+function openDelTlModal() {
+  delTlState.value = 'idle'
+  delTlAck.value = false
+  delTlHolding.value = false
+  showDelTlModal.value = true
+}
+function closeDelTlModal() {
+  if (delTlState.value === 'loading') return
+  clearTimeout(delTlHoldTimer)
+  delTlHolding.value = false
+  showDelTlModal.value = false
+  delTlState.value = 'idle'
+  delTlAck.value = false
+}
+function toggleDelTlAck() {
+  if (delTlState.value !== 'idle') return
+  delTlAck.value = !delTlAck.value
+  delTlHolding.value = false
+}
+function doDelTl() {
+  clearTimeout(delTlHoldTimer)
+  delTlHolding.value = false
+  delTlState.value = 'loading'
+  delTlDoneTimer = setTimeout(() => {
+    deleteScanTimeline()
+    delTlState.value = 'saved'
+  }, 1200)
+}
+function delTlHoldStart() {
+  if (!delTlReady.value) return
+  delTlHolding.value = true
+  clearTimeout(delTlHoldTimer)
+  delTlHoldTimer = setTimeout(doDelTl, 1000)
+}
+function delTlHoldEnd() {
+  if (delTlHolding.value) {
+    clearTimeout(delTlHoldTimer)
+    delTlHolding.value = false
+  }
+}
+function delTlKeyDown(e) {
+  if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
+    e.preventDefault()
+    delTlHoldStart()
+  }
+}
+function delTlKeyUp(e) {
+  if (e.key === 'Enter' || e.key === ' ') delTlHoldEnd()
+}
+onUnmounted(() => {
+  clearTimeout(delTlHoldTimer)
+  clearTimeout(delTlDoneTimer)
+})
 </script>
 
 <template>
@@ -304,7 +522,11 @@ function downloadReport() {
     <!-- ── Sidebar cards ──────────────────────────────────────────────── -->
     <aside class="scan-timeline">
       <section class="side-card">
-        <h2 class="scan-timeline__section">Scan timeline</h2>
+        <div class="scan-timeline__head">
+          <h2 class="scan-timeline__section">Scan timeline</h2>
+          <span class="scan-timeline__count">{{ scans.length }} scans</span>
+        </div>
+        <p v-if="recurrenceLabel" class="scan-timeline__recurrence">Repeats {{ recurrenceLabel.toLowerCase() }}</p>
 
         <div class="scan-timeline__scrollwrap">
           <div ref="tlRef" class="scan-timeline__scroll" @scroll="updateTimelineHint">
@@ -314,14 +536,50 @@ function downloadReport() {
               :key="s.id"
               type="button"
               class="scan-timeline__item"
-              :class="{ 'scan-timeline__item--active': i === selectedScan }"
+              :class="{ 'scan-timeline__item--active': i === selectedScan, 'scan-timeline__item--disabled': s.status === 'Scanning' || s.status === 'Queue' || s.status === 'Waiting' }"
+              :disabled="s.status === 'Scanning' || s.status === 'Queue' || s.status === 'Waiting'"
               @click="selectedScan = i"
             >
               <span class="scan-timeline__dot" :style="{ background: scanDot[s.status] ?? '#9aa5b1' }" />
               <span class="scan-timeline__meta">
                 <span class="scan-timeline__date">{{ to24Hour(s.date) }}</span>
-                <span class="scan-timeline__status">{{ s.status }}</span>
+                <span class="scan-timeline__status">{{ rbConfirming(i) ? 'Retry this scan?' : s.status }}</span>
               </span>
+              <template v-if="s.status === 'Failed' || retryDoneIndex === i">
+                <div class="rb-pill" :class="rbState(i)">
+                  <button
+                    type="button"
+                    class="rb-sync"
+                    title="Retry scan"
+                    aria-label="Retry scan"
+                    :tabindex="rbState(i) === 'is-idle' ? 0 : -1"
+                    @click.stop="openRescanConfirm(i)"
+                  >
+                    <IconRefresh :size="12" />
+                  </button>
+                  <button
+                    type="button"
+                    class="rb-ok"
+                    title="Confirm retry"
+                    aria-label="Confirm retry"
+                    :tabindex="rbState(i) === 'is-confirm' ? 0 : -1"
+                    @click.stop="confirmRescan"
+                  >
+                    <IconCheck :size="12" class="rb-tick" />
+                    <span class="rb-spinner" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    class="rb-no"
+                    title="Cancel retry"
+                    aria-label="Cancel retry"
+                    :tabindex="rbState(i) === 'is-confirm' ? 0 : -1"
+                    @click.stop="cancelRescan"
+                  >
+                    <IconX :size="12" />
+                  </button>
+                </div>
+              </template>
             </button>
           </div>
           <button
@@ -336,9 +594,47 @@ function downloadReport() {
 
         <p class="scan-timeline__count">{{ scans.length }} scans</p>
 
-        <button type="button" class="btn-register btn-register--block" @click="rescan">
-          <IconRefresh :size="14" /> Re-scan
-        </button>
+        <div class="scan-main__actions">
+          <Transition name="rescan-swap" mode="out-in">
+            <button
+              v-if="scanInProgress"
+              key="scanning"
+              type="button"
+              class="btn-register btn-register--block btn-register--scanning"
+              disabled
+            >
+              Scan in progress
+            </button>
+            <div v-else-if="pendingRescanType === 'main'" key="confirm" class="rescan-confirm-inline">
+              <button
+                type="button"
+                class="btn-register btn-register--block btn-register--cancel"
+                :disabled="rescanLoading"
+                @click="cancelRescan"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="btn-register btn-register--block btn-register--proceed"
+                :disabled="rescanLoading"
+                @click="confirmRescan"
+              >
+                <span v-if="rescanLoading" class="btn-register__spinner" aria-hidden="true" />
+                <span v-else>Proceed</span>
+              </button>
+            </div>
+            <button
+              v-else-if="app.scanType === 'manual'"
+              key="rescan"
+              type="button"
+              class="btn-register btn-register--block"
+              @click="() => openRescanConfirm()"
+            >
+              Re-scan
+            </button>
+          </Transition>
+        </div>
       </section>
 
       <section class="side-card">
@@ -376,11 +672,11 @@ function downloadReport() {
           </div>
         </div>
         <div class="scan-main__actions">
-          <button type="button" class="btn-glass target-detail-trigger" @click="toggleTargetDetailModal($event)">
+          <button type="button" class="btn-register target-detail-trigger" @click="toggleTargetDetailModal($event)">
             <IconInfoCircle :size="15" /> View detail
           </button>
-          <button type="button" class="btn-register" @click="downloadReport">
-            <IconDownload :size="15" /> Report
+          <button type="button" class="btn-register" @click="openReportModal">
+            <IconDownload :size="15" /> Download report
           </button>
         </div>
       </section>
@@ -507,6 +803,179 @@ function downloadReport() {
     <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip />
 
     <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showReportModal" class="modal-backdrop" @mousedown.self="showReportModal = false">
+          <div class="rep-modal">
+            <div class="rep-modal__head">
+              <div>
+                <h2 class="rep-modal__title">Download Report</h2>
+                <p class="rep-modal__desc">Choose which findings to include in the CSV export.</p>
+              </div>
+              <button type="button" class="rep-modal__close" aria-label="Close" @click="showReportModal = false">
+                <IconX :size="18" />
+              </button>
+            </div>
+
+            <div class="rep-modal__grid">
+              <div class="rep-modal__col">
+                <div class="rep-modal__col-head">
+                  <p class="rep-modal__label">Severity</p>
+                  <button type="button" class="rep-modal__selectall" @click="selectAllRepSev">Select all</button>
+                </div>
+                <div class="rep-modal__opts">
+                  <label v-for="o in severityOptions" :key="o.value" class="rep-check">
+                    <input
+                      type="checkbox"
+                      class="rep-check__input"
+                      :checked="repSev.includes(o.value)"
+                      @change="toggleRepSev(o.value)"
+                    />
+                    <span class="rep-check__box" aria-hidden="true"><IconCheck :size="12" class="rep-check__icon" /></span>
+                    <span
+                      class="rep-radio__tag"
+                      :style="{ background: severityPill[o.value].bg, color: severityPill[o.value].color }"
+                    >{{ o.label }}</span>
+                    <span class="rep-check__bar">
+                      <span
+                        class="rep-check__bar-fill"
+                        :class="{ 'rep-check__bar-fill--on': repSev.includes(o.value) }"
+                        :style="{ width: (repSevCounts[o.value] / repSevMax * 100) + '%' }"
+                      />
+                    </span>
+                    <span class="rep-check__count">{{ repSevCounts[o.value] }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="rep-modal__divider" aria-hidden="true" />
+
+              <div class="rep-modal__col">
+                <div class="rep-modal__col-head">
+                  <p class="rep-modal__label">Vulnerability status</p>
+                  <button type="button" class="rep-modal__selectall" @click="selectAllRepCycle">Select all</button>
+                </div>
+                <div class="rep-modal__opts">
+                  <label v-for="tab in cycleTabs" :key="tab" class="rep-check">
+                    <input
+                      type="checkbox"
+                      class="rep-check__input"
+                      :checked="repCycle.includes(tab)"
+                      @change="toggleRepCycle(tab)"
+                    />
+                    <span class="rep-check__box" aria-hidden="true"><IconCheck :size="12" class="rep-check__icon" /></span>
+                    <span class="rep-check__text">{{ tab }}</span>
+                    <span class="rep-check__bar">
+                      <span
+                        class="rep-check__bar-fill"
+                        :class="{ 'rep-check__bar-fill--on': repCycle.includes(tab) }"
+                        :style="{ width: (repCycleCounts[tab] / repCycleMax * 100) + '%' }"
+                      />
+                    </span>
+                    <span class="rep-check__count">{{ repCycleCounts[tab] }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="rep-modal__footer">
+              <p class="rep-modal__count"><b>{{ repRows.length }}</b> of {{ vulns.length }} vulnerabilities selected</p>
+              <div class="rep-modal__progress">
+                <span
+                  class="rep-modal__progress-fill"
+                  :style="{ width: (vulns.length ? repRows.length / vulns.length * 100 : 0) + '%' }"
+                />
+              </div>
+
+              <div class="rep-modal__actions">
+                <button type="button" class="rep-btn rep-btn--cancel" @click="showReportModal = false">Cancel</button>
+                <button
+                  type="button"
+                  class="rep-btn rep-btn--download"
+                  :class="{ 'rep-btn--busy': reportDownloadState === 'loading' }"
+                  :disabled="!repRows.length || reportDownloadState !== 'idle'"
+                  @click="submitReportDownload"
+                >
+                  <span v-if="reportDownloadState === 'loading'" class="rep-btn__spinner" />
+                  <span v-else>Download</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showDelTlModal" class="modal-backdrop modal-backdrop--above" @mousedown.self="closeDelTlModal">
+          <div class="del-modal" role="dialog" aria-modal="true" aria-labelledby="del-tl-title">
+            <div class="del-stack">
+              <div class="del-panel" :class="{ 'del-hidden': delTlState === 'saved' }">
+                <div class="del-head">
+                  <span class="del-tile" :class="{ 'del-tile--acked': delTlAck }">
+                    <IconTrash :size="22" />
+                  </span>
+                  <div class="del-titles">
+                    <span id="del-tl-title" class="del-title">Delete timeline</span>
+                    <span class="del-repo">
+                      <IconCalendar :size="14" class="del-repo__icon" /><span class="del-ellip">{{ delTlScanLabel }}</span>
+                    </span>
+                  </div>
+                  <button type="button" class="del-close" aria-label="Close" @click="closeDelTlModal">
+                    <IconX :size="18" />
+                  </button>
+                </div>
+
+                <p class="del-body">
+                  <strong>{{ delTlScanLabel }}</strong> and its results will be removed from the timeline immediately.
+                  Once deleted, you won't be able to view or restore this scan.
+                </p>
+
+                <button
+                  type="button"
+                  class="del-ack"
+                  :class="{ 'del-ack--on': delTlAck }"
+                  role="checkbox"
+                  :aria-checked="delTlAck"
+                  @click="toggleDelTlAck"
+                >
+                  <span class="del-box"><IconCheck :size="16" class="del-tick" /></span>
+                  <span class="del-ack__text">This action is permanent and cannot be undone.</span>
+                </button>
+
+                <div class="del-actions">
+                  <button type="button" class="del-btn del-btn--cancel" @click="closeDelTlModal">Cancel</button>
+                  <button
+                    type="button"
+                    class="del-btn del-btn--delete"
+                    :class="{ 'is-ready': delTlReady, 'is-holding': delTlHolding, 'is-deleting': delTlState === 'loading' }"
+                    :aria-disabled="!delTlReady"
+                    @pointerdown="delTlHoldStart"
+                    @pointerup="delTlHoldEnd"
+                    @pointerleave="delTlHoldEnd"
+                    @keydown="delTlKeyDown"
+                    @keyup="delTlKeyUp"
+                  >
+                    <span class="del-fill" aria-hidden="true" />
+                    <span class="del-label"><span v-if="delTlState === 'loading'" class="del-spinner" aria-hidden="true" />{{ delTlButtonLabel }}</span>
+                  </button>
+                </div>
+                <span class="del-hint">{{ delTlHint }}</span>
+              </div>
+
+              <div class="del-panel del-done" :class="{ 'is-shown': delTlState === 'saved' }">
+                <span class="del-done__icon"><IconCheck :size="28" /></span>
+                <span class="del-done__title">Timeline deleted</span>
+                <span class="del-done__body"><span class="del-mono">{{ delTlScanLabel }}</span> has been removed.</span>
+                <button type="button" class="del-btn del-btn--cancel del-done__btn" @click="closeDelTlModal">Done</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <Teleport to="body">
       <Transition name="target-panel-fade">
         <div v-if="showTargetDetailModal" class="target-modal" :style="{ top: `${targetDetailPos.top}px`, left: `${targetDetailPos.left}px` }">
             <div class="target-modal__head">
@@ -553,6 +1022,7 @@ function downloadReport() {
               <div class="target-modal__section">
                 <p class="target-modal__section-label">Multi-Tags</p>
                 <div class="target-modal__tag-list">
+                  <span v-if="!app.tags.length" class="target-modal__empty">No tags</span>
                   <span
                     v-for="(t, i) in app.tags"
                     :key="`${t.label}-${i}`"
@@ -585,7 +1055,7 @@ function downloadReport() {
 
             <div class="target-modal__footer">
               <p class="target-modal__footer-desc">Removes this scan and its results from the timeline.</p>
-              <button type="button" class="target-modal__delete" @click="deleteScanTimeline">
+              <button type="button" class="target-modal__delete" @click="openDelTlModal">
                 <IconTrash :size="13" /> Delete Timeline
               </button>
             </div>
@@ -651,6 +1121,7 @@ function downloadReport() {
   &__scroll {
     height: 324px;
     overflow-y: auto;
+    overflow-x: hidden;
     overscroll-behavior: contain;
     scrollbar-width: thin;
     display: flex;
@@ -658,6 +1129,7 @@ function downloadReport() {
     gap: 2px;
     position: relative;
     padding-bottom: 12px;
+    max-width: 100%;
   }
 
   &__rail {
@@ -690,6 +1162,15 @@ function downloadReport() {
     &--active {
       background: #F1F5F9;
       box-shadow: 0 4px 16px -4px rgba(16, 24, 32, 0.12);
+    }
+
+    &--disabled {
+      cursor: default;
+      background: rgba(15, 23, 42, 0.05);
+
+      &:hover {
+        background: rgba(15, 23, 42, 0.05);
+      }
     }
   }
 
@@ -762,6 +1243,12 @@ function downloadReport() {
     font-size: 11.5px;
     color: var(--glacia-ink-dim);
     margin: 0;
+  }
+
+  &__recurrence {
+    margin: -8px 0 0;
+    font-size: 12px;
+    color: var(--glacia-ink-dim);
   }
 
   &__divider {
@@ -837,6 +1324,231 @@ function downloadReport() {
 
   &--block {
     width: 100%;
+  }
+
+  &--cancel {
+    background: transparent;
+    color: var(--glacia-ink-dim);
+    box-shadow: none;
+    border: 1px solid var(--glacia-glass-border);
+
+    &:hover {
+      background: rgba(15, 23, 42, 0.06);
+      color: var(--glacia-ink);
+      box-shadow: none;
+    }
+  }
+
+  &--proceed {
+    background: var(--glacia-red);
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(255, 37, 41, 0.4);
+
+    &:hover:not(:disabled) {
+      background: #e01e22;
+      box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: default;
+    }
+  }
+
+  &--scanning {
+    background: #ECEEF0;
+    color: #5C6470;
+    box-shadow: none;
+    cursor: default;
+
+    &:hover {
+      background: #ECEEF0;
+      box-shadow: none;
+    }
+  }
+
+  &__spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    animation: btn-register-spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+}
+
+@keyframes btn-register-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// Re-scan ↔ Cancel/Proceed ↔ Scan-in-progress transform animation
+.rescan-swap-enter-active {
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.rescan-swap-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.rescan-swap-enter-from {
+  opacity: 0;
+  transform: translateY(6px) scale(0.97);
+}
+.rescan-swap-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+}
+
+// Inline re-scan confirmation (button transforms into Cancel/Proceed)
+.rescan-confirm-inline {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+
+  .btn-register {
+    flex: 1;
+  }
+}
+
+// Failed-scan retry pill — port of references/RetryButton.vue
+.rb-pill {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border-radius: 999px;
+  background: rgba(220, 38, 38, 0.1);
+  transition: width 420ms cubic-bezier(0.65, 0, 0.35, 1), background 300ms ease,
+    opacity 260ms ease, transform 320ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.rb-pill.is-confirm {
+  width: 58px;
+  background: var(--gray-100);
+}
+.rb-pill.is-loading {
+  background: transparent;
+}
+.rb-pill.is-done {
+  background: transparent;
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.rb-pill button {
+  position: absolute;
+  border: 0;
+  padding: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rb-sync {
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  color: #dc2626;
+  transition: opacity 180ms ease, transform 360ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.rb-pill:not(.is-idle) .rb-sync {
+  opacity: 0;
+  transform: rotate(-180deg) scale(0.4);
+  pointer-events: none;
+}
+
+.rb-ok {
+  left: 2px;
+  top: 2px;
+  width: 24px;
+  height: 24px;
+  background: var(--glacia-red);
+  color: #fff;
+  box-shadow: 0 6px 14px -6px rgba(255, 37, 41, 0.55);
+  opacity: 0;
+  transform: scale(0.4);
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 380ms cubic-bezier(0.34, 1.3, 0.64, 1), background 200ms ease;
+}
+.is-confirm .rb-ok {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition-delay: 60ms;
+}
+.is-confirm .rb-ok:hover {
+  filter: brightness(0.92);
+}
+.is-loading .rb-ok {
+  opacity: 1;
+  transform: none;
+  cursor: default;
+}
+
+.rb-tick {
+  transition: opacity 180ms ease, transform 260ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.is-loading .rb-tick {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.rb-spinner {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: rb-spin 700ms linear infinite;
+  opacity: 0;
+  transition: opacity 200ms ease 120ms;
+}
+.is-loading .rb-spinner {
+  opacity: 1;
+}
+
+.rb-no {
+  left: 32px;
+  top: 2px;
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  color: #5b6470;
+  box-shadow: 0 1px 3px rgba(16, 24, 32, 0.12);
+  opacity: 0;
+  transform: scale(0.4);
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 340ms cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.is-confirm .rb-no {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition-delay: 140ms;
+}
+.is-confirm .rb-no:hover {
+  color: var(--glacia-ink);
+}
+.is-loading .rb-no {
+  transform: translateX(-14px) scale(0.3);
+}
+
+@keyframes rb-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rb-pill, .rb-pill * {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
   }
 }
 
@@ -1293,6 +2005,11 @@ function downloadReport() {
     gap: 6px;
   }
 
+  &__empty {
+    font-size: 12px;
+    color: var(--glacia-ink-dim);
+  }
+
   &__divider {
     height: 1px;
     background: rgba(16, 24, 32, 0.1);
@@ -1478,6 +2195,704 @@ function downloadReport() {
 @media (max-width: 640px) {
   .target-modal__severity-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+// ── Download Report filter modal ─────────────────────────────────────────
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 20px;
+}
+
+.modal-backdrop--above {
+  z-index: 500;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.rep-modal {
+  width: 100%;
+  max-width: 640px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
+  padding: 28px 28px 0;
+  overflow: hidden;
+  animation: rep-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes rep-modal-bounce {
+  0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
+  60%  { opacity: 1; transform: scale(1.01) translateY(0); }
+  100% { transform: scale(1); }
+}
+
+.rep-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 20px;
+}
+
+.rep-modal__title {
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--glacia-ink);
+  margin: 0;
+}
+
+.rep-modal__desc {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--glacia-ink-dim);
+}
+
+.rep-modal__close {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--glacia-ink-dim);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.1);
+    color: var(--glacia-ink);
+  }
+}
+
+.rep-modal__grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  padding: 20px 0;
+  border-top: 1px solid #eef1f4;
+}
+
+.rep-modal__divider {
+  width: 1px;
+  background: #eef1f4;
+}
+
+.rep-modal__col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.rep-modal__label {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--glacia-ink);
+  margin: 0;
+}
+
+.rep-modal__selectall {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--glacia-red);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.rep-modal__opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rep-check {
+  display: grid;
+  grid-template-columns: 22px minmax(64px, auto) 1fr 20px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.13s;
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.04);
+  }
+
+  &__input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &__box {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 8px;
+    border: 2px solid #cbd5e1;
+    background: #fff;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.13s, background 0.13s;
+  }
+
+  &__icon {
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.13s;
+  }
+
+  &__input:checked + &__box {
+    border-color: var(--glacia-red);
+    background: var(--glacia-red);
+  }
+
+  &__input:checked + &__box &__icon {
+    opacity: 1;
+  }
+
+  &__input:focus-visible + &__box {
+    outline: 2px solid var(--glacia-red);
+    outline-offset: 2px;
+  }
+
+  &__text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--glacia-ink);
+  }
+
+  &__bar {
+    height: 6px;
+    border-radius: 999px;
+    background: #eef1f4;
+    overflow: hidden;
+  }
+
+  &__bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: #cbd5e1;
+    transition: background 0.13s;
+
+    &--on {
+      background: var(--glacia-red);
+    }
+  }
+
+  &__count {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--glacia-ink-dim);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.rep-radio__tag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  justify-self: start;
+}
+
+.rep-modal__footer {
+  margin: 0 -28px;
+  padding: 18px 28px 24px;
+  background: #f8f9fb;
+  border-top: 1px solid #eef1f4;
+}
+
+.rep-modal__count {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--glacia-ink-dim);
+
+  b {
+    color: var(--glacia-ink);
+    font-weight: 800;
+  }
+}
+
+.rep-modal__progress {
+  height: 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.rep-modal__progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--glacia-red);
+  transition: width 0.2s ease;
+}
+
+.rep-modal__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.rep-btn {
+  flex: 1;
+  height: 52px;
+  border-radius: 999px;
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &--cancel {
+    background: #fff;
+    color: var(--glacia-ink);
+    border: 1px solid #d3dee2;
+
+    &:hover {
+      background: rgba(15, 23, 42, 0.04);
+    }
+  }
+
+  &--download {
+    background: #ff2e3a;
+    color: #fff;
+    box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
+
+    &:hover:not(:disabled) {
+      background: #e6212c;
+    }
+
+    &:disabled {
+      background: #e5e7eb;
+      color: #9ca3af;
+      box-shadow: none;
+      cursor: default;
+    }
+
+    // Mid-download still reads as "red", not "disabled" — the :disabled
+    // attribute here only blocks a second click while it's in flight.
+    &.rep-btn--busy:disabled {
+      background: #ff2e3a;
+      color: #fff;
+      box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
+    }
+  }
+
+  &__spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    animation: rep-btn-spin 0.7s linear infinite;
+  }
+}
+
+@keyframes rep-btn-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// ── Delete timeline modal (same hold-to-delete as Delete repository) ──────
+.del-modal {
+  width: min(460px, calc(100% - 40px));
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--glacia-glass-border);
+  box-shadow: 0 40px 80px -30px rgba(16, 24, 32, 0.5);
+  overflow: hidden;
+  animation: del-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes del-modal-bounce {
+  0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
+  60%  { opacity: 1; transform: scale(1.01) translateY(0); }
+  100% { transform: scale(1); }
+}
+
+.del-stack {
+  display: grid;
+}
+
+.del-panel {
+  grid-area: 1 / 1;
+}
+
+.del-panel:not(.del-done) {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: opacity 260ms ease, transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.del-hidden {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+  pointer-events: none;
+}
+
+.del-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.del-tile {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--glacia-sev-critical);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 420ms cubic-bezier(0.34, 1.5, 0.64, 1);
+
+  &--acked {
+    transform: rotate(-8deg) scale(1.06);
+  }
+}
+
+.del-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.del-title {
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 800;
+  color: var(--glacia-ink);
+}
+
+.del-repo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--glacia-ink-dim);
+
+  &__icon {
+    flex-shrink: 0;
+  }
+}
+
+.del-ellip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.del-close {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  padding: 0;
+  border-radius: 999px;
+  background: #eef1f4;
+  color: var(--glacia-ink-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 160ms ease;
+
+  &:hover {
+    background: #e2e8f0;
+  }
+}
+
+.del-body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--glacia-ink-dim);
+
+  strong {
+    color: var(--glacia-ink);
+    font-weight: 700;
+  }
+}
+
+.del-ack {
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  transition: background 260ms ease, border-color 260ms ease;
+
+  &--on {
+    border-color: var(--glacia-sev-critical);
+    background: rgba(220, 38, 38, 0.06);
+  }
+
+  &__text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--glacia-ink);
+    transition: color 220ms ease;
+  }
+
+  &--on &__text {
+    color: var(--glacia-sev-critical);
+  }
+}
+
+.del-box {
+  flex: none;
+  position: relative;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border-radius: 7px;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+
+.del-ack--on .del-box {
+  border-color: var(--glacia-sev-critical);
+  background: var(--glacia-sev-critical);
+}
+
+.del-tick {
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.3);
+  transition: opacity 160ms ease, transform 320ms cubic-bezier(0.34, 1.6, 0.64, 1);
+}
+
+.del-ack--on .del-tick {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.del-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.del-btn {
+  height: 48px;
+  border-radius: 16px;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &--cancel {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: var(--glacia-ink);
+    transition: background 160ms ease;
+
+    &:hover {
+      background: #f1f5f9;
+    }
+  }
+
+  &--delete {
+    position: relative;
+    overflow: hidden;
+    border: 0;
+    background: #eef1f4;
+    color: #94a3b8;
+    cursor: not-allowed;
+    user-select: none;
+    touch-action: none;
+    transition: background 260ms ease, color 260ms ease, box-shadow 260ms ease, transform 160ms ease;
+
+    &.is-ready,
+    &.is-deleting {
+      background: var(--glacia-sev-critical);
+      color: #fff;
+    }
+
+    &.is-ready {
+      cursor: pointer;
+      box-shadow: 0 10px 24px -10px rgba(220, 38, 38, 0.6);
+    }
+
+    &.is-holding {
+      transform: scale(0.98);
+    }
+  }
+}
+
+.del-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: #a8161f;
+  transition: width 260ms ease-out;
+}
+
+.is-holding .del-fill {
+  width: 100%;
+  transition: width 1000ms linear;
+}
+
+.is-deleting .del-fill {
+  width: 100%;
+  transition: none;
+}
+
+.del-label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.del-spinner {
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: del-spin 700ms linear infinite;
+}
+
+.del-hint {
+  font-size: 12.5px;
+  color: var(--glacia-ink-dim);
+  text-align: right;
+  margin-top: -8px;
+  min-height: 18px;
+}
+
+.del-done {
+  padding: 40px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 300ms ease 120ms, transform 420ms cubic-bezier(0.2, 0.9, 0.25, 1) 120ms;
+
+  &.is-shown {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  &__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0.4);
+    transition: transform 520ms cubic-bezier(0.34, 1.6, 0.64, 1) 220ms;
+  }
+
+  &.is-shown &__icon {
+    transform: scale(1);
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+  }
+
+  &__body {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__btn {
+    margin-top: 10px;
+    height: 44px;
+    padding: 0 24px;
+  }
+}
+
+.del-mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-weight: 600;
+  color: var(--glacia-ink);
+}
+
+@keyframes del-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .del-modal,
+  .del-modal * {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
   }
 }
 </style>

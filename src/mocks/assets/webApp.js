@@ -19,16 +19,9 @@ const EXTRA_TAGS = [
 ]
 
 const ROWS = [
-  { id: 1, name: 'Website Protergo Cyber Security', target: 'https://protergo.id', owner: 'Protergo Cyber Security HQ', scanType: 'manual', status: 'Scanning', extras: [0, 4] },
-  { id: 2, name: 'Customer Portal', target: 'https://portal.protergo.id', owner: 'Protergo Cyber Security Jakarta', scanType: 'scheduled', status: 'Queue', extras: [1, 5] },
-  { id: 3, name: 'Billing Dashboard', target: 'https://billing.protergo.id', owner: 'Protergo Fintech Solutions', scanType: 'continuous', status: 'Completed', extras: [0, 8] },
-  { id: 4, name: 'Partner API Gateway', target: 'https://api.protergo.id/v2', owner: 'Protergo Labs', scanType: 'manual', status: 'Failed', extras: [2, 6] },
-  { id: 5, name: 'Staging Storefront', target: 'https://staging.shop.protergo.id', owner: 'Protergo Cyber Security Surabaya', scanType: 'scheduled', status: 'Waiting', extras: [1, 3] },
-  { id: 6, name: 'VPN Admin Console', target: 'https://vpn.protergo.id/admin', owner: 'Protergo Cyber Security Bandung', scanType: 'continuous', status: 'Scanning', extras: [3, 2] },
-  { id: 7, name: 'Docs Portal', target: 'https://docs.protergo.id', owner: 'Beta Ventures Security', scanType: 'manual', status: 'Completed', extras: [4, 7] },
-  { id: 8, name: 'Mobile API Backend', target: 'https://m.protergo.id/api', owner: 'Protergo Cyber Security Rempoa', scanType: 'scheduled', status: 'Queue', extras: [5, 0] },
-  { id: 9, name: 'Legacy CRM', target: 'https://crm.protergo.id', owner: 'Protergo Cyber Security Ciputat', scanType: 'continuous', status: 'NotStarted', extras: [7, 1] },
-  { id: 10, name: 'Status Page', target: 'https://status.protergo.id', owner: 'Protergo Cyber Security HQ', scanType: 'manual', status: 'Completed', extras: [6, 8] },
+  { id: 1, name: 'Website Protergo Cyber Security', target: 'https://protergo.id', owner: 'Protergo Cyber Security HQ', scanType: 'manual', status: 'Scanning', extras: [0, 4], auth: 'Inactive' },
+  { id: 2, name: 'Customer Portal', target: 'https://portal.protergo.id', owner: 'Protergo Cyber Security Jakarta', scanType: 'scheduled', status: 'Queue', extras: [1, 5], auth: 'Active' },
+  { id: 3, name: 'Billing Dashboard', target: 'https://billing.protergo.id', owner: 'Protergo Fintech Solutions', scanType: 'continuous', status: 'Completed', extras: [0, 8], recurrence: 'weekly', auth: 'Inactive' },
 ]
 
 export function getWebApps() {
@@ -39,17 +32,40 @@ export function getWebApps() {
     owner: r.owner,
     scanType: r.scanType,
     status: r.status,
+    recurrence: r.recurrence ?? null,
+    auth: r.auth ?? 'Inactive',
     tags: [],
   })))
 }
 
-// Scan timeline entries for the web app detail page, newest first.
-export function getWebAppScans() {
+// Scan timeline entries per app — different scan types behave differently,
+// mirroring SourceCodeDetailView: manual keeps a completed history, scheduled
+// queues upcoming runs, continuous shows recurrence with an active scan.
+export function getWebAppScans(appId) {
+  if (appId === 2) {
+    // scheduled — upcoming runs queued
+    return [
+      { id: 'q1', date: '20 Jul 2026 08:00', status: 'Queue', duration: null },
+      { id: 'q2', date: '21 Jul 2026 08:00', status: 'Waiting', duration: null },
+      { id: 'q3', date: '22 Jul 2026 08:00', status: 'Waiting', duration: null },
+      { id: 's1', date: '14 Jul 2026 12:59', status: 'Completed', duration: '3m 41s' },
+    ]
+  }
+  if (appId === 3) {
+    // continuous — active scan plus completed history
+    return [
+      { id: 'c1', date: '14 Jul 2026 12:59', status: 'Scanning', duration: null },
+      { id: 'c2', date: '09 Jul 2026 14:25', status: 'Completed', duration: '5m 18s' },
+      { id: 'c3', date: '03 Jul 2026 14:24', status: 'Completed', duration: '4m 47s' },
+      { id: 'c4', date: '01 Jul 2026 14:33', status: 'Completed', duration: '6m 02s' },
+    ]
+  }
+  // manual (id 1) — completed history with one failed run for retry
   return [
-    { id: 's1', date: '14 Jul 2026 12:59', status: 'Completed' },
-    { id: 's2', date: '09 Jul 2026 14:25', status: 'Completed' },
-    { id: 's3', date: '03 Jul 2026 14:24', status: 'Completed' },
-    { id: 's4', date: '01 Jul 2026 14:33', status: 'Completed' },
+    { id: 's1', date: '14 Jul 2026 12:59', status: 'Scanning', duration: null },
+    { id: 's2', date: '09 Jul 2026 14:25', status: 'Completed', duration: '3m 41s' },
+    { id: 's3', date: '03 Jul 2026 14:24', status: 'Failed', duration: '1m 12s' },
+    { id: 's4', date: '01 Jul 2026 14:33', status: 'Completed', duration: '4m 02s' },
   ]
 }
 

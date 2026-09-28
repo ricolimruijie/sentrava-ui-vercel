@@ -188,12 +188,14 @@ function movePill() {
 
   &__trigger {
     width: 100%;
-    height: 54px;
-    padding: 0 18px;
-    border-radius: 14px;
-    border: 0.5px solid var(--glacia-glass-border);
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
+    height: 44px;
+    padding: 0 12px 0 16px;
+    border-radius: var(--glacia-radius-sm, 12px);
+    border: 1px solid #AEBEC4;
+    background: var(--glacia-glass-fill, rgba(255, 255, 255, 0.6));
+    backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
+    box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(255, 255, 255, 0.95)), 0 10px 24px -14px rgba(16, 24, 32, 0.2);
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -201,13 +203,13 @@ function movePill() {
     gap: 10px;
     cursor: pointer;
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 15px;
+    font-size: 14px;
     color: var(--glacia-ink);
     text-align: left;
-    transition: border-color 0.13s, box-shadow 0.13s;
+    transition: border-color 200ms ease, box-shadow 280ms ease;
 
     &:hover {
-      border-color: var(--glacia-ink-dim);
+      border-color: #849599;
     }
   }
 

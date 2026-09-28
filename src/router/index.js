@@ -99,7 +99,7 @@ const appRoutes = [
       // this lets the breadcrumb reflect the active tab as a trailing
       // crumb instead of always showing the static page title.
       tabQuery: 'tab',
-      tabLabels: { overview: 'Overview', list: 'Company list', audit: 'Audit log', probe: 'Probe box' },
+      tabLabels: { overview: 'Overview', list: 'Company list', audit: 'Audit log', probe: 'Integration' },
     },
   },
   { path: '/credits',             component: Placeholder, meta: { requiresAuth: true } },

@@ -3,38 +3,53 @@
 // because both views mutate rows locally (status changes, deletes, tags).
 
 const REPOS = [
-  { id: 1, repo: 'protergo-cyber-security', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 1987, tags: [], status: 'NotStarted', scanType: 'manual' },
-  { id: 2, repo: 'tcg-royal', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 4213, tags: [], status: 'NotStarted', scanType: 'scheduled' },
-  { id: 3, repo: 'aoc-glasshour', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 2765, tags: [], status: 'NotStarted', scanType: 'continuous' },
-  { id: 4, repo: 'dune-franky-heretic', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 8340, tags: [], status: 'NotStarted', scanType: 'manual' },
-  { id: 5, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Rempoa', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'scheduled' },
-  { id: 6, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Rempoa', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'continuous' },
-  { id: 7, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Rempoa', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'manual' },
-  { id: 8, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Ciputat', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'scheduled' },
-  { id: 9, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Ciputat', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'continuous' },
-  { id: 10, repo: 'aura-ready', branch: 'main', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Ciputat', linesOfCode: 3128, tags: [], status: 'NotStarted', scanType: 'manual' },
+  { id: 1, repo: 'protergo-cyber-security', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 1987, tags: [], status: 'Scanning', scanType: 'manual' },
+  { id: 2, repo: 'tcg-royal', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 4213, tags: [], status: 'Completed', scanType: 'scheduled' },
+  { id: 3, repo: 'aoc-glasshour', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 2765, tags: [], status: 'Scanning', scanType: 'continuous', recurrence: 'weekly' },
 ]
 
 export function getSourceCodeRepos() {
   return structuredClone(REPOS)
 }
 
-// Scan timeline entries, newest first.
-export function getSourceCodeScans() {
+// Scan timeline entries, newest first. tcg-royal (id 2) is a freshly
+// scheduled repo — its first scan is running and the rest are still queued,
+// with no completed history yet.
+export function getSourceCodeScans(repoId) {
+  if (repoId === 2) {
+    return [
+      // tcg-royal scans on a daily schedule — each Waiting entry is the next
+      // upcoming run, not a blank/unknown date.
+      { id: 't1', date: '9 Feb 2025 8:30 AM', status: 'Failed', duration: '2m 03s' },
+      { id: 't2', date: '10 Feb 2025 8:30 AM', status: 'Completed', duration: '4m 15s' },
+      { id: 't3', date: '11 Feb 2025 8:30 AM', status: 'Scanning', duration: null },
+      { id: 't4', date: '12 Feb 2025 8:30 AM', status: 'Waiting', duration: null },
+      { id: 't5', date: '13 Feb 2025 8:30 AM', status: 'Waiting', duration: null },
+      { id: 't6', date: '14 Feb 2025 8:30 AM', status: 'Waiting', duration: null },
+      { id: 't7', date: '15 Feb 2025 8:30 AM', status: 'Waiting', duration: null },
+      { id: 't8', date: '16 Feb 2025 8:30 AM', status: 'Waiting', duration: null },
+    ]
+  }
+  if (repoId === 3) {
+    // aoc-glasshour — scan running today, next run scheduled next week
+    const fmt = (d) => d.toLocaleString('en-US', {
+      day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
+    })
+    return [
+      { id: 'a3', date: fmt(new Date(Date.now() - 7 * 24 * 3600 * 1000)), status: 'Completed', duration: '4m 52s' },
+      { id: 'a1', date: fmt(new Date()), status: 'Scanning', duration: null },
+      { id: 'a2', date: fmt(new Date(Date.now() + 7 * 24 * 3600 * 1000)), status: 'Waiting', duration: null },
+    ]
+  }
   return [
-    { id: 's1', date: '9 Feb 2025 8:30 AM', status: 'Completed', duration: '4m 32s' },
-    { id: 's2', date: '10 Feb 2025 8:30 AM', status: 'Queue', duration: null },
-    { id: 's3', date: '11 Feb 2025 8:30 AM', status: 'Waiting', duration: null },
-    { id: 's4', date: '8 Feb 2025 8:30 AM', status: 'Completed', duration: '5m 10s' },
-    { id: 's5', date: '7 Feb 2025 2:15 PM', status: 'Completed', duration: '3m 48s' },
-    { id: 's6', date: '6 Feb 2025 8:30 AM', status: 'Scanning', duration: null },
-    { id: 's7', date: '5 Feb 2025 11:45 AM', status: 'Completed', duration: '6m 02s' },
-    { id: 's8', date: '4 Feb 2025 8:30 AM', status: 'Failed', duration: '1m 44s' },
-    { id: 's9', date: '3 Feb 2025 4:00 PM', status: 'Completed', duration: '3m 59s' },
-    { id: 's10', date: '2 Feb 2025 8:30 AM', status: 'Completed', duration: '5m 24s' },
-    { id: 's11', date: '1 Feb 2025 9:10 AM', status: 'Completed', duration: '4m 41s' },
-    { id: 's12', date: '31 Jan 2025 8:30 AM', status: 'Completed', duration: '4m 08s' },
-    { id: 's13', date: '30 Jan 2025 3:20 PM', status: 'Completed', duration: '3m 36s' },
+    { id: 's1', date: '9 Feb 2025 8:30 AM', status: 'Scanning', duration: null },
+    { id: 's2', date: '8 Feb 2025 8:30 AM', status: 'Completed', duration: '5m 10s' },
+    { id: 's3', date: '7 Feb 2025 2:15 PM', status: 'Failed', duration: '2m 03s' },
+    { id: 's4', date: '6 Feb 2025 8:30 AM', status: 'Completed', duration: '4m 05s' },
+    { id: 's5', date: '5 Feb 2025 11:45 AM', status: 'Completed', duration: '6m 02s' },
+    { id: 's6', date: '4 Feb 2025 8:30 AM', status: 'Completed', duration: '1m 44s' },
+    { id: 's7', date: '3 Feb 2025 4:00 PM', status: 'Completed', duration: '3m 59s' },
+    { id: 's8', date: '2 Feb 2025 8:30 AM', status: 'Completed', duration: '5m 24s' },
   ]
 }
 
@@ -176,7 +191,7 @@ const VULN_DETAILS = {
     cvss: { score: 3.7, rating: 'Low' },
     cwe: 'CWE-20: Improper Input Validation',
     owasp: 'A03:2021 - Injection',
-    likelihood: 'low', impact: 'low', confidence: 'medium',
+    likelihood: 'low', impact: 'medium', confidence: 'low',
     summary: 'The mobile app config loader parses app-config.json feature-flag values without type or range checking before passing them to native modules.',
     extractedResult: 'config/settings/app-config.json:734 defines a numeric flag consumed by native code without bounds checking.',
     impactText: 'A malformed or attacker-tampered config (e.g. delivered via a compromised CDN) can crash the app or trigger undefined behaviour in the native layer.',
@@ -312,7 +327,7 @@ const VULN_DETAILS = {
     cvss: { score: 9.8, rating: 'Critical' },
     cwe: 'CWE-489: Active Debug Code',
     owasp: 'A05:2021 - Security Misconfiguration',
-    likelihood: 'high', impact: 'high', confidence: 'high',
+    likelihood: 'high', impact: 'medium', confidence: 'low',
     summary: 'A debug admin panel that dumps environment variables and internal routing tables is reachable on the production deployment without any authentication.',
     extractedResult: 'routes/debug/admin-panel.go:45 registers /debug/admin with no auth middleware and is included in the production build.',
     impactText: 'Anyone who discovers the endpoint can read environment secrets, internal service URLs, and runtime configuration, enabling full compromise of the deployment.',

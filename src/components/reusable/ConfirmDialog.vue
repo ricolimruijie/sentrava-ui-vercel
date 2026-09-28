@@ -2,9 +2,11 @@
 import { IconAlertTriangle } from '@tabler/icons-vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
+import { computed } from 'vue'
 
-defineProps({
-  visible:     { type: Boolean, required: true },
+const props = defineProps({
+  modelValue:  { type: Boolean, default: false },
+  visible:     { type: Boolean, default: false },
   title:       { type: String,  default: 'Are you sure?' },
   message:     { type: String,  default: 'This action cannot be undone.' },
   confirmLabel:{ type: String,  default: 'Confirm' },
@@ -12,7 +14,16 @@ defineProps({
   danger:      { type: Boolean, default: false },
   loading:     { type: Boolean, default: false },
 })
-defineEmits(['update:visible', 'confirm', 'cancel'])
+
+const emit = defineEmits(['update:modelValue', 'update:visible', 'confirm', 'cancel'])
+
+const visible = computed({
+  get() { return props.modelValue ?? props.visible },
+  set(val) {
+    emit('update:modelValue', val)
+    emit('update:visible', val)
+  }
+})
 </script>
 
 <template>
@@ -22,7 +33,7 @@ defineEmits(['update:visible', 'confirm', 'cancel'])
     :modal="true"
     :style="{ width: '400px' }"
     :pt="{ root: { class: 'sentra-dialog' } }"
-    @update:visible="$emit('update:visible', $event)"
+    @update:visible="visible = $event"
   >
     <template #header>
       <div class="dialog-header">

@@ -650,7 +650,11 @@ const tagPopoverSource = ref(null) // 'webapp' | 'network' | 'networkHost' | 'so
 const tagPopoverPos = ref({ top: 0, left: 0 })
 const tagQuery = ref('')
 const tagNewColor = ref(4)
-const createdTags = ref([])
+const createdTags = ref([
+  { label: 'Production', colorId: 4 },
+  { label: 'Staging', colorId: 1 },
+  { label: 'Dev', colorId: 3 },
+])
 const tagVocab = computed(() => {
   const m = new Map()
   Object.values(ips37ByDomain).flat().forEach((x) => x.tags.forEach((t) => m.set(t.label, t.colorId)))
@@ -2505,27 +2509,29 @@ function submitRegisterWebapp() {
                 />
               </div>
 
-              <label class="create-modal__label">Authentication</label>
-              <div class="basic-auth-card">
-                <div class="basic-auth-card__row">
-                  <span class="basic-auth-card__title">Basic Authentication</span>
-                  <button
-                    type="button"
-                    class="toggle-switch"
-                    :class="{ 'toggle-switch--on': regWABasic }"
-                    role="switch"
-                    :aria-checked="regWABasic"
-                    @click="regWABasic = !regWABasic"
-                  >
-                    <span class="toggle-switch__thumb" />
-                  </button>
-                </div>
-                <Transition name="dv-expand">
-                  <div v-if="regWABasic" class="basic-auth-card__fields">
-                    <GlassField v-model="regWAUser" label="Username" placeholder="Username" required error-text="Username is required" />
-                    <GlassField v-model="regWAPass" label="Password" placeholder="Password" input-type="password" required error-text="Password is required" />
+              <div class="auth-block">
+                <span class="auth-block__label">Authentication</span>
+                <div class="basic-auth-card">
+                  <div class="basic-auth-card__row">
+                    <span class="basic-auth-card__title">Basic Authentication</span>
+                    <button
+                      type="button"
+                      class="toggle-switch"
+                      :class="{ 'toggle-switch--on': regWABasic }"
+                      role="switch"
+                      :aria-checked="regWABasic"
+                      @click="regWABasic = !regWABasic"
+                    >
+                      <span class="toggle-switch__thumb" />
+                    </button>
                   </div>
-                </Transition>
+                  <Transition name="dv-expand">
+                    <div v-if="regWABasic" class="basic-auth-card__fields">
+                      <GlassField v-model="regWAUser" label="Username" placeholder="Username" required error-text="Username is required" />
+                      <GlassField v-model="regWAPass" label="Password" placeholder="Password" input-type="password" required error-text="Password is required" />
+                    </div>
+                  </Transition>
+                </div>
               </div>
             </div>
 
@@ -3501,11 +3507,22 @@ function submitRegisterWebapp() {
 
 .field-error { margin: 6px 0 0; font-size: 12px; line-height: 1.4; color: var(--glacia-sev-critical); }
 .field-hint { margin: 6px 0 0; font-size: 12px; line-height: 1.4; color: var(--glacia-ink-dim); }
+.auth-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  &__label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--glacia-ink);
+  }
+}
+
 .basic-auth-card {
-  margin-top: 16px;
   padding: 16px 18px;
   border-radius: 16px;
-  border: 0.5px solid var(--glacia-glass-border);
+  border: 1px solid #AEBEC4;
   background: #fff;
   box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
 
@@ -3526,11 +3543,8 @@ function submitRegisterWebapp() {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    overflow: hidden;
-  }
-
-  &__fields .create-modal__label:first-child {
     margin-top: 14px;
+    overflow: hidden;
   }
 }
 .toggle-switch {
