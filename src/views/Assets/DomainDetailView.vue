@@ -262,7 +262,7 @@ const columns = [
   { key: 'relatedDomain', label: 'Related Domain', width: '22%', truncate: true },
   { key: 'totalSeverity', label: 'Total Findings', width: '140px', align: 'center' },
   { key: 'tags', label: 'Multi-Tags', width: '20%' },
-  { key: 'status', label: 'Scanner Status', width: '150px', align: 'center' },
+  { key: 'status', label: 'Scanning Status', width: '150px', align: 'center' },
   { key: 'view', label: 'Action', width: '76px', align: 'center' },
 ]
 
@@ -283,6 +283,9 @@ function toggleEpMenu(row, event) {
 function closeEpMenu() {
   epMenuId.value = null
 }
+
+// Re-scan is only offered for endpoints whose last scan failed.
+const epMenuFailed = computed(() => endpoints.value.find((e) => e.id === epMenuId.value)?.status === 'Failed')
 
 function rescanEndpoint(id) {
   const row = endpoints.value.find((e) => e.id === id)
@@ -391,8 +394,8 @@ watch(() => route.query, (query) => {
   }
 }, { immediate: true })
 
-// Sum of every endpoint's findings (the Total Findings column).
-const totalFindings = computed(() => endpoints.value.reduce((n, e) => n + (Number(e.totalSeverity) || 0), 0))
+// Sum of every endpoint's findings (the Total Findings column); failed scans have none.
+const totalFindings = computed(() => endpoints.value.reduce((n, e) => n + (e.status === 'Failed' ? 0 : Number(e.totalSeverity) || 0), 0))
 
 // Target domain first, then any extra subdomains this endpoint also serves.
 function relatedFor(row) {
@@ -417,7 +420,7 @@ const drColumns = [
   { key: 'relatedDomain', label: 'Related Domain', width: '22%', truncate: true },
   { key: 'tags', label: 'Multi-Tags', width: '22%' },
   { key: 'totalSeverity', label: 'Total Findings', width: '140px', align: 'center' },
-  { key: 'status', label: 'Scanner Status', width: '150px', align: 'center' },
+  { key: 'status', label: 'Scanning Status', width: '150px', align: 'center' },
   { key: 'view', label: 'Action', width: '76px', align: 'center' },
 ]
 // Display copies: the reputation scan is still queued for every endpoint, so
@@ -516,6 +519,19 @@ const vulnSeverityOptions = [
   { value: 'low', label: 'Low' },
   { value: 'info', label: 'Info' },
 ]
+
+const severityCards = [
+  { key: 'critical', label: 'Critical', bg: '#FBE3E3', bar: '#DC2626' },
+  { key: 'high', label: 'High', bg: '#FDEEE3', bar: '#EA580C' },
+  { key: 'medium', label: 'Medium', bg: '#FEF6DC', bar: '#EAB308' },
+  { key: 'low', label: 'Low', bg: '#E7F7ED', bar: '#16A34A' },
+  { key: 'info', label: 'Info', bg: '#E5F3FC', bar: '#0EA5E9' },
+]
+const severityCounts = computed(() => {
+  const counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 }
+  vulns.value.forEach((v) => { if (v.severity in counts) counts[v.severity]++ })
+  return counts
+})
 
 const sevPill = {
   high: { label: 'High', bg: '#FDE8E8', color: '#C81E1E' },
@@ -1098,9 +1114,9 @@ onUnmounted(() => {
           </div>
           <div class="scan-main__meta">
             <span>Date Scanned: <b class="mono">{{ to24Hour(scans[selectedScan]?.date ?? '') }}</b></span>
+            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
             <span>Scan Type: <b class="mono">{{ scanTypeLabel }}</b></span>
             <span v-if="recurrenceLabel">Recurrence: <b class="mono">{{ recurrenceLabel }}</b></span>
-            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
             <span>Total Endpoint: <b class="mono">{{ endpoints.length }}</b></span>
             <span>Total Findings: <b class="mono">{{ totalFindings.toLocaleString() }}</b></span>
           </div>
@@ -1114,7 +1130,7 @@ onUnmounted(() => {
 
       <div class="scan-main__controls">
         <FilterDropdown v-model="multiTagFilter" :options="multiTagOptions" placeholder="Multi-Tags" />
-        <FilterDropdown v-model="statusFilter" :options="statusOptions" placeholder="Scanner Status" />
+        <FilterDropdown v-model="statusFilter" :options="statusOptions" placeholder="Scanning Status" />
         <div class="scan-main__spacer" />
         <SearchInput v-model="search" placeholder="Search" />
       </div>
@@ -1126,7 +1142,11 @@ onUnmounted(() => {
         empty-text="No endpoints found."
       >
         <template #cell-totalSeverity="{ row }">
-          <FindingsBadge :total="row.totalSeverity" :counts="row.severityCounts" />
+          <FindingsBadge
+            :total="row.status === 'Failed' ? '-' : row.totalSeverity"
+            :counts="row.severityCounts"
+            :no-tip="row.status === 'Failed'"
+          />
         </template>
         <template #cell-relatedDomain="{ row }">
           <RelatedDomains :domains="relatedFor(row)" />
@@ -1180,7 +1200,7 @@ onUnmounted(() => {
       </section>
 
       <div class="scan-main__controls">
-        <FilterDropdown v-model="drStatusFilter" :options="statusOptions" placeholder="Scanner Status" />
+        <FilterDropdown v-model="drStatusFilter" :options="statusOptions" placeholder="Scanning Status" />
         <div class="scan-main__spacer" />
         <SearchInput v-model="drSearch" placeholder="Search" />
       </div>
@@ -1234,6 +1254,9 @@ onUnmounted(() => {
           </div>
         </div>
         <div class="scan-main__actions">
+          <button type="button" class="btn-register target-detail-trigger" @click="toggleTargetDetailModal($event)">
+            <IconInfoCircle :size="15" /> View detail
+          </button>
           <button type="button" class="btn-register" @click="openReportModal">
             <IconDownload :size="15" /> Download report
           </button>
@@ -1324,10 +1347,10 @@ onUnmounted(() => {
           </div>
           <div class="scan-main__meta">
             <span>Date Scanned: <b class="mono">{{ to24Hour(scans[selectedScan]?.date ?? '') }}</b></span>
+            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
             <span>Scan Type: <b class="mono">{{ scanTypeLabel }}</b></span>
             <span v-if="recurrenceLabel">Recurrence: <b class="mono">{{ recurrenceLabel }}</b></span>
             <span>Total Vulnerabilities: <b class="mono">{{ vulns.length }}</b></span>
-            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
           </div>
         </div>
         <div class="scan-main__actions">
@@ -1419,7 +1442,14 @@ onUnmounted(() => {
 
     <Teleport to="body">
       <div v-if="epMenuId" class="action-menu" :style="{ top: `${epMenuPos.top}px`, left: `${epMenuPos.left}px` }">
-        <button type="button" class="action-menu__item" @click="openEndpointFindings(endpoints.find((e) => e.id === epMenuId))">
+        <button
+          type="button"
+          class="action-menu__item"
+          :class="{ 'action-menu__item--disabled': epMenuFailed }"
+          :disabled="epMenuFailed"
+          :title="epMenuFailed ? 'Not available — this endpoint\'s scan failed' : null"
+          @click="openEndpointFindings(endpoints.find((e) => e.id === epMenuId))"
+        >
           <IconArrowUpRight :size="15" />
           See Details
         </button>
@@ -1427,7 +1457,7 @@ onUnmounted(() => {
           <IconTag :size="15" />
           Manage tag
         </button>
-        <button type="button" class="action-menu__item" @click="rescanEndpoint(epMenuId)">
+        <button v-if="epMenuFailed" type="button" class="action-menu__item" @click="rescanEndpoint(epMenuId)">
           <IconScan :size="15" />
           Re-scan
         </button>
@@ -1508,7 +1538,7 @@ onUnmounted(() => {
                 <span class="detail-field__value">{{ detailRow.totalSeverity }}</span>
               </div>
               <div class="detail-field">
-                <span class="detail-field__label">Scanner Status</span>
+                <span class="detail-field__label">Scanning Status</span>
                 <span
                   class="status-pill"
                   :style="{ background: scanStatusPill[detailRow.status]?.bg, color: scanStatusPill[detailRow.status]?.color }"
@@ -1724,7 +1754,7 @@ onUnmounted(() => {
                 <p class="target-modal__eyebrow">Target Details</p>
                 <div class="target-modal__pills">
                   <span class="target-pill">{{ domain.targetType }}</span>
-                  <span class="target-pill">{{ { singular: 'Singular Scanning', specified: 'Specified Scanning', continuous: 'Continuous Scanning' }[domain.scanType] ?? domain.scanType }}</span>
+                  <span class="target-pill">{{ scanTypeLabel }}</span>
                 </div>
               </div>
               <button type="button" class="target-modal__close" aria-label="Close" @click="closeTargetDetailModal">
@@ -1738,7 +1768,7 @@ onUnmounted(() => {
                   <span class="target-stat-row__icon"><IconLink :size="16" /></span>
                   <div class="target-stat-row__text">
                     <p class="target-stat-row__label">Endpoint</p>
-                    <p class="target-stat-row__value">{{ domain.endpoint }}</p>
+                    <p class="target-stat-row__value">{{ selectedEndpoint ? (selectedEndpoint.ip ?? selectedEndpoint.endpoint) : domain.endpoint }}</p>
                   </div>
                 </div>
                 <div class="target-stat-row">
@@ -1767,19 +1797,37 @@ onUnmounted(() => {
                 <p class="target-modal__section-label">Multi-Tags</p>
                 <div class="target-modal__tag-list">
                   <span
-                    v-for="(t, i) in domain.tags"
+                    v-for="(t, i) in (selectedEndpoint ?? domain).tags"
                     :key="`${t.label}-${i}`"
                     class="dv-tag"
                     :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }"
                   >{{ t.label }}</span>
-                  <span v-if="!(domain.tags || []).length" class="tag-popover__empty">No tags yet.</span>
+                  <span v-if="!((selectedEndpoint ?? domain).tags || []).length" class="tag-popover__empty">No tags yet.</span>
+                </div>
+              </div>
+
+              <div v-if="selectedEndpoint" class="target-modal__section">
+                <div class="target-modal__section-head">
+                  <h3 class="target-modal__section-title">Severity Overview</h3>
+                  <span class="target-modal__severity-total">{{ vulns.length }}</span>
+                </div>
+                <div class="target-modal__severity-grid">
+                  <div
+                    v-for="s in severityCards"
+                    :key="s.key"
+                    class="severity-card"
+                    :style="{ background: s.bg, borderColor: s.bar }"
+                  >
+                    <p class="severity-card__value">{{ severityCounts[s.key] }}</p>
+                    <p class="severity-card__label" :style="{ color: s.bar }">{{ s.label }}</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="target-modal__divider" />
+            <div v-if="!selectedEndpoint" class="target-modal__divider" />
 
-            <div class="target-modal__footer">
+            <div v-if="!selectedEndpoint" class="target-modal__footer">
               <p class="target-modal__footer-desc">Removes this scan and its results from the timeline.</p>
               <button type="button" class="target-modal__delete" @click="openDelTlModal">
                 <IconTrash :size="13" /> Delete Timeline
@@ -2679,6 +2727,14 @@ onUnmounted(() => {
     &--danger {
       color: var(--glacia-sev-critical);
     }
+
+    // Not clickable (e.g. See Details on an endpoint whose scan failed).
+    &--disabled,
+    &--disabled:hover {
+      background: #F6F7F9;
+      color: #9AA5B1;
+      cursor: not-allowed;
+    }
   }
 
   &__row {
@@ -2993,6 +3049,68 @@ onUnmounted(() => {
     width: 100%;
   }
 }
+// ── Severity Overview (Target Details panel) ──────────────────────────────
+.target-modal__section-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.target-modal__section-title {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--glacia-ink-dim);
+  margin: 0;
+}
+.target-modal__severity-total {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--glacia-ink-dim);
+  font-size: 9.5px;
+  font-weight: 700;
+}
+.target-modal__severity-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.severity-card {
+  padding: 10px 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px -6px rgba(16, 24, 32, 0.18);
+  }
+
+  &__value {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+    margin: 0;
+  }
+
+  &__label {
+    font-size: 10px;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
 // ── Target Details panel (View detail, same as WebAppDetailView) ───────────
 // Anchored popover — not a centered modal — so it has no backdrop and fades
 // in place near the button that opened it.

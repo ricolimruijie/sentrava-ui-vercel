@@ -269,12 +269,12 @@ function viewTicket(item) {
   border-radius: var(--glacia-radius-sm);
   background: none;
   border: none;
-  color: var(--glacia-ink);
+  color: var(--glacia-ink-dim);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: background 0.13s, color 0.13s;
-  &:hover { background: rgba(0,0,0,0.05); }
+  &:hover { background: rgba(0,0,0,0.05); color: var(--glacia-ink); }
 }
 </style>

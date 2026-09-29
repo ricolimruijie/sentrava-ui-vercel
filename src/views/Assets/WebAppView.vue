@@ -515,9 +515,9 @@ function submitScan() {
 
     <div class="web-app__controls">
       <div class="web-app__filters">
-        <FilterDropdown v-model="multiTagFilter" :options="multiTagOptions" placeholder="Multi-Tags" />
         <FilterDropdown v-model="scanTypeFilter" :options="scanTypeFilterOptions" placeholder="Scan Type" />
-        <FilterDropdown v-model="statusFilter" :options="statusOptions" placeholder="Scanner Status" />
+        <FilterDropdown v-model="multiTagFilter" :options="multiTagOptions" placeholder="Multi-Tags" />
+        <FilterDropdown v-model="statusFilter" :options="statusOptions" placeholder="Scanning Status" />
       </div>
       <SearchInput v-model="search" placeholder="Search" />
     </div>

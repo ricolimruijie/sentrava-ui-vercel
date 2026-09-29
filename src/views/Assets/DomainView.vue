@@ -21,7 +21,7 @@ const columns = [
   { key: 'owner', label: 'Asset owner', width: '20%', truncate: true },
   { key: 'scanType', label: 'Scan type', width: '14%', truncate: true},
   { key: 'status', label: 'Scanning status', width: '12%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '32px', align: 'center' },
+  { key: 'actions', label: 'Action', width: '76px', align: 'center' },
 ]
 
 const statusMeta = {
@@ -40,18 +40,15 @@ const scanTypeOptions = [
 ]
 
 // ── Filters ────────────────────────────────────────────────────────────────
-const domainFilter = ref(null)
+const scanTypeFilter = ref(null)
 const statusFilter = ref(null)
 const search = ref('')
 
-const domainOptions = computed(() =>
-  [...new Set(domains.value.map((d) => d.endpoint))].sort().map((d) => ({ value: d, label: d })),
-)
 const statusOptions = Object.entries(statusMeta).map(([value, meta]) => ({ value, label: meta.label }))
 
 const filtered = computed(() => {
   let list = domains.value
-  if (domainFilter.value) list = list.filter((n) => n.endpoint === domainFilter.value)
+  if (scanTypeFilter.value) list = list.filter((n) => n.scanType === scanTypeFilter.value)
   if (statusFilter.value) list = list.filter((n) => n.status === statusFilter.value)
   const q = search.value.trim().toLowerCase()
   if (q) list = list.filter((n) => n.endpoint.toLowerCase().includes(q))
@@ -409,7 +406,7 @@ function submitScan() {
 
     <div class="domain__controls">
       <div class="domain__filters">
-        <FilterDropdown v-model="domainFilter" :options="domainOptions" placeholder="Domain" />
+        <FilterDropdown v-model="scanTypeFilter" :options="scanTypeOptions" placeholder="Scan Type" />
         <FilterDropdown v-model="statusFilter" :options="statusOptions" placeholder="Scanning Status" />
       </div>
       <SearchInput v-model="search" placeholder="Search" />

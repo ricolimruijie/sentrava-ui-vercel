@@ -121,7 +121,8 @@ export function getNetworkEndpoints() {
     owner: ENDPOINT_OWNERS[i],
     ...(() => { const { severityCounts, total } = endpointSeverity(i); return { severityCounts, totalSeverity: total } })(),
     tags: [],
-    status: 'Completed',
+    // These endpoints' scans failed (dummy).
+    status: ['10.10.10.12', '10.10.10.27'].includes(endpoint) ? 'Failed' : 'Completed',
   })))
 }
 

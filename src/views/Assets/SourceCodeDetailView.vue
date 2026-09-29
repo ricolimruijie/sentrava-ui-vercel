@@ -399,7 +399,7 @@ const columns = [
   { key: 'check', label: '', width: '48px', align: 'center' },
   { key: '__index', label: '#', width: '24px', dim: true },
   { key: 'name', label: 'Vulnerability name', width: '42%', truncate: true },
-  { key: 'line', label: 'Line', width: '64px', align: 'center', dim: true },
+  { key: 'line', label: 'Code Line', width: '100px', align: 'center', dim: true },
   { key: 'severity', label: 'Severity', width: '100px', align: 'center' },
   { key: 'lastModified', label: 'Last modified', width: '120px', dim: true, truncate: true},
   { key: 'action', label: 'Action', width: '70px', align: 'center' },
@@ -522,7 +522,7 @@ function submitReportDownload() {
   if (!repRows.value.length || reportDownloadState.value !== 'idle') return
   reportDownloadState.value = 'loading'
   setTimeout(() => {
-    const rows = [['No', 'Vulnerability name', 'Component', 'Line', 'Severity', 'Last modified', 'Modified by']]
+    const rows = [['No', 'Vulnerability name', 'Component', 'Code Line', 'Severity', 'Last modified', 'Modified by']]
     repRows.value.forEach((v, i) => {
       rows.push([i + 1, `"${v.name.replace(/"/g, '""')}"`, v.component, v.line, severityPill[v.severity]?.label ?? v.severity, v.lastModified, v.modifiedBy])
     })
@@ -775,6 +775,9 @@ function submitReportDownload() {
           >
             <IconCheck v-if="isChecked(row.id)" :size="13" />
           </button>
+        </template>
+        <template #cell-line="{ row }">
+          <span class="count-badge">{{ row.line }}</span>
         </template>
         <template #cell-severity="{ row }">
           <span
@@ -1089,6 +1092,22 @@ function submitReportDownload() {
 </template>
 
 <style scoped lang="scss">
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: 8px;
+  background: #ECEEF0;
+  border: 1px solid #d8dee4;
+  color: #5C6470;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .scan-detail {
   display: flex;
   gap: 20px;

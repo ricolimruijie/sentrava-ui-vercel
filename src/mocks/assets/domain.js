@@ -142,7 +142,8 @@ export function getDomainEndpoints() {
     owner: ENDPOINT_OWNERS[i],
     ...(() => { const { severityCounts, total } = endpointSeverity(i); return { severityCounts, totalSeverity: total } })(),
     tags: [],
-    status: 'Completed',
+    // 10.10.10.12's endpoint scan failed (dummy).
+    status: ips[i] === '10.10.10.12' ? 'Failed' : 'Completed',
   })))
 }
 

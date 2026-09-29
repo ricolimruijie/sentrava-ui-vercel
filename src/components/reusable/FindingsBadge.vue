@@ -7,6 +7,8 @@ import { ref, computed } from 'vue'
 const props = defineProps({
   total: { type: [Number, String], default: 0 },
   counts: { type: Object, default: () => ({}) },
+  // Same badge, but no breakdown tooltip (e.g. a failed scan showing "-").
+  noTip: { type: Boolean, default: false },
 })
 
 const LEVELS = [
@@ -26,7 +28,7 @@ const tipStyle = ref({})
 
 function show() {
   const el = badgeRef.value
-  if (!el) return
+  if (!el || props.noTip) return
   const r = el.getBoundingClientRect()
   tipStyle.value = { top: `${r.top + r.height / 2}px`, left: `${r.right + 10}px` }
   open.value = true
@@ -65,7 +67,7 @@ function hide() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 30px;
+  min-width: 38px; // same width as a two-digit count, so a "-" badge lines up
   height: 28px;
   padding: 0 9px;
   border-radius: 8px;
