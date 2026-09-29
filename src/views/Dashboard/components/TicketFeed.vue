@@ -1,16 +1,32 @@
 <script setup>
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { IconChevronRight } from '@tabler/icons-vue'
 
-defineProps({
+const router = useRouter()
+
+const props = defineProps({
   items:   { type: Array,   default: () => [] },
   loading: { type: Boolean, default: false },
 })
+
+// Only the 8 latest tickets (items arrive oldest-first).
+const visibleItems = computed(() => (props.items ?? []).slice(-8))
+
+function goTickets() {
+  router.push('/tickets')
+}
+
+function goTicket(item) {
+  router.push(`/tickets/${item.ticketId}`)
+}
 </script>
 
 <template>
   <div class="tickets card">
     <div class="tickets__halo">
       <h2 class="tickets__title">Ticket Feed</h2>
+      <button type="button" class="tickets__viewall" @click="goTickets">View all</button>
     </div>
 
     <div class="tickets__body">
@@ -20,25 +36,27 @@ defineProps({
         <table class="ttable">
           <thead>
             <tr>
+              <th class="ttable__date">Date</th>
+              <th>Ticket Name</th>
               <th>Category</th>
-              <th>Ticket</th>
-              <th class="ttable__status">Status</th>
+              <th class="ttable__status">Ticket Status</th>
               <th class="ttable__arrow"></th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loading"><td colspan="4" class="ttable__empty">Loading…</td></tr>
-            <tr v-else-if="!items.length"><td colspan="4" class="ttable__empty">No tickets.</td></tr>
-            <tr v-for="item in items" :key="item.id">
-              <td class="ttable__cat" :style="{ color: item.color ?? '#FF2529' }">{{ item.label }}</td>
+            <tr v-else-if="!visibleItems.length"><td colspan="4" class="ttable__empty">No tickets.</td></tr>
+            <tr v-for="item in visibleItems" :key="item.id">
+              <td class="ttable__date">{{ item.date }}</td>
               <td class="ttable__name">{{ item.name }}</td>
+              <td class="ttable__cat">{{ item.label }}</td>
               <td class="ttable__status">
                 <span class="status-pill" :class="item.status === 'resolved' ? 'resolved' : 'open'">
                   {{ item.status === 'resolved' ? 'Resolved' : 'Open' }}
                 </span>
               </td>
               <td class="ttable__arrow">
-                <button type="button" class="arrow-btn"><IconChevronRight :size="11" /></button>
+                <button type="button" class="arrow-btn" aria-label="View ticket" @click="goTicket(item)"><IconChevronRight :size="11" /></button>
               </td>
             </tr>
           </tbody>
@@ -57,6 +75,10 @@ defineProps({
 
   &__halo {
     padding: 20px 22px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
   }
 
   &__title {
@@ -65,6 +87,28 @@ defineProps({
     font-weight: 800;
     color: var(--glacia-ink);
     margin: 0;
+  }
+
+  &__viewall {
+    border: none;
+    background-color: transparent;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 2px;
+    background-repeat: no-repeat;
+    background-position: left calc(100% - 2px);
+    padding: 4px 2px 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--glacia-red);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background-size 0.25s ease, color 0.15s ease;
+
+    &:hover {
+      background-size: 100% 2px;
+      color: #e01e22;
+    }
   }
 
   &__body {
@@ -78,56 +122,48 @@ defineProps({
   }
 
   &__wrap {
-    max-height: 369px; // header + 6 rows before scrolling kicks in
-    overflow-y: auto;
-    scrollbar-width: thin;
-
-    &::-webkit-scrollbar {
-      width: 5px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: rgba(15, 23, 42, 0.15);
-      border-radius: var(--glacia-radius-pill);
-    }
-
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
+    overflow: visible;
   }
 }
 
 .ttable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 13px;
   table-layout: fixed;
 
   th {
-    padding: 12px 14px 12px 0;
     text-align: left;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--glacia-ink-dim);
-    border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+    padding: 6px 8px;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border);
     white-space: nowrap;
   }
 
   td {
-    padding: 14px 14px 14px 0;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    padding: 9px 8px;
+    border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
+    font-weight: 500;
+    color: var(--glacia-ink);
   }
 
   tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: var(--color-bg); }
+
+  &__date {
+    width: 112px;
+    white-space: nowrap;
+  }
 
   &__cat {
     // Hugs "Application & System Failures" — the longest category label —
     // so it never truncates, instead of an arbitrary percentage.
     width: 228px;
-    font-weight: 700;
+    font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

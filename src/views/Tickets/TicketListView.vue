@@ -26,7 +26,7 @@ const columns = [
   { key: 'date',     label: 'Submission Date', width: '13%', padLeft: '4px', truncate: true },
   { key: 'name',     label: 'Ticket Name', width: '30%' },
   { key: 'category', label: 'Issue Category', width: '18%', truncate: true },
-  { key: 'ticketId', label: 'Ticket ID',  width: '17%', mono: true, truncate: true },
+  { key: 'ticketId', label: 'Ticket ID',  width: '17%', truncate: true },
   { key: 'status',   label: 'Ticket Status', width: '12%', align: 'center' },
   { key: 'action',   label: 'Action',     width: '30px',  align: 'center', compact: true },
 ]
@@ -108,6 +108,15 @@ function viewTicket(item) {
         <div class="ticket-name">
           <div class="ticket-name__title">{{ row.name }}</div>
         </div>
+      </template>
+      <template #cell-date="{ row }">
+        <span class="ticket-name__title">{{ row.date }}</span>
+      </template>
+      <template #cell-category="{ row }">
+        <span class="ticket-name__title">{{ row.category }}</span>
+      </template>
+      <template #cell-ticketId="{ row }">
+        <span class="ticket-name__title">{{ row.ticketId }}</span>
       </template>
       <template #cell-status="{ row }">
         <span class="status-pill" :style="{ background: s(row.status).bg, color: s(row.status).color }">

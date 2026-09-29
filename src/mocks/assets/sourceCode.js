@@ -3,9 +3,9 @@
 // because both views mutate rows locally (status changes, deletes, tags).
 
 const REPOS = [
-  { id: 1, repo: 'protergo-cyber-security', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 1987, tags: [], status: 'Scanning', scanType: 'manual' },
-  { id: 2, repo: 'tcg-royal', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 4213, tags: [], status: 'Completed', scanType: 'scheduled' },
-  { id: 3, repo: 'aoc-glasshour', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 2765, tags: [], status: 'Scanning', scanType: 'continuous', recurrence: 'weekly' },
+  { id: 1, lastScanned: '14 July 2026', repo: 'protergo-cyber-security', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 1987, tags: [], status: 'Scanning', scanType: 'manual' },
+  { id: 2, lastScanned: '16 July 2026', repo: 'tcg-royal', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 4213, tags: [], status: 'Completed', scanType: 'scheduled' },
+  { id: 3, lastScanned: '12 July 2026', repo: 'aoc-glasshour', branch: 'main', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security HQ', linesOfCode: 2765, tags: [], status: 'Scanning', scanType: 'continuous', recurrence: 'weekly' },
 ]
 
 export function getSourceCodeRepos() {

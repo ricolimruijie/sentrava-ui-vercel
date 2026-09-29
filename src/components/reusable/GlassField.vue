@@ -8,7 +8,8 @@ import { IconChevronDown, IconCheck, IconAlertCircle } from '@tabler/icons-vue'
 //             :options="[{ label: 'Production', value: 'production' }, { label: 'Staging', value: 'staging' }]"
 //             error-text="Choose an environment" />
 const props = defineProps({
-  modelValue: { type: [String, Number, null], default: '' },
+  modelValue: { type: [String, Number, Array, null], default: '' },
+  multiple: { type: Boolean, default: false }, // select only: modelValue is an array; options render as checkboxes
   type: { type: String, default: 'text' }, // 'text' | 'select' | 'textarea'
   inputType: { type: String, default: 'text' }, // native <input> type, e.g. 'password', 'email' — ignored for 'select'/'textarea'
   label: { type: String, required: true },
@@ -85,7 +86,14 @@ function unbindWindowClose() {
 }
 onBeforeUnmount(unbindWindowClose)
 
-const selected = computed(() => props.options.find((o) => o.value === props.modelValue))
+const selectedValues = computed(() => (props.multiple && Array.isArray(props.modelValue) ? props.modelValue : []))
+const isChosen = (o) => (props.multiple ? selectedValues.value.includes(o.value) : o.value === props.modelValue)
+const selected = computed(() => {
+  if (!props.multiple) return props.options.find((o) => o.value === props.modelValue)
+  const picked = props.options.filter((o) => selectedValues.value.includes(o.value))
+  if (!picked.length) return undefined
+  return { value: picked.map((o) => o.value).join('|'), label: picked.length > 2 ? `${picked.length} selected` : picked.map((o) => o.label).join(', ') }
+})
 const isEmpty = computed(() => (props.type === 'select' ? !selected.value : !String(props.modelValue || '').trim()))
 const active = computed(() => (props.type === 'select' ? open.value : focused.value))
 const hasError = computed(() => {
@@ -96,6 +104,18 @@ const hasError = computed(() => {
   if (!touched.value) return false
   return (props.required && isEmpty.value) || props.invalid
 })
+
+// Controlled input: if the parent rejects/sanitizes the typed value (e.g. an
+// IP field that only allows digits and dots) the model doesn't change, so
+// Vue wouldn't re-render — put the DOM value back to the model ourselves.
+function onInput(e) {
+  const el = e.target
+  emit('update:modelValue', el.value)
+  nextTick(() => {
+    const cur = props.modelValue == null ? '' : String(props.modelValue)
+    if (el.value !== cur) el.value = cur
+  })
+}
 
 function sweep() {
   sheenKey.value++
@@ -119,7 +139,7 @@ function onBlur() {
 function setOpen(o) {
   open.value = o
   if (o) {
-    const i = props.options.findIndex((x) => x.value === props.modelValue)
+    const i = props.options.findIndex((x) => isChosen(x))
     hi.value = i < 0 ? 0 : i
     sweep()
     positionMenu()
@@ -140,8 +160,15 @@ function toggle() {
   setOpen(!open.value)
 }
 function choose(i) {
-  emit('update:modelValue', props.options[i].value)
+  const v = props.options[i].value
   touched.value = true
+  if (props.multiple) {
+    // Checkbox style: toggle the row and keep the menu open.
+    const cur = selectedValues.value
+    emit('update:modelValue', cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v])
+    return
+  }
+  emit('update:modelValue', v)
   setOpen(false)
 }
 function onKey(e) {
@@ -174,7 +201,7 @@ function onKey(e) {
           :value="modelValue"
           :maxlength="maxlength"
           :placeholder="placeholder"
-          @input="emit('update:modelValue', $event.target.value)"
+          @input="onInput"
           @focus="onFocus"
           @blur="onBlur"
           @keyup.enter="emit('enter')"
@@ -193,7 +220,7 @@ function onKey(e) {
           :maxlength="maxlength"
           :placeholder="placeholder"
           autocomplete="off"
-          @input="emit('update:modelValue', $event.target.value)"
+          @input="onInput"
           @focus="onFocus"
           @blur="onBlur"
           @keyup.enter="emit('enter')"
@@ -220,7 +247,7 @@ function onKey(e) {
           <IconChevronDown :size="18" class="gf__chev" />
         </button>
         <Teleport to="body">
-          <div v-if="open" class="gf__menu" role="listbox" :style="menuStyle">
+          <div v-if="open" class="gf__menu" role="listbox" :aria-multiselectable="multiple || undefined" :style="menuStyle">
             <div
               class="gf__menu-inner"
               ref="menuInnerRef"
@@ -233,13 +260,14 @@ function onKey(e) {
                 :key="o.value"
                 class="gf__opt"
                 role="option"
-                :aria-selected="o.value === modelValue"
+                :aria-selected="isChosen(o)"
                 :style="{ animationDelay: i * 35 + 'ms' }"
                 @mouseenter="hi = i"
                 @mousedown.prevent="choose(i)"
               >
+                <span v-if="multiple" class="gf__cb" :class="{ 'is-on': isChosen(o) }"><IconCheck v-if="isChosen(o)" :size="12" :stroke="3" /></span>
                 <span>{{ o.label }}</span>
-                <IconCheck v-if="o.value === modelValue" :size="16" class="gf__check" />
+                <IconCheck v-if="!multiple && isChosen(o)" :size="16" class="gf__check" />
               </div>
             </div>
             <div v-show="menuMore" class="gf__more" aria-hidden="true">
@@ -411,7 +439,7 @@ function onKey(e) {
 .gf__error {
   max-height: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 5px;
   font-size: 12px;
   color: var(--color-critical, #dc2626);
@@ -421,12 +449,13 @@ function onKey(e) {
   transition: opacity 200ms ease, transform 280ms var(--gf-ease), max-height 280ms var(--gf-ease);
 }
 .is-error .gf__error {
-  max-height: 20px;
+  max-height: 48px; // room for a two-line message in narrow fields
   opacity: 1;
   transform: none;
 }
 .gf__error-icon {
   flex: none;
+  margin-top: 1px;
 }
 
 .gf__menu {
@@ -439,9 +468,7 @@ function onKey(e) {
   padding: 6px;
   border-radius: var(--glacia-radius-md, 20px);
   border: 1px solid var(--glacia-glass-border, rgba(255, 255, 255, 0.75));
-  background: var(--glacia-glass-fill-strong, rgba(255, 255, 255, 0.8));
-  backdrop-filter: blur(var(--glacia-blur-md, 22px)) saturate(160%);
-  -webkit-backdrop-filter: blur(var(--glacia-blur-md, 22px)) saturate(160%);
+  background: #fff;
   box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(255, 255, 255, 0.95)), 0 12px 32px -8px rgba(16, 24, 32, 0.2);
   transform-origin: 50% 0;
   animation: gf-pop 280ms var(--gf-ease) both;
@@ -466,7 +493,7 @@ function onKey(e) {
   top: 0;
   height: 42px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(16, 24, 32, 0.05);
   transition: transform 260ms var(--gf-ease);
 }
 .gf__opt {
@@ -488,6 +515,22 @@ function onKey(e) {
   color: var(--color-primary-dark, #cc1f23);
   font-weight: 700;
 }
+.gf__opt .gf__cb {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  // The menu is teleported to <body>, outside .gf, so --gf-border isn't defined here.
+  border: 1.5px solid #8A9BA3;
+  background: #fff;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 140ms ease, border-color 140ms ease;
+  &.is-on { background: var(--color-primary, #ff2529); border-color: var(--color-primary, #ff2529); }
+}
+.gf__opt .gf__cb + span { flex: 1; }
 .gf__check {
   flex: none;
   color: var(--color-primary, #ff2529);

@@ -20,7 +20,9 @@ const app = computed(() => {
   return getWebApps().find((a) => a.id === id) ?? getWebApps()[0]
 })
 
-const scanTypeLabels = { manual: 'Manual Triggered', scheduled: 'Scheduled Scanning', continuous: 'Continuous Scanning' }
+// Same scan-type wording as the other asset detail views (also used by the
+// Target Details pill below).
+const scanTypeLabels = { manual: 'Manual Triggered', singular: 'Manual Triggered', scheduled: 'Scheduled Scanning', specified: 'Scheduled Scanning', continuous: 'Continuous Scanning' }
 
 // Same palette as WebAppView/SourceCodeView so tags render identically.
 const tagColors = [
@@ -88,6 +90,8 @@ const scans = ref(getWebAppScans(app.value.id))
 const selectedScan = ref(Math.max(0, getWebAppScans(app.value.id).findIndex(
   (s) => !['Scanning', 'Queue', 'Waiting'].includes(s.status),
 )))
+
+const scanTypeLabel = computed(() => scanTypeLabels[app.value.scanType] ?? app.value.scanType)
 
 // Timeline entries are stored as "9 Feb 2025 8:30 AM" — rewrite the trailing
 // 12-hour time into 24-hour, same as the calendar's time picker.
@@ -748,9 +752,12 @@ onUnmounted(() => {
             <h1 class="scan-main__title">{{ app.name }}</h1>
           </div>
           <div class="scan-main__meta">
-            <span>URL <b class="mono">{{ app.target }}</b></span>
-            <span>Total Vulnerabilities <b class="mono">{{ vulns.length.toLocaleString() }}</b></span>
-            <span>Total scan time taken <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
+            <span>Date Scanned: <b class="mono">{{ to24Hour(scans[selectedScan]?.date ?? '') }}</b></span>
+            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
+            <span>Scan Type: <b class="mono">{{ scanTypeLabel }}</b></span>
+            <span v-if="recurrenceLabel">Recurrence: <b class="mono">{{ recurrenceLabel }}</b></span>
+            <span>URL: <b class="mono">{{ app.target }}</b></span>
+            <span>Total Vulnerabilities: <b class="mono">{{ vulns.length.toLocaleString() }}</b></span>
           </div>
         </div>
         <div class="scan-main__actions">

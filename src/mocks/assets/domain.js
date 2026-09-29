@@ -1,14 +1,11 @@
 import { endpointSeverity } from './severity.js'
 
-// Network Assessment seed data.
-export function getNetworks() {
+// Domain Inspection seed data.
+export function getDomains() {
   return structuredClone([
-    { id: 1, endpoint: '10.10.19.2/24', targetType: 'CIDR', scanType: 'manual', lastScanned: '14 July 2026', registeredCount: 30, status: 'Scanning', tags: [] },
-    { id: 3, endpoint: '10.10.20.0/24', targetType: 'CIDR', scanType: 'scheduled', lastScanned: '23 June 2026', registeredCount: 45, status: 'Completed', tags: [] },
-    { id: 4, endpoint: '10.10.21.0/24', targetType: 'CIDR', scanType: 'continuous', lastScanned: '18 June 2026', registeredCount: 12, status: 'Scanning', tags: [], recurrence: 'weekly' },
-    { id: 2, endpoint: '10.10.19.52', targetType: 'IP Single', scanType: 'manual', lastScanned: '14 July 2026', registeredCount: 1, status: 'Scanning', tags: [] },
-    { id: 6, endpoint: '10.10.19.88', targetType: 'IP Single', scanType: 'scheduled', lastScanned: '20 June 2026', registeredCount: 1, status: 'Completed', tags: [] },
-    { id: 7, endpoint: '10.10.19.91', targetType: 'IP Single', scanType: 'continuous', lastScanned: '25 June 2026', registeredCount: 1, status: 'Scanning', tags: [], recurrence: 'weekly' },
+    { id: 1, endpoint: 'protergo.id', targetType: 'Domain', scanType: 'manual', lastScanned: '14 July 2026', registeredCount: 10, status: 'Scanning', tags: [], owner: 'Protergo Cyber Security Rempoa' },
+    { id: 2, endpoint: 'acme-corp.com', targetType: 'Domain', scanType: 'scheduled', lastScanned: '23 June 2026', registeredCount: 10, status: 'Completed', tags: [], owner: 'Protergo Cyber Security Ampera' },
+    { id: 3, endpoint: 'beta-ventures.io', targetType: 'Domain', scanType: 'continuous', lastScanned: '25 June 2026', registeredCount: 10, status: 'Scanning', tags: [], owner: 'Protergo Cyber Security Surabaya', recurrence: 'weekly' },
   ])
 }
 
@@ -18,7 +15,7 @@ export function getNetworks() {
 // waiting placeholders); scheduled/specified targets show a fixed cadence
 // (past runs, the next queued slot, a future waiting slot); continuous
 // targets show an in-progress run backed by a run history.
-const NETWORK_SCANS = {
+const DOMAIN_SCANS = {
   // manual — CIDR (10.10.19.2/24)
   1: [
     { id: 's1', date: '14 Jul 2026 12:59', status: 'Scanning' },
@@ -81,8 +78,8 @@ const NETWORK_SCANS = {
 // Finished runs carry a duration so the detail header can show "Total scan time
 // taken"; a running scan shows its elapsed time, queued/waiting ones have none.
 const SCAN_DURATIONS = ['4m 15s', '2m 03s', '6m 41s', '3m 27s', '5m 08s', '4m 52s', '7m 19s', '3m 44s']
-export function getNetworkScans(id) {
-  return structuredClone(NETWORK_SCANS[id] ?? NETWORK_SCANS[1]).map((sc, i) => ({
+export function getDomainScans(id) {
+  return structuredClone(DOMAIN_SCANS[id] ?? DOMAIN_SCANS[1]).map((sc, i) => ({
     ...sc,
     duration: sc.status === 'Waiting' || sc.status === 'Queue'
       ? null
@@ -110,14 +107,38 @@ const ENDPOINT_TAGS = [
   [{ label: 'Database', colorId: 2 }, { label: 'Server', colorId: 6 }, { label: 'Cloud', colorId: 0 }, { label: 'CDN', colorId: 5 }, { label: 'Load balancer', colorId: 6 }],
 ]
 
-export function getNetworkEndpoints() {
-  const ips = [
-    '10.10.10.12', '10.10.10.27', '10.10.10.34', '10.10.10.59', '10.10.10.73',
-    '10.10.10.88', '10.10.10.101', '10.10.10.126', '10.10.10.148', '10.10.10.203',
+// Domain reputation engine results for the Domain detail card (dummy data).
+const REPUTATION = {
+  1: { total: 100, passed: 100, failed: 0 },
+  2: { total: 100, passed: 92, failed: 8 },
+  3: { total: 100, passed: 64, failed: 36 },
+}
+export function getDomainReputation(id) {
+  return { ...(REPUTATION[id] ?? REPUTATION[1]) }
+}
+
+const RELATED_PREFIXES = [
+  ['www', 'api', 'mail'], [], ['www'], ['vpn', 'dev'], [],
+  ['www', 'cdn'], ['staging'], [], ['www', 'portal', 'blog', 'shop'], ['app'],
+]
+
+export function getDomainEndpoints() {
+  const subs = [
+    'api.protergo.id', 'app.protergo.id', 'mail.protergo.id', 'vpn.protergo.id', 'cdn.protergo.id',
+    'portal.protergo.id', 'dev.protergo.id', 'staging.protergo.id', 'blog.protergo.id', 'shop.protergo.id',
   ]
-  return structuredClone(ips.map((endpoint, i) => ({
+  // Dummy host IPs behind each discovered subdomain (Domain Reputation view).
+  const ips = [
+    '10.10.10.59', '10.10.10.12', '10.10.10.34', '10.10.10.73', '10.10.10.88',
+    '10.10.10.101', '10.10.10.126', '10.10.10.148', '10.10.10.175', '10.10.10.203',
+  ]
+  return structuredClone(subs.map((endpoint, i) => ({
     id: `ep-${i + 1}`,
     endpoint,
+    ip: ips[i],
+    // Extra subdomain prefixes this endpoint also serves (dummy) — the target
+    // domain itself is always the first related domain.
+    relatedPrefixes: RELATED_PREFIXES[i],
     owner: ENDPOINT_OWNERS[i],
     ...(() => { const { severityCounts, total } = endpointSeverity(i); return { severityCounts, totalSeverity: total } })(),
     tags: [],
@@ -126,7 +147,7 @@ export function getNetworkEndpoints() {
 }
 
 // Findings for an IP Single endpoint detail view.
-const SINGLE_VULNS = [
+const DOMAIN_VULNS = [
   { name: 'NVT: Die-Hellman Ephemeral Key Exchange DoS Vulnerability (SSL/TLS, D(HE)ater)', port: 1000, protocol: 'TCP', service: 'HTTPS', severity: 'high' },
   { name: 'Google API keys should not be disclosed', port: 8080, protocol: 'TCP', service: 'HTTPS', severity: 'high' },
   { name: 'Microsoft Azure Service Fabric Security Misconfiguration', port: 2500, protocol: 'TCP', service: 'HTTPS', severity: 'high' },
@@ -139,7 +160,7 @@ const SINGLE_VULNS = [
   { name: 'Use of Deprecated Cryptographic Algorithms in Applications', port: 5400, protocol: 'UDP', service: 'HTTPS', severity: 'info' },
 ]
 
-const SINGLE_MODIFIERS = [
+const DOMAIN_MODIFIERS = [
   ['ricolimruijie', 'ricolimruijie@protergo.id'],
   ['alexclaire', 'alex@protergo.id'],
   ['Finished scan by system', ''],
@@ -152,24 +173,24 @@ const SINGLE_MODIFIERS = [
   ['budiarto', 'budiarto@protergo.id'],
 ]
 
-export function getNetworkVulns() {
-  return structuredClone(SINGLE_VULNS.map((v, i) => ({
+export function getDomainVulns() {
+  return structuredClone(DOMAIN_VULNS.map((v, i) => ({
     id: `nv-${i + 1}`,
     ...v,
     component: `${v.protocol.toLowerCase()} port ${v.port}`,
     line: v.port,
     lastModified: 'Monday 10 February 2025',
-    modifiedBy: SINGLE_MODIFIERS[i][0],
-    modifiedEmail: SINGLE_MODIFIERS[i][1],
+    modifiedBy: DOMAIN_MODIFIERS[i][0],
+    modifiedEmail: DOMAIN_MODIFIERS[i][1],
     validation: 'Unresolved',
     cycle: 'Active',
     codeLine: v.port,
-    ...NET_VULN_DETAILS[i],
+    ...DOMAIN_VULN_DETAILS[i],
   })))
 }
 
 // Deep-dive content for VulnerabilityDetailModal, aligned to each finding.
-const NET_VULN_DETAILS = [
+const DOMAIN_VULN_DETAILS = [
   {
     cwe: 'CWE-400: Uncontrolled Resource Consumption',
     cves: ['CVE-2002-20001', 'CVE-2002-20002', 'CVE-2002-20003'],

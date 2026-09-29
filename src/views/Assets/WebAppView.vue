@@ -7,7 +7,7 @@ import SearchInput from '@/components/reusable/SearchInput.vue'
 import DateTimePicker from '@/components/reusable/DateTimePicker.vue'
 import GlassField from '@/components/reusable/GlassField.vue'
 import { getWebApps } from '@/mocks/assets/webApp.js'
-import { IconDotsVertical, IconCirclePlus, IconScan, IconX, IconTag, IconArrowUpRight, IconTrash, IconCheck, IconFolder, IconPlus, IconBuilding, IconKey, IconInfoCircle } from '@tabler/icons-vue'
+import { IconDotsVertical, IconCirclePlus, IconScan, IconX, IconTag, IconArrowUpRight, IconTrash, IconCheck, IconFolder, IconPlus, IconBuilding, IconKey, IconInfoCircle, IconArrowRight, IconBrowser } from '@tabler/icons-vue'
 
 const router = useRouter()
 
@@ -15,11 +15,12 @@ const apps = ref(getWebApps())
 
 const columns = [
   { key: '__index', label: '#', width: '24px', dim: true },
-  { key: 'name', label: 'Application name', width: '16%', truncate: true },
-  { key: 'target', label: 'Target', width: '18%', truncate: true },
-  { key: 'owner', label: 'Asset owner', width: '14%', truncate: true },
+  { key: 'lastScanned', label: 'Last scanned', width: '11%', truncate: true },
+  { key: 'name', label: 'Application name', width: '15%', truncate: true },
+  { key: 'target', label: 'Target', width: '16%', truncate: true },
+  { key: 'owner', label: 'Asset owner', width: '13%', truncate: true },
   { key: 'scanType', label: 'Scan type', width: '11%', truncate: true },
-  { key: 'tags', label: 'Multi-Tags', width: '15%' },
+  { key: 'tags', label: 'Multi-Tags', width: '14%' },
   { key: 'status', label: 'Scanning status', width: '10%', align: 'center' },
   { key: 'actions', label: 'Action', width: '32px', align: 'center' },
 ]
@@ -254,6 +255,7 @@ const regUrlBasic = ref(false)
 const regUrlUser = ref('')
 const regUrlPass = ref('')
 const regUrlState = ref('idle') // 'idle' | 'loading' | 'saved'
+const lastRegisteredApp = ref('')
 
 const ownerOptions = [
   { value: 'Protergo Cyber Security Ampera', label: 'Protergo Cyber Security Ampera' },
@@ -288,6 +290,10 @@ function openUrlModal() {
   showUrlModal.value = true
 }
 
+function goToAssetInventoryUrl() {
+  closeUrlModal()
+  router.push('/assets?tab=webapp')
+}
 function closeUrlModal() {
   showUrlModal.value = false
   regUrlState.value = 'idle'
@@ -309,10 +315,10 @@ function submitUrl() {
       owner: regUrlOwner.value,
       scanType: 'manual',
       tags: [],
-      status: 'NotStarted',
+      status: 'Scanning',
     })
+    lastRegisteredApp.value = name
     regUrlState.value = 'saved'
-    setTimeout(closeUrlModal, 700)
   }, 500)
 }
 
@@ -486,6 +492,7 @@ function submitScan() {
       : apps.value.filter((a) => a.status === 'NotStarted')
     targets.forEach((a) => {
       a.status = 'Scanning'
+      a.lastScanned = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
       a.scanType = scanType.value
       // Persist recurrence so detail views can show it on the timeline.
       a.recurrence = scanType.value === 'continuous' ? scanRecurrence.value : null
@@ -537,6 +544,9 @@ function submitScan() {
         <span class="status-pill" :class="statusMeta[row.status]?.pill ?? 'status-pill--notstarted'">
           {{ statusMeta[row.status]?.label ?? row.status }}
         </span>
+      </template>
+      <template #cell-lastScanned="{ row }">
+        <span :class="{ dim: !row.lastScanned }">{{ row.lastScanned || 'Not available' }}</span>
       </template>
       <template #cell-scanType="{ row }">
         <span :class="{ dim: !row.scanType }">
@@ -619,7 +629,29 @@ function submitScan() {
                 <IconX :size="20" />
               </button>
             </div>
-            <div class="create-modal__body">
+            <div v-if="regUrlState === 'saved'" class="create-modal__body">
+              <div class="reg-success">
+                <div class="reg-success__card">
+                  <span class="reg-success__icon">
+                    <IconBrowser :size="22" />
+                    <span class="reg-success__check"><IconCheck :size="11" /></span>
+                  </span>
+                  <div class="reg-success__card-text">
+                    <p class="reg-success__repo">{{ lastRegisteredApp }}</p>
+                    <p class="reg-success__sub">URL registered</p>
+                  </div>
+                  <span class="status-pill status-pill--scanning reg-success__status">
+                    <span class="reg-success__status-dot"></span> Scanning
+                  </span>
+                </div>
+
+                <p class="reg-success__desc">
+                  <strong>{{ lastRegisteredApp }}</strong> is now being discovered. It will be available to scan for vulnerability assessment once the discovery scan finishes. You can track its progress from Asset Inventory in the meantime.
+                </p>
+              </div>
+            </div>
+
+            <div v-else class="create-modal__body">
               <div class="create-modal__group">
                 <GlassField
                   type="select"
@@ -676,7 +708,13 @@ function submitScan() {
               </div>
             </div>
 
-            <div class="create-modal__actions">
+            <div v-if="regUrlState === 'saved'" class="create-modal__actions create-modal__actions--column">
+              <button type="button" class="reg-success__link" @click="goToAssetInventoryUrl">
+                View scanning progress <IconArrowRight :size="16" />
+              </button>
+              <button type="button" class="reg-success__close" @click="closeUrlModal">Close</button>
+            </div>
+            <div v-else class="create-modal__actions">
               <button type="button" class="modal-btn modal-btn--cancel" @click="closeUrlModal">Cancel</button>
               <button
                 type="button"
@@ -1135,6 +1173,128 @@ function submitScan() {
   &:hover { background: rgba(100, 116, 139, 0.08); }
 }
 
+.reg-success {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 4px;
+
+  &__card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 16px;
+    background: #F4F6F8;
+  }
+
+  &__icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid rgba(16, 24, 32, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__check {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #16a34a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+  }
+
+  &__card-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__repo {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--glacia-ink);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__sub {
+    font-size: 12.5px;
+    color: var(--glacia-ink-dim);
+    margin: 2px 0 0;
+  }
+
+  &__status {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &__desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--glacia-ink-dim);
+    text-align: center;
+    margin: 0;
+
+    strong { color: var(--glacia-ink); font-weight: 700; font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #2563EB;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.75; }
+  }
+
+  &__close {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--glacia-ink-dim);
+    font-family: 'Manrope', 'Inter', sans-serif;
+    cursor: pointer;
+
+    &:hover { color: var(--glacia-ink); }
+  }
+}
+
+
 .dim {
   color: var(--glacia-ink-dim);
 }
@@ -1186,6 +1346,7 @@ function submitScan() {
     &--error { border-color: var(--glacia-sev-critical); &:focus { border-color: var(--glacia-sev-critical); } }
   }
   &__actions { display: flex; gap: 14px; margin-top: 10px; flex-shrink: 0; }
+  &__actions--column { flex-direction: column; align-items: center; gap: 16px; }
 }
 
 .field-error { margin: 6px 0 0; font-size: 12px; line-height: 1.4; color: var(--glacia-sev-critical); }

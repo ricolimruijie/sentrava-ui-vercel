@@ -11,7 +11,6 @@ defineProps({
   <div class="account card">
     <div class="account__banner">
       <span class="account__banner-label">Account ID</span>
-      <IconShield :size="20" color="#fff" />
     </div>
 
     <div class="account__avatar">
@@ -65,6 +64,9 @@ defineProps({
   height: 405px;
 
   &__banner {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     height: 116px;
     flex-shrink: 0;
     padding: 18px 20px;
@@ -72,6 +74,23 @@ defineProps({
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+
+    // Grid pattern: thin white lines every 22px, fading out toward the
+    // bottom-left so the label and shield icon stay crisp.
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+      background-size: 22px 22px;
+      background-position: -1px -1px;
+      -webkit-mask-image: linear-gradient(200deg, #000 0%, rgba(0, 0, 0, 0.15) 75%, transparent 100%);
+      mask-image: linear-gradient(200deg, #000 0%, rgba(0, 0, 0, 0.15) 75%, transparent 100%);
+      pointer-events: none;
+    }
   }
 
   &__banner-label {

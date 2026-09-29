@@ -60,7 +60,12 @@ function cellStyle(col) {
 // 32px regardless of what a caller passes — callers shouldn't need to think
 // about sizing these two.
 function colWidth(col) {
-  if (col.key === '__index' || col.key === 'actions') return '32px'
+  if (col.key === '__index' || col.key === 'actions') {
+    // A caller can ask for a wider row-number column (e.g. a "No." header that
+    // must not truncate); anything narrower than the 32px minimum is ignored.
+    const px = /^(\d+)px$/.exec(col.width ?? '')
+    return px && Number(px[1]) > 32 ? col.width : '32px'
+  }
   return col.width || null
 }
 
@@ -158,6 +163,8 @@ defineExpose({ pagination })
     border-bottom: 1px solid var(--glacia-glass-border);
     vertical-align: middle;
     color: var(--glacia-ink);
+    font-size: 13px;
+    font-weight: 500;
   }
 
   &__row:last-child td { border-bottom: none; }
@@ -170,10 +177,14 @@ defineExpose({ pagination })
   }
 
   &__cell {
+    // All body text renders in one unified font (13px / medium / ink) —
+    // the mono/bold/dim flags are kept for API compatibility but no longer
+    // alter the typeface, so every table matches across all pages.
     &--mono {
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 12px;
-      color: var(--glacia-ink-dim);
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+      color: inherit;
     }
 
     &--truncate {
@@ -183,11 +194,11 @@ defineExpose({ pagination })
     }
 
     &--bold {
-      font-weight: 600;
+      font-weight: 500;
     }
 
     &--dim {
-      color: var(--glacia-ink-dim);
+      color: var(--glacia-ink);
     }
   }
 }

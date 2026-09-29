@@ -19,9 +19,9 @@ const EXTRA_TAGS = [
 ]
 
 const ROWS = [
-  { id: 1, name: 'Website Protergo Cyber Security', target: 'https://protergo.id', owner: 'Protergo Cyber Security HQ', scanType: 'manual', status: 'Scanning', extras: [0, 4], auth: 'Inactive' },
-  { id: 2, name: 'Customer Portal', target: 'https://portal.protergo.id', owner: 'Protergo Cyber Security Jakarta', scanType: 'scheduled', status: 'Completed', extras: [1, 5], auth: 'Active' },
-  { id: 3, name: 'Billing Dashboard', target: 'https://billing.protergo.id', owner: 'Protergo Fintech Solutions', scanType: 'continuous', status: 'Scanning', extras: [0, 8], recurrence: 'weekly', auth: 'Inactive' },
+  { id: 1, lastScanned: '14 July 2026', name: 'Website Protergo Cyber Security', target: 'https://protergo.id', owner: 'Protergo Cyber Security HQ', scanType: 'manual', status: 'Scanning', extras: [0, 4], auth: 'Inactive' },
+  { id: 2, lastScanned: '16 July 2026', name: 'Customer Portal', target: 'https://portal.protergo.id', owner: 'Protergo Cyber Security Jakarta', scanType: 'scheduled', status: 'Completed', extras: [1, 5], auth: 'Active' },
+  { id: 3, lastScanned: '12 July 2026', name: 'Billing Dashboard', target: 'https://billing.protergo.id', owner: 'Protergo Fintech Solutions', scanType: 'continuous', status: 'Scanning', extras: [0, 8], recurrence: 'weekly', auth: 'Inactive' },
 ]
 
 export function getWebApps() {
@@ -31,6 +31,7 @@ export function getWebApps() {
     target: r.target,
     owner: r.owner,
     scanType: r.scanType,
+    lastScanned: r.lastScanned ?? null,
     status: r.status,
     recurrence: r.recurrence ?? null,
     auth: r.auth ?? 'Inactive',

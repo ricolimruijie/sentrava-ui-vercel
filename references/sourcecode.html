@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/coral-ice-design-system-2deb55f0-b45b-4525-8811-ff6a0244fd32/styles.css">
+<script src="_ds/coral-ice-design-system-2deb55f0-b45b-4525-8811-ff6a0244fd32/_ds_bundle.js"></script>
+<style>
+body{margin:0}
+a{color:var(--ice-700)}a:hover{color:var(--ice-800)}
+[style*="var(--font-icon)"]{font-variant-ligatures:common-ligatures discretionary-ligatures;font-feature-settings:"liga" 1,"dlig" 1;}
+@keyframes tl47-bounce{0%,100%{transform:translateY(-1px)}50%{transform:translateY(3px)}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:0.01ms !important;transition-duration:0.01ms !important}}
+</style>
+</helmet>
+<div data-screen-label="47b Scan results" style="width:1656px;height:976px;border-radius:16px;overflow:hidden;position:relative;background:var(--surface-base);box-shadow:0 30px 60px -30px rgba(16,24,32,0.3);font-family:var(--font-display);color:var(--text-1);display:flex"><div style="position:absolute;top:-220px;right:-160px;width:640px;height:520px;border-radius:50%;background:radial-gradient(closest-side,var(--surface-glow-coral),transparent);pointer-events:none"></div><div style="position:absolute;top:-200px;left:-200px;width:700px;height:560px;border-radius:50%;background:radial-gradient(closest-side,var(--surface-glow-ice),transparent);pointer-events:none"></div>
+<div style="position:relative;width:264px;flex:none;display:flex;flex-direction:column;gap:22px;padding:28px 18px;border-right:1px solid var(--gray-100);box-sizing:border-box">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:0 6px"><span style="font-size:16px;font-weight:800">Scan timeline</span></div>
+<div style="position:relative"><div ref="{{ tlRef }}" onScroll="{{ tlScroll }}" style="height:324px;overflow-y:auto;margin:0 -6px;padding:0 6px;scrollbar-width:thin;scrollbar-color:var(--gray-200) transparent;overscroll-behavior:contain;mask-image:{{ tlMask }};-webkit-mask-image:{{ tlMask }}"><div style="display:flex;flex-direction:column;gap:2px;position:relative;padding-bottom:12px">
+<div style="position:absolute;left:18px;top:28px;bottom:40px;width:2px;background:var(--gray-200)"></div>
+<sc-for list="{{ scansLong }}" as="s" hint-placeholder-count="3"><button onClick="{{ s.click }}" style="flex:none;height:56px;box-sizing:border-box;position:relative;display:flex;align-items:center;gap:12px;padding:10px 10px;border:0;border-radius:12px;background:{{ s.bg }};text-align:left;cursor:pointer;font-family:var(--font-display);transition:background 0.2s ease"><span style="width:18px;height:18px;box-sizing:border-box;border-radius:50%;background:{{ s.color }};border:3px solid #fff;box-shadow:0 0 0 1px var(--gray-200);flex:none"></span><span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:{{ s.fw }};color:var(--text-1)">{{ s.date }}</span><span style="font-size:11.5px;color:var(--text-3)">{{ s.status }}</span></span></button></sc-for>
+</div></div>
+<button onClick="{{ tlMore }}" style="position:absolute;left:50%;bottom:4px;display:flex;align-items:center;gap:4px;height:26px;padding:0 10px 0 12px;border-radius:999px;border:1px solid var(--glass-border);background:var(--glass-fill-strong);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);box-shadow:inset 0 1px 0 var(--glass-hi), 0 6px 14px -6px var(--glass-shadow);font-family:var(--font-display);font-size:11.5px;font-weight:600;color:var(--text-2);cursor:pointer;opacity:{{ hintOp }};transform:{{ hintTransform }};pointer-events:{{ hintPe }};transition:opacity 0.3s ease, transform 0.4s cubic-bezier(.3,1.4,.5,1)">{{ hintLabel }}<span style="font-family:var(--font-icon);font-size:16px;animation:tl47-bounce 1.4s ease-in-out infinite">expand_more</span></button>
+</div>
+<span style="font-size:11.5px;color:var(--text-3);padding:0 10px;margin-top:-12px">{{ scanTotal }} scans</span>
+<x-import component-from-global-scope="CoralIceDesignSystem_2deb55.Button" variant="secondary" hint-size="auto,40px"><span style="display:inline-flex;align-items:center;gap:6px"><span style="font-family:var(--font-icon);font-size:18px">refresh</span>Re-scan</span></x-import>
+<div style="height:1px;background:var(--gray-100)"></div>
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;padding:0 10px 8px">Vulnerability cycle</span>
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5"><button onClick="{{ t.click }}" style="display:flex;justify-content:space-between;align-items:center;height:38px;padding:0 12px;border:0;border-radius:10px;background:{{ t.railBg }};color:{{ t.railColor }};font-family:var(--font-display);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s ease">{{ t.label }}<span style="font-family:var(--font-mono);font-size:11px;padding:1px 8px;border-radius:999px;background:{{ t.cBg }};color:{{ t.cColor }}">{{ t.count }}</span></button></sc-for>
+</div>
+</div>
+<div style="position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;padding:28px 24px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px"><div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;align-items:baseline;gap:10px"><span style="font-size:13px;color:var(--text-3);font-weight:600">Target</span><span style="font-size:24px;font-weight:800">Repository 1</span></div><div style="display:flex;gap:18px;font-size:12px;color:var(--text-3);flex-wrap:wrap"><span>Date scan <b style="color:var(--text-1);font-weight:600">{{ scanDate }}</b></span><span>Branch <b style="color:var(--text-1);font-weight:600;font-family:var(--font-mono);font-size:11.5px">production-main</b></span><span>Total vulnerabilities <b style="color:var(--text-1);font-weight:600;font-family:var(--font-mono);font-size:11.5px">1,000</b></span></div></div><div style="display:flex;gap:10px"><x-import component-from-global-scope="CoralIceDesignSystem_2deb55.Button" variant="secondary" hint-size="auto,40px"><span style="display:inline-flex;align-items:center;gap:6px"><span style="font-family:var(--font-icon);font-size:18px">info</span>View detail</span></x-import><x-import component-from-global-scope="CoralIceDesignSystem_2deb55.Button" variant="primary" hint-size="auto,40px"><span style="display:inline-flex;align-items:center;gap:6px"><span style="font-family:var(--font-icon);font-size:18px">download</span>Report</span></x-import></div></div>
+<div style="display:flex;gap:10px;align-items:center"><div style="display:flex;align-items:center;gap:8px;height:38px;width:280px;padding:0 14px;border-radius:999px;background:var(--glass-fill);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--glass-border);box-shadow:inset 0 1px 0 var(--glass-hi), 0 10px 30px -12px var(--glass-shadow);box-sizing:border-box"><span style="font-family:var(--font-icon);font-size:18px;color:var(--text-3)">search</span><span style="font-size:13px;color:var(--text-3)">Search vulnerabilities</span></div><div style="display:flex;align-items:center;gap:6px;height:38px;padding:0 12px 0 14px;border-radius:999px;background:var(--glass-fill);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--glass-border);box-shadow:inset 0 1px 0 var(--glass-hi), 0 10px 30px -12px var(--glass-shadow);box-sizing:border-box;font-size:13px;color:var(--text-2);white-space:nowrap">Severity<span style="font-family:var(--font-icon);font-size:18px;color:var(--text-3)">expand_more</span></div><div style="display:flex;align-items:center;gap:6px;height:38px;padding:0 12px 0 14px;border-radius:999px;background:var(--glass-fill);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--glass-border);box-shadow:inset 0 1px 0 var(--glass-hi), 0 10px 30px -12px var(--glass-shadow);box-sizing:border-box;font-size:13px;color:var(--text-2);white-space:nowrap">Component<span style="font-family:var(--font-icon);font-size:18px;color:var(--text-3)">expand_more</span></div><div style="flex:1"></div><x-import component-from-global-scope="CoralIceDesignSystem_2deb55.Button" variant="secondary" hint-size="auto,40px"><span style="display:inline-flex;align-items:center;gap:6px"><span style="font-family:var(--font-icon);font-size:18px">edit</span>Bulk edit</span></x-import></div>
+<div style="flex:1;min-height:0;background:#fff;border-radius:16px;border:1px solid var(--gray-100);display:flex;flex-direction:column;overflow:hidden">
+<div style="display:grid;grid-template-columns:36px 36px minmax(0,2.3fr) minmax(0,1.5fr) 64px 110px 160px 220px 40px;align-items:center;gap:0 12px;padding:0 16px;height:42px;border-bottom:1px solid var(--gray-100);font-size:12px;font-weight:700;color:var(--text-2);flex:none"><button onClick="{{ toggleAll }}" style="width:18px;height:18px;border-radius:5px;border:1.5px solid {{ allBorder }};background:{{ allBg }};display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-family:var(--font-icon);font-size:14px;color:#fff;flex:none">check</button><span></span><span>Vulnerability name</span><span>Component</span><span>Line</span><span>Severity</span><span>Last modified</span><span>Modified by</span><span></span></div>
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="10"><div style="display:grid;grid-template-columns:36px 36px minmax(0,2.3fr) minmax(0,1.5fr) 64px 110px 160px 220px 40px;align-items:center;gap:0 12px;padding:0 16px;height:56px;border-bottom:1px solid var(--gray-50);background:{{ r.rowBg }};font-size:13px;transition:background 0.15s ease"><button onClick="{{ r.toggle }}" style="width:18px;height:18px;border-radius:5px;border:1.5px solid {{ r.cbBorder }};background:{{ r.cbBg }};display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-family:var(--font-icon);font-size:14px;color:#fff;flex:none">check</button><span style="font-family:var(--font-mono);font-size:12px;color:var(--text-3)">{{ r.n }}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500">{{ r.name }}</span><span style="font-family:var(--font-mono);font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.comp }}</span><span style="font-family:var(--font-mono);font-size:12px">{{ r.line }}</span><span><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:{{ r.sevTint }};font-size:12px;font-weight:600;color:var(--text-1);white-space:nowrap">{{ r.sev }}</span></span><span style="color:var(--text-2)">{{ r.date }}</span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.user }}</span><span style="font-size:11.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.email }}</span></div><span style="font-family:var(--font-icon);font-size:20px;color:var(--text-3);text-align:center">more_vert</span></div></sc-for>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text-2)"><span>{{ selCount }} of 100 rows selected</span><div style="display:flex;align-items:center;gap:4px"><span style="display:flex;align-items:center;gap:2px;padding:0 10px;height:32px"><span style="font-family:var(--font-icon);font-size:18px">chevron_left</span>Previous</span><span style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:#fff;border:1px solid var(--gray-200);font-weight:700;color:var(--text-1);box-sizing:border-box;font-family:var(--font-mono);font-size:12px">1</span><span style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:999px;;box-sizing:border-box;font-family:var(--font-mono);font-size:12px">2</span><span style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:999px;;box-sizing:border-box;font-family:var(--font-mono);font-size:12px">3</span><span style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:999px;;box-sizing:border-box;font-family:var(--font-mono);font-size:12px">…</span><span style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:999px;;box-sizing:border-box;font-family:var(--font-mono);font-size:12px">9</span><span style="min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:999px;;box-sizing:border-box;font-family:var(--font-mono);font-size:12px">10</span><span style="display:flex;align-items:center;gap:2px;padding:0 10px;height:32px">Next<span style="font-family:var(--font-icon);font-size:18px">chevron_right</span></span></div></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {};
+  make47(k) {
+    const V = [
+      ['NVT: Die-Hellman Ephemeral Key Exchange DoS Vulnerability (CVE-2002-20001)','unitest/scan/mobsf/ios.json',109,'High','ricolimruijie','ricolimruijie@protergo.id'],
+      ['Google API keys should not be disclosed','app/deploy/linux/appimage/config.yaml',203,'High','alexclaire','alex@protergo.id'],
+      ['Microsoft Azure Service Fabric Security Misconfiguration','services/monitoring/logs/2025/fabric.xml',317,'High','Finished scan by system',''],
+      ['Cross-Site Scripting (XSS) Vulnerabilities in Web Applications','database/backup/mysql/2025/dump.sql',425,'Medium','sitirosiyati','sitirosiyati@protergo.id'],
+      ['Insecure Direct Object References (IDOR) in REST APIs','assets/images/icons/icon-router.ts',512,'Medium','budiarto','budiarto@protergo.id'],
+      ['Hardcoded Credentials in Source Code','scripts/automation/deploy-prod.sh',678,'Medium','budiarto','budiarto@protergo.id'],
+      ['Improper Input Validation in Mobile Applications','config/settings/app-config.json',734,'Low','budiarto','budiarto@protergo.id'],
+      ['Server-Side Request Forgery (SSRF) Attacks','tests/unit/test_authentication.py',812,'Low','budiarto','budiarto@protergo.id'],
+      ['Insufficient Logging and Monitoring Practices','documentation/user-manual/logging.md',926,'Info','budiarto','budiarto@protergo.id'],
+      ['Use of Deprecated Cryptographic Algorithms in Applications','resources/fonts/Roboto-Regular.ttf',1054,'Info','budiarto','budiarto@protergo.id'],
+    ];
+    const SV = { High: ['var(--high)','var(--high-tint)'], Medium: ['var(--warning)','var(--warning-tint)'], Low: ['var(--success)','var(--success-tint)'], Info: ['var(--info)','var(--info-tint)'] };
+    const SC = [['9 Feb 2025 8:30 AM','Completed','var(--success)','var(--success-tint)'],['10 Feb 2025 8:30 AM','Queue','var(--ice-600)','var(--ice-200)'],['11 Feb 2025 8:30 AM','Waiting','var(--gray-400)','var(--gray-100)']];
+    const EX = ['8 Feb 2025 8:30 AM','7 Feb 2025 2:15 PM','6 Feb 2025 8:30 AM','5 Feb 2025 11:45 AM','4 Feb 2025 8:30 AM','3 Feb 2025 4:00 PM','2 Feb 2025 8:30 AM','1 Feb 2025 9:10 AM','31 Jan 2025 8:30 AM','30 Jan 2025 3:20 PM'].map(d => [d,'Completed','var(--success)','var(--success-tint)']);
+    const ALL = SC.concat(EX);
+    const TB = [['Active',0],['Fixing',0],['Mitigated',10],['Tolerated',0],['False positive',0]];
+    const D = { tab: 'Mitigated', scan: 1, checked: [0,1,2,3,4], sel: 0, sev: null };
+    const s = { ...D, ...((this.state.s47 || {})[k] || {}) };
+    const set = p => this.setState(st => { const a = st.s47 || {}; return { s47: { ...a, [k]: { ...D, ...(a[k] || {}), ...p } } }; });
+    const has = i => s.checked.includes(i);
+    const toggle = i => set({ checked: has(i) ? s.checked.filter(x => x !== i) : [...s.checked, i] });
+    const all = s.checked.length === V.length;
+    const empty = s.tab !== 'Mitigated';
+    const rows = empty ? [] : V.map((v, i) => ({ n: String(i + 1).padStart(2, '0'), name: v[0], comp: v[1], line: v[2], sev: v[3], sevColor: SV[v[3]][0], sevTint: SV[v[3]][1], date: 'Mon, 10 Feb 2025', user: v[4], email: v[5],
+      cbBorder: has(i) ? 'var(--coral-500)' : 'var(--gray-300)', cbBg: has(i) ? 'var(--coral-500)' : '#fff', toggle: e => { e && e.stopPropagation && e.stopPropagation(); toggle(i); },
+      rowBg: has(i) ? 'var(--coral-50)' : '#fff', show: !s.sev || s.sev === v[3] ? 'grid' : 'none',
+      select: () => set({ sel: i }), selBg: s.sel === i ? 'var(--ice-50)' : (has(i) ? 'var(--coral-50)' : '#fff'), selBar: s.sel === i ? 'inset 3px 0 0 var(--ice-600)' : 'none' }));
+    const sel = rows[s.sel] || { n: '', name: 'No vulnerabilities in this status', comp: '—', line: '—', sev: '—', sevColor: 'transparent', sevTint: 'var(--gray-100)', date: '—', user: '—', email: '' };
+    const sc = ALL[s.scan];
+    return {
+      scanDate: sc[0], scanStatus: sc[1], scanColor: sc[2], scanTint: sc[3],
+      cycleScan: () => set({ scan: (s.scan + 1) % 3 }),
+      scans: SC.map((x, i) => ({ date: x[0], status: x[1], color: x[2], tint: x[3], fw: i === s.scan ? 700 : 500, bg: i === s.scan ? '#fff' : 'transparent', border: i === s.scan ? 'var(--coral-300)' : 'var(--gray-200)', click: () => set({ scan: i }) })),
+      scansLong: ALL.map((x, i) => ({ date: x[0], status: x[1], color: x[2], fw: i === s.scan ? 700 : 500, bg: i === s.scan ? '#fff' : 'transparent', click: () => set({ scan: i }) })), scanTotal: ALL.length,
+      tlRef: this._tlRef || (this._tlRef = el => { this._tlEl = el; if (el && !this._tlNudged) { this._tlNudged = true; setTimeout(() => { el.scrollTo({ top: 36, behavior: 'smooth' }); setTimeout(() => el.scrollTo({ top: 0, behavior: 'smooth' }), 650); }, 1200); } }),
+      tlScroll: e => { const el = e.currentTarget, end = el.scrollTop + el.clientHeight >= el.scrollHeight - 6, left = Math.max(0, Math.round((el.scrollHeight - el.scrollTop - el.clientHeight) / 58)); if (end !== !!s.tlEnd || left !== s.tlLeft) set({ tlEnd: end, tlLeft: left }); },
+      tlMore: () => this._tlEl && this._tlEl.scrollBy({ top: 174, behavior: 'smooth' }),
+      hintLabel: (s.tlLeft ?? (ALL.length - 5)) + ' more',
+      hintOp: s.tlEnd ? 0 : 1, hintPe: s.tlEnd ? 'none' : 'auto', hintTransform: s.tlEnd ? 'translate(-50%, 8px) scale(0.9)' : 'translate(-50%, 0) scale(1)',
+      tlMask: s.tlEnd ? 'none' : 'linear-gradient(180deg,#000 292px,transparent 324px)',
+      tabs: TB.map(([l, n]) => { const on = l === s.tab; return { label: l, count: n, bg: on ? '#fff' : 'transparent', shadow: on ? '0 2px 8px -2px rgba(16,24,32,0.18)' : 'none', color: on ? 'var(--text-1)' : 'var(--text-2)', cBg: on ? 'var(--coral-500)' : 'var(--gray-100)', cColor: on ? '#fff' : 'var(--text-2)', railBg: on ? '#fff' : 'transparent', railColor: on ? 'var(--text-1)' : 'var(--text-2)', click: () => set({ tab: l }) }; }),
+      sevCards: ['High','Medium','Low','Info'].map(l => ({ label: l, count: empty ? 0 : V.filter(v => v[3] === l).length, color: SV[l][0], border: s.sev === l ? SV[l][0] : 'var(--gray-100)', click: () => set({ sev: s.sev === l ? null : l }) })),
+      rows, sel: { ...sel, initial: (sel.user || '?')[0].toUpperCase() },
+      groups: ['High','Medium','Low','Info'].map(l => ({ label: l, color: SV[l][0], tint: SV[l][1], rows: rows.filter(r => r.sev === l) })).filter(g => g.rows.length).map(g => ({ ...g, count: g.rows.length })),
+      selCount: s.checked.length,
+      toggleAll: () => set({ checked: all ? [] : V.map((_, i) => i) }), allBorder: all ? 'var(--coral-500)' : 'var(--gray-300)', allBg: all ? 'var(--coral-500)' : '#fff',
+      clearSel: () => set({ checked: [] }),
+      barTransform: s.checked.length ? 'translate(-50%, 0)' : 'translate(-50%, 120px)', barOp: s.checked.length ? 1 : 0,
+    };
+  }
+
+  renderVals() { return this.make47('b'); }
+}
+</script>
+</body>
+</html>

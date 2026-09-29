@@ -14,11 +14,12 @@ const repos = ref(getSourceCodeRepos())
 
 const columns = [
   { key: '__index', label: '#', width: '24px', dim: true },
-  { key: 'repo', label: 'Repository', width: '15%', truncate: true },
+  { key: 'lastScanned', label: 'Last Scanned', width: '11%', truncate: true },
+  { key: 'repo', label: 'Repository', width: '14%', truncate: true },
   { key: 'branch', label: 'Branch', width: '7%', truncate: true},
-  { key: 'owner', label: 'Asset Owner', width: '18%', truncate: true },
+  { key: 'owner', label: 'Asset Owner', width: '16%', truncate: true },
   { key: 'scanType', label: 'Scan Type', width: '12%' },
-  { key: 'tags', label: 'Multi-Tags', width: '20%' },
+  { key: 'tags', label: 'Multi-Tags', width: '18%' },
   { key: 'status', label: 'Scanning status', width: '12%', align: 'center' },
   { key: 'actions', label: 'Action', width: '70px', align: 'center' },
 ]
@@ -213,6 +214,7 @@ function submitScan() {
       : repos.value.filter((r) => r.status === 'NotStarted')
     targets.forEach((r) => {
       r.status = 'Scanning'
+      r.lastScanned = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
       r.scanType = scanType.value
       // Persist recurrence so detail views can show it on the timeline.
       r.recurrence = scanType.value === 'continuous' ? scanRecurrence.value : null
@@ -251,7 +253,7 @@ const regRepoUrlError = computed(() => {
   const u = regRepoUrl.value.trim()
   if (!u) return ''
   const ok = /^(https?:\/\/)?[\w.-]+\.[a-z]{2,}\/[\w.-]+\/[\w.-]+\/?$/i.test(u)
-  if (!ok) return 'Enter a valid repository URL, e.g. github.com/xxxxx/xxxxx-repo'
+  if (!ok) return 'Please enter a valid URL (e.g., https://example.com)'
   return ''
 })
 const canRegister = computed(() =>
@@ -518,6 +520,9 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
           {{ statusMeta[row.status]?.label ?? row.status }}
         </span>
       </template>
+      <template #cell-lastScanned="{ row }">
+        <span :class="{ dim: !row.lastScanned }">{{ row.lastScanned || 'Not available' }}</span>
+      </template>
       <template #cell-scanType="{ row }">
         <span :class="{ dim: !row.scanType }">
           {{ scanTypeOptions.find((o) => o.value === row.scanType)?.label ?? '—' }}
@@ -782,13 +787,16 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
                 error-text="Git provider is required."
               />
 
-              <GlassField
-                v-model="regRepoUrl"
-                label="URL Repository"
-                placeholder="URL Repository"
-                required
-                :error-text="regRepoUrlError || 'URL Repository is required.'"
-              />
+              <div>
+                <GlassField
+                  v-model="regRepoUrl"
+                  label="URL Repository"
+                  placeholder="URL Repository"
+                  required
+                  :invalid="!!regRepoUrlError"
+                  :error-text="regRepoUrlError || 'URL Repository is required.'"
+                />
+              </div>
 
               <GlassField
                 v-model="regVisibility"

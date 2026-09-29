@@ -4,26 +4,54 @@ import { useRoute, useRouter } from 'vue-router'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
+import RelatedDomains from '@/components/reusable/RelatedDomains.vue'
 import FindingsBadge from '@/components/reusable/FindingsBadge.vue'
 import VulnerabilityDetailModal from '@/components/vulnerabilities/VulnerabilityDetailModal.vue'
-import { getNetworks, getNetworkScans, getNetworkEndpoints, getNetworkVulns } from '@/mocks/assets/network.js'
+import { getDomains, getDomainScans, getDomainEndpoints, getDomainVulns, getDomainReputation } from '@/mocks/assets/domain.js'
 import {
   IconEye, IconDownload, IconRefresh, IconChevronDown, IconChevronRight, IconX, IconInfoCircle,
   IconDotsVertical, IconCheck, IconMinus, IconPencil, IconTrash, IconArrowUpRight, IconTag, IconScan,
-  IconCalendar, IconClock, IconBuilding, IconLink,
+  IconCalendar, IconClock, IconBuilding, IconLink, IconLoader2, IconUpload,
 } from '@tabler/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 
-const network = computed(() => {
+const domain = computed(() => {
   const id = Number(route.params.id)
-  return getNetworks().find((n) => n.id === id) ?? getNetworks()[0]
+  return getDomains().find((n) => n.id === id) ?? getDomains()[0]
 })
 
-// CIDR targets show the discovered endpoint list; IP Single targets show
+// Domain targets show the discovered endpoint list; single-host targets show
 // the vulnerability findings for that host.
-const isCidr = computed(() => network.value.targetType === 'CIDR')
+const isDomain = computed(() => domain.value.targetType === 'Domain')
+
+// ── Domain Reputation card (gauge) ─────────────────────────────────────────────
+const reputation = computed(() => getDomainReputation(domain.value.id))
+// On a single endpoint's findings page the score describes that host's IP.
+const repTitle = computed(() => (selectedEndpoint.value ? 'IP Reputation' : 'Domain Reputation'))
+const repScore = computed(() => {
+  const { total, passed } = reputation.value
+  return total ? Math.round((passed / total) * 100) : 0
+})
+const repTone = computed(() => {
+  if (repScore.value >= 80) return { label: 'Strong', color: '#63C892', bg: '#E8F7EF', fg: '#2F7D57' }
+  if (repScore.value >= 50) return { label: 'Fair', color: '#F2B84B', bg: '#FDF3DC', fg: '#A26A00' }
+  return { label: 'Weak', color: '#E5645F', bg: '#FDE8E8', fg: '#B42323' }
+})
+// Half-dial geometry: centre (120,120), 180° sweep from the left to the right.
+const GAUGE_C = 120
+const gaugeTicks = Array.from({ length: 9 }, (_, i) => {
+  const a = Math.PI - (Math.PI * i) / 8
+  return {
+    x1: GAUGE_C + 52 * Math.cos(a), y1: GAUGE_C - 52 * Math.sin(a),
+    x2: GAUGE_C + 64 * Math.cos(a), y2: GAUGE_C - 64 * Math.sin(a),
+  }
+})
+const gaugeNeedle = computed(() => {
+  const a = Math.PI - (Math.PI * repScore.value) / 100
+  return { x: GAUGE_C + 50 * Math.cos(a), y: GAUGE_C - 50 * Math.sin(a) }
+})
 
 const tagColors = [
   { swatch: '#F26D6D', bg: '#FDE8E8', fg: '#E03131' }, { swatch: '#F2994A', bg: '#FDEEE0', fg: '#E8590C' },
@@ -44,7 +72,7 @@ const scanStatusPill = {
 }
 
 // ── Scan timeline ──────────────────────────────────────────────────────────
-const scans = ref(getNetworkScans(network.value.id))
+const scans = ref(getDomainScans(domain.value.id))
 const selectedScan = ref(0)
 
 // Same dotted-timeline approach as WebAppDetailView.
@@ -112,22 +140,19 @@ const hasActiveScan = computed(() => scans.value.some((s) => s.status === 'Scann
 // = ongoing scans that can be stopped; scheduled/specified run on their own
 // schedule and show no manual control, same as WebAppDetailView.
 const scanActionKind = computed(() => {
-  const t = network.value.scanType
+  const t = domain.value.scanType
   if (t === 'manual' || t === 'singular') return 'manual'
   if (t === 'continuous') return 'continuous'
   return 'none'
 })
 
-// Sum of every endpoint's findings (the Total Findings column).
-const totalFindings = computed(() => endpoints.value.reduce((n, e) => n + (Number(e.totalSeverity) || 0), 0))
-
 const scanTypeLabels = { manual: 'Manual Triggered', singular: 'Manual Triggered', scheduled: 'Scheduled Scanning', specified: 'Scheduled Scanning', continuous: 'Continuous Scanning' }
-const scanTypeLabel = computed(() => scanTypeLabels[network.value.scanType] ?? network.value.scanType)
+const scanTypeLabel = computed(() => scanTypeLabels[domain.value.scanType] ?? domain.value.scanType)
 
 // Shown under the timeline heading for continuous targets.
 const recurrenceLabels = { daily: 'Daily', weekly: 'Weekly', biweekly: 'Every Two Weeks', monthly: 'Monthly' }
 const recurrenceLabel = computed(() =>
-  network.value.scanType === 'continuous' ? (recurrenceLabels[network.value.recurrence] ?? null) : null,
+  domain.value.scanType === 'continuous' ? (recurrenceLabels[domain.value.recurrence] ?? null) : null,
 )
 
 function stopScanning() {
@@ -203,7 +228,7 @@ function confirmRescan() {
 }
 
 // ── Endpoints ──────────────────────────────────────────────────────────────
-const endpoints = ref(getNetworkEndpoints())
+const endpoints = ref(getDomainEndpoints())
 
 const search = ref('')
 const multiTagFilter = ref(null)
@@ -224,7 +249,7 @@ const filtered = computed(() => {
   if (multiTagFilter.value) list = list.filter((e) => (e.tags || []).some((t) => t.label === multiTagFilter.value))
   if (statusFilter.value) list = list.filter((e) => e.status === statusFilter.value)
   const q = search.value.trim().toLowerCase()
-  if (q) list = list.filter((e) => e.endpoint.toLowerCase().includes(q) || e.owner.toLowerCase().includes(q))
+  if (q) list = list.filter((e) => e.ip.includes(q) || e.endpoint.toLowerCase().includes(q) || e.owner.toLowerCase().includes(q))
   return list
 })
 
@@ -233,15 +258,15 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: '#', width: '52px', dim: true, mono: true },
-  { key: 'endpoint', label: 'Endpoint', width: '17%', mono: true, truncate: true },
-  { key: 'owner', label: 'Asset Owner', width: '22%', truncate: true },
+  { key: 'ip', label: 'Endpoint', width: '16%', mono: true, truncate: true },
+  { key: 'relatedDomain', label: 'Related Domain', width: '22%', truncate: true },
   { key: 'totalSeverity', label: 'Total Findings', width: '140px', align: 'center' },
-  { key: 'tags', label: 'Multi-Tags', width: '22%' },
+  { key: 'tags', label: 'Multi-Tags', width: '20%' },
   { key: 'status', label: 'Scanner Status', width: '150px', align: 'center' },
   { key: 'view', label: 'Action', width: '76px', align: 'center' },
 ]
 
-// ── Endpoint row menu (CIDR layout) ────────────────────────────────────────
+// ── Endpoint row menu (Domain layout) ────────────────────────────────────────
 const epMenuId = ref(null)
 const epMenuPos = ref({ top: 0, left: 0 })
 
@@ -271,7 +296,7 @@ function deleteEndpoint(id) {
   endpoints.value = endpoints.value.filter((e) => e.id !== id)
 }
 
-// ── Endpoint tag popover (CIDR layout) ─────────────────────────────────────
+// ── Endpoint tag popover (Domain layout) ─────────────────────────────────────
 const epTagFor = ref(null)
 const epTagPos = ref({ top: 0, left: 0 })
 const epTagQuery = ref('')
@@ -328,7 +353,7 @@ function removeEpRowTag(row, label) {
   row.tags = row.tags.filter((t) => t.label !== label)
 }
 
-// ── Endpoint findings mode (CIDR “See Details” target) ─────────────────────
+// ── Endpoint findings mode (Domain “See Details” target) ─────────────────────
 // The open endpoint is mirrored to ?view=findings&ep=<id> so the navbar
 // breadcrumb gains an “Endpoint Findings” level (same tabQuery pattern as
 // the Company page) and the view survives refresh.
@@ -340,7 +365,7 @@ function openEndpointFindings(row) {
 }
 
 watch(() => route.params.id, () => {
-  scans.value = getNetworkScans(network.value.id)
+  scans.value = getDomainScans(domain.value.id)
   selectedScan.value = 0
   scanInProgress.value = false
   timelineStopped.value = false
@@ -365,6 +390,46 @@ watch(() => route.query, (query) => {
     epBulkOpen.value = false
   }
 }, { immediate: true })
+
+// Sum of every endpoint's findings (the Total Findings column).
+const totalFindings = computed(() => endpoints.value.reduce((n, e) => n + (Number(e.totalSeverity) || 0), 0))
+
+// Target domain first, then any extra subdomains this endpoint also serves.
+function relatedFor(row) {
+  return [domain.value.endpoint, ...(row.relatedPrefixes ?? []).map((p) => `${p}.${domain.value.endpoint}`)]
+}
+
+// ── Domain Reputation detail view (?view=reputation) ─────────────────────
+// Full-width endpoint table opened from the reputation card's "View details".
+const showReputation = computed(() => route.query.view === 'reputation' && isDomain.value && !selectedEndpoint.value)
+
+// Opened from "See Details" in an endpoint row's action menu.
+function openReputationDetail() {
+  closeEpMenu()
+  router.push({ query: { view: 'reputation' } })
+}
+
+const drStatusFilter = ref(null)
+const drSearch = ref('')
+const drColumns = [
+  { key: '__index', label: 'No.', width: '48px', dim: true },
+  { key: 'ip', label: 'Endpoint', width: '20%', mono: true, truncate: true },
+  { key: 'relatedDomain', label: 'Related Domain', width: '22%', truncate: true },
+  { key: 'tags', label: 'Multi-Tags', width: '22%' },
+  { key: 'totalSeverity', label: 'Total Findings', width: '140px', align: 'center' },
+  { key: 'status', label: 'Scanner Status', width: '150px', align: 'center' },
+  { key: 'view', label: 'Action', width: '76px', align: 'center' },
+]
+// Display copies: the reputation scan is still queued for every endpoint, so
+// severity totals aren't ready yet. Tag/menu handlers look rows up by id in
+// `endpoints`, so tags added here stay in sync with the main table.
+const drRows = computed(() => {
+  let list = endpoints.value.map((e) => ({ ...e, relatedDomain: domain.value.endpoint, status: 'Queue' }))
+  if (drStatusFilter.value) list = list.filter((e) => e.status === drStatusFilter.value)
+  const q = drSearch.value.trim().toLowerCase()
+  if (q) list = list.filter((e) => e.ip.includes(q) || e.relatedDomain.toLowerCase().includes(q))
+  return list
+})
 
 const epSearch = ref('')
 const epSeverity = ref(null)
@@ -423,9 +488,9 @@ function epBulkSetCycle(cycle) {
 // ── Endpoint findings CSV export now goes through the Download Report
 // filter modal (same as WebAppDetailView) — see Header actions below.
 
-// ── Endpoint detail modal (read-only, CIDR layout) ─────────────────────────
+// ── Endpoint detail modal (read-only, Domain layout) ─────────────────────────
 
-// ── Endpoint detail modal (read-only, CIDR layout) ─────────────────────────
+// ── Endpoint detail modal (read-only, Domain layout) ─────────────────────────
 const detailRow = ref(null)
 
 function viewEndpoint(row) {
@@ -437,7 +502,7 @@ function closeDetail() {
 }
 
 // ── Single-host vulnerabilities (IP Single layout) ─────────────────────────
-const vulns = ref(getNetworkVulns())
+const vulns = ref(getDomainVulns())
 const activeCycle = ref('Active')
 const cycleTabs = ['Active', 'Fixing', 'Mitigated', 'Tolerated', 'False Positive']
 const cycleCount = (cycle) => vulns.value.filter((v) => v.cycle === cycle).length
@@ -545,8 +610,19 @@ function setVulnCycle(id, cycle) {
 const showFindingModal = ref(false)
 const selectedFinding = ref(null)
 
+const findingAutoUpload = ref(false)
+
 function viewFinding(id) {
   closeVulnMenu()
+  findingAutoUpload.value = false
+  selectedFinding.value = vulns.value.find((v) => v.id === id) ?? null
+  showFindingModal.value = true
+}
+
+// Opens the finding on its Evidence tab with the Upload Evidence form ready.
+function uploadEvidence(id) {
+  closeVulnMenu()
+  findingAutoUpload.value = true
   selectedFinding.value = vulns.value.find((v) => v.id === id) ?? null
   showFindingModal.value = true
 }
@@ -557,11 +633,12 @@ function deleteFinding(id) {
   vulnChecked.value = vulnChecked.value.filter((c) => c !== id)
 }
 
-function rescanFinding(id) {
+// Queues the finding for revalidation (same as WebAppDetailView).
+function revalidateFinding(id) {
   const row = vulns.value.find((v) => v.id === id)
   closeVulnMenu()
   if (!row) return
-  row.validation = 'Unresolved'
+  row.validation = 'Queue'
 }
 
 // ── Single-host CSV export now goes through the Download Report
@@ -617,7 +694,7 @@ function deleteScanTimeline() {
 }
 
 // ── Download Report filter modal (multi-select, horizontal, same as WebAppDetailView) ──
-// All three header buttons (CIDR list, endpoint findings, IP Single) open
+// All three header buttons (Domain list, endpoint findings, IP Single) open
 // this modal; the export covers the vulnerability list filtered by the
 // selected severities + cycles.
 const showReportModal = ref(false)
@@ -688,9 +765,9 @@ function openReportModal() {
 }
 const reportDownloadState = ref('idle') // 'idle' | 'loading'
 
-// Endpoint picker — only the CIDR endpoint-list view offers it (the other
+// Endpoint picker — only the Domain endpoint-list view offers it (the other
 // views already show a single endpoint/host, so they export just that one).
-const showEndpointPicker = computed(() => isCidr.value && !selectedEndpoint.value)
+const showEndpointPicker = computed(() => isDomain.value && !selectedEndpoint.value)
 const repEndpoints = ref([])
 
 function toggleRepEndpoint(id) {
@@ -702,14 +779,14 @@ function selectAllRepEndpoints() {
   repEndpoints.value = endpoints.value.map((e) => e.id)
 }
 
-// Endpoints covered by the export: the picked ones in the CIDR list view,
+// Endpoints covered by the export: the picked ones in the Domain list view,
 // otherwise the single endpoint/host currently on screen.
 const reportEndpointList = computed(() => {
   if (showEndpointPicker.value) {
     const sel = new Set(repEndpoints.value)
     return endpoints.value.filter((e) => sel.has(e.id))
   }
-  const ep = selectedEndpoint.value?.endpoint ?? network.value.endpoint
+  const ep = selectedEndpoint.value?.endpoint ?? domain.value.endpoint
   return [{ id: 'single', endpoint: ep }]
 })
 
@@ -729,7 +806,7 @@ function submitReportDownload() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `scan-report-${network.value.endpoint.replace(/[^0-9a-z.]/gi, '-')}.csv`
+    a.download = `scan-report-${domain.value.endpoint.replace(/[^0-9a-z.]/gi, '-')}.csv`
     a.click()
     URL.revokeObjectURL(url)
     reportDownloadState.value = 'idle'
@@ -817,9 +894,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="scan-detail">
+  <div class="scan-detail" :class="{ 'scan-detail--wide': showReputation }">
     <!-- ── Sidebar ──────────────────────────────────────────────────── -->
-    <aside class="scan-timeline">
+    <aside v-if="!showReputation" class="scan-timeline">
       <section v-if="!selectedEndpoint" class="side-card">
         <div class="scan-timeline__head">
           <h2 class="scan-timeline__section">Scan timeline</h2>
@@ -945,7 +1022,7 @@ onUnmounted(() => {
         </Transition>
       </section>
 
-      <section v-if="!isCidr || selectedEndpoint" class="side-card">
+      <section v-if="!isDomain || selectedEndpoint" class="side-card">
         <p class="scan-timeline__section">Vulnerability cycle</p>
         <div class="cycle-tabs">
           <button
@@ -963,21 +1040,67 @@ onUnmounted(() => {
           </button>
         </div>
       </section>
+
+      <section v-if="isDomain" class="side-card rep-card">
+        <div class="rep-card__head">
+          <h2 class="scan-timeline__section">{{ repTitle }}</h2>
+          <button type="button" class="rep-card__more">View details</button>
+        </div>
+
+        <svg class="rep-gauge" viewBox="0 0 240 140" role="img" :aria-label="`${repTitle} ${repScore} percent, ${repTone.label}`">
+          <path d="M 30 120 A 90 90 0 0 1 210 120" pathLength="100" class="rep-gauge__track" />
+          <path
+            d="M 30 120 A 90 90 0 0 1 210 120"
+            pathLength="100"
+            class="rep-gauge__value"
+            :style="{ stroke: repTone.color }"
+            :stroke-dasharray="`${repScore} 100`"
+          />
+          <line
+            v-for="(t, i) in gaugeTicks"
+            :key="i"
+            :x1="t.x1" :y1="t.y1" :x2="t.x2" :y2="t.y2"
+            class="rep-gauge__tick"
+          />
+          <line :x1="GAUGE_C" :y1="GAUGE_C" :x2="gaugeNeedle.x" :y2="gaugeNeedle.y" class="rep-gauge__needle" />
+          <circle :cx="GAUGE_C" :cy="GAUGE_C" r="9" class="rep-gauge__pivot" />
+        </svg>
+
+        <div class="rep-card__score">
+          <span class="rep-card__pct">{{ repScore }}%</span>
+          <span class="rep-card__tone" :style="{ background: repTone.bg, color: repTone.fg }">{{ repTone.label }}</span>
+        </div>
+
+        <div class="rep-card__stats">
+          <div class="rep-stat">
+            <span class="rep-stat__label"><i class="rep-stat__dot" style="background:#B4C0C8" />Total Engine</span>
+            <span class="rep-stat__value">{{ reputation.total }}</span>
+          </div>
+          <div class="rep-stat">
+            <span class="rep-stat__label"><i class="rep-stat__dot" style="background:#63C892" />Passed Test</span>
+            <span class="rep-stat__value">{{ reputation.passed }}</span>
+          </div>
+          <div class="rep-stat">
+            <span class="rep-stat__label"><i class="rep-stat__dot" style="background:#C0392B" />Failed Test</span>
+            <span class="rep-stat__value">{{ reputation.failed }}</span>
+          </div>
+        </div>
+      </section>
     </aside>
 
-    <!-- ── Main: CIDR endpoint list ─────────────────────────────────── -->
-    <div v-if="isCidr && !selectedEndpoint" class="scan-main">
+    <!-- ── Main: Domain endpoint list ─────────────────────────────────── -->
+    <div v-if="isDomain && !selectedEndpoint && !showReputation" class="scan-main">
       <section class="scan-main__head">
         <div>
           <div class="scan-main__target">
             <span class="scan-main__target-label">Target</span>
-            <h1 class="scan-main__title">{{ network.endpoint }}</h1>
+            <h1 class="scan-main__title">{{ domain.endpoint }}</h1>
           </div>
           <div class="scan-main__meta">
             <span>Date Scanned: <b class="mono">{{ to24Hour(scans[selectedScan]?.date ?? '') }}</b></span>
-            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
             <span>Scan Type: <b class="mono">{{ scanTypeLabel }}</b></span>
             <span v-if="recurrenceLabel">Recurrence: <b class="mono">{{ recurrenceLabel }}</b></span>
+            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
             <span>Total Endpoint: <b class="mono">{{ endpoints.length }}</b></span>
             <span>Total Findings: <b class="mono">{{ totalFindings.toLocaleString() }}</b></span>
           </div>
@@ -1002,6 +1125,12 @@ onUnmounted(() => {
         :items="filtered"
         empty-text="No endpoints found."
       >
+        <template #cell-totalSeverity="{ row }">
+          <FindingsBadge :total="row.totalSeverity" :counts="row.severityCounts" />
+        </template>
+        <template #cell-relatedDomain="{ row }">
+          <RelatedDomains :domains="relatedFor(row)" />
+        </template>
         <template #cell-tags="{ row }">
           <div class="cell-tags">
             <span
@@ -1013,9 +1142,6 @@ onUnmounted(() => {
             <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
             <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openEpTagPopover(row, $event)">Add tag</button>
           </div>
-        </template>
-        <template #cell-totalSeverity="{ row }">
-          <FindingsBadge :total="row.totalSeverity" :counts="row.severityCounts" />
         </template>
         <template #cell-status="{ row }">
           <span
@@ -1031,13 +1157,77 @@ onUnmounted(() => {
       </DataTable>
     </div>
 
-    <!-- ── Main: endpoint findings (CIDR “See Details” target) ──────────── -->
+    <!-- ── Main: Domain Reputation detail (endpoint table) ─────────────── -->
+    <div v-else-if="showReputation" class="scan-main">
+      <section class="scan-main__head">
+        <div>
+          <div class="scan-main__target">
+            <span class="scan-main__target-label">Target</span>
+            <h1 class="scan-main__title">{{ domain.endpoint }}</h1>
+          </div>
+          <div class="scan-main__meta">
+            <span>Timeline Scan <b class="mono">{{ to24Hour(scans[selectedScan]?.date ?? '') }}</b></span>
+            <span>Scan Type <b class="mono">{{ scanTypeLabel }}</b></span>
+            <span>Total Endpoint <b class="mono">{{ endpoints.length }}</b></span>
+            <span>Scan Duration <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
+          </div>
+        </div>
+        <div class="scan-main__actions">
+          <button type="button" class="btn-register" @click="openReportModal">
+            <IconDownload :size="15" /> Download Full Report
+          </button>
+        </div>
+      </section>
+
+      <div class="scan-main__controls">
+        <FilterDropdown v-model="drStatusFilter" :options="statusOptions" placeholder="Scanner Status" />
+        <div class="scan-main__spacer" />
+        <SearchInput v-model="drSearch" placeholder="Search" />
+      </div>
+
+      <DataTable :columns="drColumns" :items="drRows" empty-text="No endpoints found.">
+        <template #cell-relatedDomain="{ row }">
+          <RelatedDomains :domains="relatedFor(row)" />
+        </template>
+        <template #cell-tags="{ row }">
+          <div class="cell-tags">
+            <span
+              v-for="t in row.tags.slice(0, 2)"
+              :key="t.label"
+              class="dv-tag"
+              :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }"
+            >{{ t.label }}</span>
+            <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
+            <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openEpTagPopover(row, $event)">Add tag</button>
+          </div>
+        </template>
+        <template #cell-totalSeverity="{ row }">
+          <span v-if="['Queue', 'Scanning', 'Waiting', 'NotStarted'].includes(row.status)" class="sev-pending" title="Findings are counted once the scan finishes">
+            <IconLoader2 :size="16" />
+          </span>
+          <FindingsBadge v-else :total="row.totalSeverity" :counts="row.severityCounts" />
+        </template>
+        <template #cell-status="{ row }">
+          <span
+            class="status-pill"
+            :style="{ background: scanStatusPill[row.status]?.bg, color: scanStatusPill[row.status]?.color }"
+          >{{ row.status === 'NotStarted' ? 'Not yet started' : row.status }}</span>
+        </template>
+        <template #cell-view="{ row }">
+          <button type="button" class="action-btn" aria-label="Actions" @click.stop="toggleEpMenu(row, $event)">
+            <IconDotsVertical :size="16" />
+          </button>
+        </template>
+      </DataTable>
+    </div>
+
+    <!-- ── Main: endpoint findings (Domain “See Details” target) ──────────── -->
     <div v-else-if="selectedEndpoint" class="scan-main">
       <section class="scan-main__head">
         <div>
           <div class="scan-main__target">
             <span class="scan-main__target-label">Endpoint</span>
-            <h1 class="scan-main__title">{{ selectedEndpoint.endpoint }}</h1>
+            <h1 class="scan-main__title">{{ selectedEndpoint.ip ?? selectedEndpoint.endpoint }}</h1>
           </div>
           <div class="scan-main__meta">
             <span>Total Vulnerabilities: <b class="mono">{{ vulns.length }}</b></span>
@@ -1125,19 +1315,19 @@ onUnmounted(() => {
     </div>
 
     <!-- ── Main: IP Single vulnerabilities ────────────────────────────── -->
-    <div v-else-if="!isCidr" class="scan-main">
+    <div v-else-if="!isDomain" class="scan-main">
       <section class="scan-main__head">
         <div>
           <div class="scan-main__target">
             <span class="scan-main__target-label">Endpoint</span>
-            <h1 class="scan-main__title">{{ network.endpoint }}</h1>
+            <h1 class="scan-main__title">{{ domain.endpoint }}</h1>
           </div>
           <div class="scan-main__meta">
             <span>Date Scanned: <b class="mono">{{ to24Hour(scans[selectedScan]?.date ?? '') }}</b></span>
-            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
             <span>Scan Type: <b class="mono">{{ scanTypeLabel }}</b></span>
             <span v-if="recurrenceLabel">Recurrence: <b class="mono">{{ recurrenceLabel }}</b></span>
             <span>Total Vulnerabilities: <b class="mono">{{ vulns.length }}</b></span>
+            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
           </div>
         </div>
         <div class="scan-main__actions">
@@ -1388,17 +1578,13 @@ onUnmounted(() => {
             </button>
           </div>
         </div>
-        <button type="button" class="action-menu__item" @click="rescanFinding(vulnMenuId)">
-          <IconScan :size="15" />
-          Re-scan
+        <button type="button" class="action-menu__item" @click="revalidateFinding(vulnMenuId)">
+          <IconRefresh :size="15" />
+          Revalidate
         </button>
-        <button
-          type="button"
-          class="action-menu__item action-menu__item--danger"
-          @click="deleteFinding(vulnMenuId)"
-        >
-          <IconTrash :size="15" />
-          Delete
+        <button type="button" class="action-menu__item" @click="uploadEvidence(vulnMenuId)">
+          <IconUpload :size="15" />
+          Upload evidence
         </button>
       </div>
     </Teleport>
@@ -1529,7 +1715,7 @@ onUnmounted(() => {
       </Transition>
     </Teleport>
 
-    <VulnerabilityDetailModal v-model="showFindingModal" :item="selectedFinding" summary-strip />
+    <VulnerabilityDetailModal v-model="showFindingModal" :item="selectedFinding" summary-strip :auto-upload="findingAutoUpload" />
     <Teleport to="body">
       <Transition name="target-panel-fade">
         <div v-if="showTargetDetailModal" class="target-modal" :style="{ top: `${targetDetailPos.top}px`, left: `${targetDetailPos.left}px` }">
@@ -1537,8 +1723,8 @@ onUnmounted(() => {
               <div class="target-modal__heading">
                 <p class="target-modal__eyebrow">Target Details</p>
                 <div class="target-modal__pills">
-                  <span class="target-pill">{{ network.targetType }}</span>
-                  <span class="target-pill">{{ { singular: 'Singular Scanning', specified: 'Specified Scanning', continuous: 'Continuous Scanning' }[network.scanType] ?? network.scanType }}</span>
+                  <span class="target-pill">{{ domain.targetType }}</span>
+                  <span class="target-pill">{{ { singular: 'Singular Scanning', specified: 'Specified Scanning', continuous: 'Continuous Scanning' }[domain.scanType] ?? domain.scanType }}</span>
                 </div>
               </div>
               <button type="button" class="target-modal__close" aria-label="Close" @click="closeTargetDetailModal">
@@ -1552,7 +1738,7 @@ onUnmounted(() => {
                   <span class="target-stat-row__icon"><IconLink :size="16" /></span>
                   <div class="target-stat-row__text">
                     <p class="target-stat-row__label">Endpoint</p>
-                    <p class="target-stat-row__value">{{ network.endpoint }}</p>
+                    <p class="target-stat-row__value">{{ domain.endpoint }}</p>
                   </div>
                 </div>
                 <div class="target-stat-row">
@@ -1581,12 +1767,12 @@ onUnmounted(() => {
                 <p class="target-modal__section-label">Multi-Tags</p>
                 <div class="target-modal__tag-list">
                   <span
-                    v-for="(t, i) in network.tags"
+                    v-for="(t, i) in domain.tags"
                     :key="`${t.label}-${i}`"
                     class="dv-tag"
                     :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }"
                   >{{ t.label }}</span>
-                  <span v-if="!(network.tags || []).length" class="tag-popover__empty">No tags yet.</span>
+                  <span v-if="!(domain.tags || []).length" class="tag-popover__empty">No tags yet.</span>
                 </div>
               </div>
             </div>
@@ -1676,20 +1862,9 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-.count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 30px;
-  height: 28px;
-  padding: 0 9px;
-  border-radius: 8px;
-  background: #ECEEF0;
-  border: 1px solid #d8dee4;
-  color: #5C6470;
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
+.scan-detail--wide {
+  grid-template-columns: minmax(0, 1fr);
+  > .scan-main > * { grid-column: 1; }
 }
 
 .scan-detail {
@@ -1708,6 +1883,153 @@ onUnmounted(() => {
 }
 
 // ── Sidebar ────────────────────────────────────────────────────────────────
+// ── Domain Reputation detail table ─────────────────────────────────────────
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: 8px;
+  background: #ECEEF0;
+  border: 1px solid #d8dee4;
+  color: #5C6470;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.sev-pending {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #ECEEF0;
+  color: #5C6470;
+
+  svg { animation: sev-spin 1.1s linear infinite; }
+}
+@keyframes sev-spin { to { transform: rotate(360deg); } }
+
+// ── Domain Reputation card ─────────────────────────────────────────────────────
+.rep-card {
+  gap: 0;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  // Same text link as Ticket Feed's "View all": red, underline slides in on hover.
+  &__more {
+    border: none;
+    background-color: transparent;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 2px;
+    background-repeat: no-repeat;
+    background-position: left calc(100% - 2px);
+    padding: 4px 2px 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--glacia-red);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background-size 0.25s ease, color 0.15s ease;
+
+    &:hover {
+      background-size: 100% 2px;
+      color: #e01e22;
+    }
+  }
+
+  &__score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: -2px;
+  }
+
+  &__pct {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--glacia-ink);
+  }
+
+  &__tone {
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--glacia-glass-border);
+  }
+}
+
+.rep-gauge {
+  display: block;
+  width: 100%;
+  max-width: 230px;
+  margin: 8px auto 0;
+
+  &__track,
+  &__value {
+    fill: none;
+    stroke-width: 16;
+    stroke-linecap: round;
+  }
+  &__track { stroke: #ECEFF1; }
+  &__tick { stroke: #B4C0C8; stroke-width: 2; stroke-linecap: round; }
+  &__needle { stroke: #101820; stroke-width: 4; stroke-linecap: round; }
+  &__pivot { fill: #101820; }
+}
+
+.rep-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+
+  &__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--glacia-ink-dim);
+    white-space: nowrap;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__value {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+  }
+}
+
 .scan-timeline {
   width: 300px;
   flex: none;
@@ -3127,7 +3449,7 @@ onUnmounted(() => {
   justify-self: start;
 }
 
-// ── Report modal endpoint picker (CIDR list view only) ───────────────────
+// ── Report modal endpoint picker (Domain list view only) ───────────────────
 .rep-modal__endpoints {
   padding: 20px 0;
   border-top: 1px solid #eef1f4;

@@ -28,7 +28,18 @@ const appRoutes = [
     meta: { requiresAuth: true, title: 'Asset Inventory', crumbs: [{ label: 'Manage' }] },
   },
   // Services — each shows a blank Work in Progress page
-  { path: '/assets/domains',     component: Placeholder, meta: { requiresAuth: true, title: 'Domain Inspection' } },
+  { path: '/assets/domains',     component: () => import('@/views/Assets/DomainView.vue'), meta: { requiresAuth: true, title: 'Domain Inspection', crumbs: [{ label: 'Services' }] } },
+  {
+    path: '/assets/domains/:id',
+    component: () => import('@/views/Assets/DomainDetailView.vue'),
+    meta: {
+      requiresAuth: true,
+      title: 'Domain Detail',
+      crumbs: [{ label: 'Services' }, { label: 'Domain Inspection', to: '/assets/domains' }],
+      tabQuery: 'view',
+      tabLabels: { findings: 'Endpoint Findings' },
+    },
+  },
   { path: '/assets/networks',    component: () => import('@/views/Assets/NetworkView.vue'), meta: { requiresAuth: true, title: 'Network', crumbs: [{ label: 'Services' }] } },
   {
     path: '/assets/networks/:id',

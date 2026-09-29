@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/coral-ice-design-system-2deb55f0-b45b-4525-8811-ff6a0244fd32/styles.css">
+<script src="_ds/coral-ice-design-system-2deb55f0-b45b-4525-8811-ff6a0244fd32/_ds_bundle.js"></script>
+<style>
+@keyframes dt46-slide-l-a{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes dt46-slide-l-b{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes dt46-slide-r-a{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+@keyframes dt46-slide-r-b{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+@keyframes dt46-fade-a{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes dt46-fade-b{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes dt46-pop-a{0%{transform:scale(0.8);animation-timing-function:cubic-bezier(.3,1.5,.5,1)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes dt46-pop-b{0%{transform:scale(0.8);animation-timing-function:cubic-bezier(.3,1.5,.5,1)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes dt46-bump-a{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes dt46-bump-b{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes dt46-glide-a{0%{transform:scale(1,1)}30%{transform:scale(1.18,0.86);animation-timing-function:ease-out}70%{transform:scale(0.95,1.05)}100%{transform:scale(1,1)}}
+@keyframes dt46-glide-b{0%{transform:scale(1,1)}30%{transform:scale(1.18,0.86);animation-timing-function:ease-out}70%{transform:scale(0.95,1.05)}100%{transform:scale(1,1)}}
+@keyframes dt46-check{0%{transform:scale(0) rotate(-45deg)}100%{transform:scale(1) rotate(0)}}
+@media (prefers-reduced-motion: reduce){*{animation-duration:0.01ms !important;transition-duration:0.01ms !important}}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ice-50)">
+<div style="background:#fff;border-radius:16px;box-shadow:0 20px 44px -14px rgba(16,24,32,0.28);font-family:var(--font-display);width:340px;padding:20px 22px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:0.82rem;font-weight:700;color:var(--text-1)">Date</span><span style="font-family:var(--font-mono);font-size:0.85rem;font-weight:600;color:var(--coral-700);background:var(--coral-50);padding:3px 10px;border-radius:999px;display:inline-block;animation:{{ dateAnim }}">{{ dateShort }}</span></div>
+<div><div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0 8px">
+<div style="display:flex;gap:2px"><button onClick="{{ prevY }}" style="width:30px;height:30px;border:0;border-radius:8px;background:transparent;font-family:var(--font-icon);font-size:20px;color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s ease" style-hover="background:var(--gray-50)">keyboard_double_arrow_left</button><button onClick="{{ prev }}" style="width:30px;height:30px;border:0;border-radius:8px;background:transparent;font-family:var(--font-icon);font-size:20px;color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s ease" style-hover="background:var(--gray-50)">chevron_left</button></div>
+<span style="font-weight:700;font-size:0.95rem;color:var(--text-1);animation:{{ labelAnim }}">{{ monthLabel }}</span>
+<div style="display:flex;gap:2px"><button onClick="{{ next }}" style="width:30px;height:30px;border:0;border-radius:8px;background:transparent;font-family:var(--font-icon);font-size:20px;color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s ease" style-hover="background:var(--gray-50)">chevron_right</button><button onClick="{{ nextY }}" style="width:30px;height:30px;border:0;border-radius:8px;background:transparent;font-family:var(--font-icon);font-size:20px;color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s ease" style-hover="background:var(--gray-50)">keyboard_double_arrow_right</button></div>
+</div>
+<div style="overflow:hidden"><div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));row-gap:2px;column-gap:2px;position:relative;animation:{{ gridAnim }}">
+<div style="position:absolute;z-index:0;pointer-events:none;left:{{ pillLeft }};top:{{ pillTop }};width:40px;height:36px;border-radius:999px;background:var(--glass-fill-strong);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--coral-200);box-shadow:inset 0 1px 0 var(--glass-hi), 0 6px 16px -6px rgba(255,46,58,0.45);box-sizing:border-box;opacity:{{ pillOp }};transition:left 0.5s cubic-bezier(.3,1.35,.5,1), top 0.5s cubic-bezier(.3,1.35,.5,1), opacity 0.2s ease;animation:{{ pillAnim }}"><div style="position:absolute;inset:0;border-radius:999px;background:linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0) 60%);opacity:0.6"></div></div>
+<span style="text-align:center;font-size:0.72rem;font-weight:700;color:var(--coral-600);height:26px;line-height:26px;position:relative;z-index:1">Su</span><span style="text-align:center;font-size:0.72rem;font-weight:700;color:var(--text-1);height:26px;line-height:26px;position:relative;z-index:1">Mo</span><span style="text-align:center;font-size:0.72rem;font-weight:700;color:var(--text-1);height:26px;line-height:26px;position:relative;z-index:1">Tu</span><span style="text-align:center;font-size:0.72rem;font-weight:700;color:var(--text-1);height:26px;line-height:26px;position:relative;z-index:1">We</span><span style="text-align:center;font-size:0.72rem;font-weight:700;color:var(--text-1);height:26px;line-height:26px;position:relative;z-index:1">Th</span><span style="text-align:center;font-size:0.72rem;font-weight:700;color:var(--text-1);height:26px;line-height:26px;position:relative;z-index:1">Fr</span><span style="text-align:center;font-size:0.72rem;font-weight:700;color:var(--text-1);height:26px;line-height:26px;position:relative;z-index:1">Sa</span>
+<sc-for list="{{ cells }}" as="c" hint-placeholder-count="35"><button onClick="{{ c.click }}" style="height:36px;border:0;border-radius:8px;background:{{ c.bg }};color:{{ c.color }};font-family:var(--font-display);font-size:0.85rem;font-weight:{{ c.fw }};cursor:pointer;visibility:{{ c.vis }};position:relative;z-index:1;transition:background 0.2s ease, color 0.3s ease" style-hover="background:{{ c.hbg }}">{{ c.label }}</button></sc-for>
+</div></div></div>
+<div style="height:1px;background:var(--gray-100)"></div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:0.82rem;font-weight:700;color:var(--text-1)">Time</span><span style="font-family:var(--font-mono);font-size:0.85rem;font-weight:600;color:var(--coral-700);background:var(--coral-50);padding:3px 10px;border-radius:999px;display:inline-block;animation:{{ timeAnim }}">{{ time }}</span></div>
+<div ref="{{ trackRef }}" onPointerDown="{{ tDown }}" onPointerMove="{{ tMove }}" onPointerUp="{{ tUp }}" onPointerCancel="{{ tUp }}" style="position:relative;height:36px;margin-top:22px;cursor:pointer;touch-action:none;user-select:none">
+<div style="position:absolute;left:0;right:0;top:15px;height:6px;border-radius:999px;background:var(--gray-100);overflow:hidden"><div style="height:100%;width:{{ pct }};border-radius:999px;background:var(--coral-500);transition-property:width;transition-timing-function:cubic-bezier(.3,1.35,.5,1);transition-duration:{{ tDur }}"></div></div>
+<div style="position:absolute;left:0;right:0;top:26px;display:flex;justify-content:space-between;padding:0 1px"><span style="width:1px;height:5px;background:var(--gray-200)"></span><span style="width:1px;height:5px;background:var(--gray-200)"></span><span style="width:1px;height:5px;background:var(--gray-200)"></span><span style="width:1px;height:5px;background:var(--gray-200)"></span><span style="width:1px;height:5px;background:var(--gray-200)"></span></div>
+<div style="position:absolute;top:0;left:{{ pct }};width:0;height:36px;transition-property:left;transition-timing-function:cubic-bezier(.3,1.35,.5,1);transition-duration:{{ tDur }}">
+<div style="position:absolute;bottom:44px;left:-30px;width:60px;display:flex;justify-content:center;opacity:{{ bubbleOp }};margin-bottom:{{ bubbleLift }};transition:opacity 0.2s ease, margin-bottom 0.3s cubic-bezier(.3,1.5,.5,1);pointer-events:none"><span style="font-family:var(--font-mono);font-size:0.78rem;font-weight:600;color:#fff;background:var(--gray-900);padding:3px 8px;border-radius:999px">{{ time }}</span></div>
+<div tabIndex="0" onKeyDown="{{ tKey }}" style="position:absolute;top:{{ thumbTop }};left:{{ thumbLeft }};width:{{ thumbW }};height:{{ thumbH }};border-radius:999px;background:var(--glass-fill-strong);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--coral-200);box-shadow:inset 0 1px 0 var(--glass-hi), 0 6px 16px -6px rgba(255,46,58,0.5);box-sizing:border-box;outline:none;transition:width 0.3s cubic-bezier(.3,1.5,.5,1), height 0.3s cubic-bezier(.3,1.5,.5,1), left 0.3s cubic-bezier(.3,1.5,.5,1), top 0.3s cubic-bezier(.3,1.5,.5,1)"><div style="position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:999px;background:var(--coral-500)"></div></div>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.68rem;color:var(--text-3)"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:4px">
+<span style="display:flex;align-items:center;gap:4px;font-size:0.75rem;color:var(--success);font-weight:600;opacity:{{ appliedOp }};transform:{{ savedTransform }};transition:opacity 0.25s ease, transform 0.35s cubic-bezier(.3,1.4,.5,1)"><span style="font-family:var(--font-icon);font-size:16px;animation:{{ checkAnim }}">check_circle</span>Saved</span>
+<div style="display:flex;gap:8px">
+<x-import component-from-global-scope="CoralIceDesignSystem_2deb55.Button" variant="secondary" on-click="{{ cancel }}" hint-size="auto,40px">Cancel</x-import>
+<x-import component-from-global-scope="CoralIceDesignSystem_2deb55.Button" variant="primary" on-click="{{ apply }}" hint-size="auto,40px">Apply</x-import>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {};
+  makeDT46(k) {
+    const now = this._dtNow || (this._dtNow = new Date()), nMin = Math.round((now.getHours() * 60 + now.getMinutes()) / 15) * 15;
+    const D = { y: now.getFullYear(), m: now.getMonth(), d: now.getDate(), h: Math.min(23, Math.floor(nMin / 60)), mi: nMin >= 1440 ? 45 : nMin % 60, tab: 'date', period: 'Afternoon', applied: false, navDir: 1, navN: 0, tN: 0, pN: 0 };
+    const all = this.state.dt46 || {};
+    const s = { ...D, ...(all[k] || {}) };
+    const set = p => this.setState(st => { const a = st.dt46 || {}; return { dt46: { ...a, [k]: { ...D, ...(a[k] || {}), applied: false, ...p } } }; });
+    const MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const pad = x => String(x).padStart(2, '0');
+    const par = x => x % 2 ? 'a' : 'b';
+    const first = new Date(s.y, s.m, 1).getDay(), n = new Date(s.y, s.m + 1, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < first; i++) cells.push({ label: '', vis: 'hidden', bg: 'transparent', hbg: 'transparent', color: 'transparent', fw: 500, click: () => {} });
+    for (let d = 1; d <= n; d++) { const on = d === s.d, g = k === 'd'; cells.push({ label: String(d), vis: 'visible', bg: on ? (g ? 'transparent' : 'var(--coral-50)') : 'transparent', hbg: on ? (g ? 'transparent' : 'var(--coral-50)') : 'var(--gray-50)', color: on ? 'var(--coral-700)' : 'var(--text-1)', fw: on ? 700 : 500, anim: on && s.pN ? 'dt46-pop-' + par(s.pN) + ' 0.34s' : 'none', click: () => set({ d, pN: s.pN + 1 }) }); }
+    const shift = dm => { let m = s.m + dm, y = s.y + Math.floor(m / 12); m = ((m % 12) + 12) % 12; set({ y, m, d: Math.min(s.d, new Date(y, m + 1, 0).getDate()), navDir: dm > 0 ? 1 : -1, navN: s.navN + 1 }); };
+    const time = pad(s.h) + ':' + pad(s.mi);
+    const dateShort = WD[new Date(s.y, s.m, s.d).getDay()] + ', ' + s.d + ' ' + MN[s.m].slice(0, 3);
+    const pick = (on) => ({ bg: on ? 'var(--coral-500)' : 'transparent', hbg: on ? 'var(--coral-500)' : 'var(--gray-50)', color: on ? '#fff' : 'var(--text-1)' });
+    const P = { Morning: 8, Afternoon: 13, Evening: 17 };
+    const slots = [0,1,2,3,4,5].map(i => { const h = P[s.period] + Math.floor(i / 2), mi = (i % 2) * 30, on = s.h === h && s.mi === mi;
+      return { label: pad(h) + ':' + pad(mi), bg: on ? 'var(--coral-50)' : '#fff', border: on ? 'var(--coral-500)' : 'var(--gray-200)', color: on ? 'var(--coral-700)' : 'var(--text-1)', click: () => set({ h, mi }) }; });
+    const isDate = s.tab === 'date';
+    return {
+      monthLabel: MN[s.m] + ' ' + s.y, cells,
+      prev: () => shift(-1), next: () => shift(1), prevY: () => shift(-12), nextY: () => shift(12),
+      time, dateShort, summary: dateShort + ' ' + s.y + ' · ' + time, hh: pad(s.h), mm: pad(s.mi),
+      hours: Array.from({ length: 24 }, (_, h) => ({ label: pad(h), ...pick(h === s.h), click: () => set({ h }) })),
+      mins: Array.from({ length: 12 }, (_, i) => ({ label: pad(i * 5), ...pick(i * 5 === s.mi), click: () => set({ mi: i * 5 }) })),
+      periods: Object.keys(P).map(p => ({ label: p, bg: p === s.period ? '#fff' : 'transparent', shadow: p === s.period ? '0 1px 3px rgba(16,24,32,0.14)' : 'none', color: p === s.period ? 'var(--text-1)' : 'var(--text-3)', click: () => set({ period: p }) })),
+      slots,
+      isDate, isTime: !isDate,
+      dateBorder: isDate ? 'var(--coral-500)' : 'var(--gray-200)', dateBg: isDate ? 'var(--coral-50)' : '#fff',
+      timeBorder: !isDate ? 'var(--coral-500)' : 'var(--gray-200)', timeBg: !isDate ? 'var(--coral-50)' : '#fff',
+      showDate: () => set({ tab: 'date' }), showTime: () => set({ tab: 'time' }),
+      hUp: () => set({ h: (s.h + 1) % 24 }), hDown: () => set({ h: (s.h + 23) % 24 }),
+      mUp: () => set({ mi: (Math.floor(s.mi / 5) * 5 + 5) % 60 }), mDown: () => set({ mi: (Math.ceil(s.mi / 5) * 5 + 55) % 60 }),
+      sliderVal: Math.round((s.h * 60 + s.mi) / 15),
+      onSlide: e => { const v = +e.target.value * 15; set({ h: Math.floor(v / 60), mi: v % 60, tN: s.tN + 1 }); },
+      trackRef: this.dt46Track || (this.dt46Track = React.createRef()),
+      pct: (s.h * 60 + s.mi) / 1425 * 100 + '%',
+      tDur: s.drag ? '0s' : '0.45s',
+      bubbleOp: s.drag ? 1 : 0, bubbleLift: s.drag ? '0px' : '-6px',
+      thumbW: s.drag ? '40px' : '28px', thumbH: s.drag ? '22px' : '28px',
+      thumbLeft: s.drag ? '-20px' : '-14px', thumbTop: s.drag ? '7px' : '4px',
+      tDown: e => { const el = this.dt46Track.current; el.setPointerCapture(e.pointerId); const r = el.getBoundingClientRect(); const v = Math.round(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * 95) * 15; this._dtJump = true; set({ h: Math.floor(v / 60), mi: v % 60, tN: s.tN + 1 }); setTimeout(() => { if (this._dtJump) set({ drag: true }); }, 120); this._dtDown = true; },
+      tMove: e => { if (!this._dtDown) return; const r = this.dt46Track.current.getBoundingClientRect(); const v = Math.round(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * 95) * 15; const h = Math.floor(v / 60), mi = v % 60; if (h !== s.h || mi !== s.mi || !s.drag) set({ h, mi, drag: true, tN: s.tN + 1 }); },
+      tUp: () => { this._dtDown = false; this._dtJump = false; set({ drag: false }); },
+      tKey: e => { const d = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 15 : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -15 : 0; if (!d) return; e.preventDefault(); const v = Math.max(0, Math.min(1425, s.h * 60 + s.mi + d)); set({ h: Math.floor(v / 60), mi: v % 60, tN: s.tN + 1 }); },
+      dateAnim: s.pN || s.navN ? 'dt46-bump-' + par(s.pN + s.navN) + ' 0.2s ease' : 'none',
+      pillLeft: ((first + s.d - 1) % 7) * 42.57 + 'px', pillTop: 28 + Math.floor((first + s.d - 1) / 7) * 38 + 'px', pillOp: 1,
+      pillAnim: s.pN ? 'dt46-glide-' + par(s.pN) + ' 0.5s' : 'none',
+      gridAnim: s.navN ? 'dt46-slide-' + (s.navDir > 0 ? 'l' : 'r') + '-' + par(s.navN) + ' 0.3s cubic-bezier(.2,.8,.2,1)' : 'none',
+      labelAnim: s.navN ? 'dt46-fade-' + par(s.navN) + ' 0.3s ease' : 'none',
+      timeAnim: s.tN ? 'dt46-bump-' + par(s.tN) + ' 0.2s ease' : 'none',
+      savedTransform: s.applied ? 'translateX(0px)' : 'translateX(-8px)', checkAnim: s.applied ? 'dt46-check 0.4s cubic-bezier(.3,1.6,.5,1)' : 'none',
+      apply: () => set({ applied: true }), cancel: () => this.setState(st => ({ dt46: { ...(st.dt46 || {}), [k]: { ...D } } })),
+      appliedOp: s.applied ? 1 : 0,
+    };
+  }
+
+  renderVals() { return this.makeDT46('d'); }
+}
+</script>
+</body>
+</html>

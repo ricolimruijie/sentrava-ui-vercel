@@ -24,6 +24,17 @@ const sev = {
 }
 
 function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg: 'rgba(100,116,139,0.12)' } }
+
+// Same cycle semantics as the detail views (WebAppDetailView).
+const cyclePill = {
+  Active:           { bg: '#fee2e2', color: '#dc2626' },
+  Fixing:           { bg: '#fef3c7', color: '#b45309' },
+  Mitigated:        { bg: '#dcfce7', color: '#16a34a' },
+  Tolerated:        { bg: '#DFF3FC', color: '#1197C2' },
+  'False Positive': { bg: '#ECEEF0', color: '#5C6470' },
+}
+
+function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470' } }
 </script>
 
 <template>
@@ -39,28 +50,33 @@ function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg
         <table class="vtable">
           <thead>
             <tr>
-              <th class="vtable__num">#</th>
               <th>Vulnerability</th>
               <th>Asset</th>
               <th>Service</th>
               <th class="text-center vtable__sev">Severity</th>
+              <th class="text-center">Vulnerability Cycle</th>
               <th class="vtable__arrow"></th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loading"><td colspan="6" class="vtable__empty">Loading…</td></tr>
             <tr v-else-if="!filteredItems.length"><td colspan="6" class="vtable__empty">No vulnerabilities found.</td></tr>
-            <tr v-for="(item, i) in filteredItems" :key="item.id" class="vtable__row">
-              <td class="vtable__num">{{ i + 1 }}</td>
+            <tr v-for="item in filteredItems" :key="item.id" class="vtable__row">
               <td class="vtable__name">{{ item.name }}</td>
               <td class="vtable__asset">{{ item.affectedAsset }}</td>
               <td class="vtable__svc">{{ item.services }}</td>
-              <td class="text-center vtable__sev">
-                <span
-                  class="sev-badge"
-                  :style="{ background: s(item.severity).bg, color: s(item.severity).color }"
-                >{{ s(item.severity).label }}</span>
-              </td>
+                <td class="text-center vtable__sev">
+                  <span
+                    class="sev-badge"
+                    :style="{ background: s(item.severity).bg, color: s(item.severity).color }"
+                  >{{ s(item.severity).label }}</span>
+                </td>
+                <td class="text-center">
+                  <span
+                    class="cycle-pill"
+                    :style="{ background: c(item.cycle).bg, color: c(item.cycle).color }"
+                  >{{ item.cycle }}</span>
+                </td>
               <td class="vtable__arrow">
                 <button type="button" class="arrow-btn"><IconChevronRight :size="11" /></button>
               </td>
@@ -107,12 +123,10 @@ function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg
   }
 
   &__wrap {
-    border: 1px solid var(--glacia-glass-border);
-    border-radius: var(--glacia-radius-md);
     overflow: auto;
     flex: 1;
     min-height: 0;
-    background: var(--glacia-glass-fill-strong);
+    background: none;
   }
 }
 
@@ -124,18 +138,16 @@ function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg
   thead tr {
     position: sticky;
     top: 0;
-    background: rgba(15, 23, 42, 0.05);
     z-index: 1;
   }
 
   th {
-    padding: 12px 14px;
     text-align: left;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--glacia-ink-dim);
+    padding: 6px 8px;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border);
     white-space: nowrap;
   }
 
@@ -144,21 +156,16 @@ function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg
     border-bottom: 1px solid var(--glacia-glass-border);
     vertical-align: middle;
     color: var(--glacia-ink);
+    font-weight: 500;
   }
 
   &__row:last-child td { border-bottom: none; }
-  &__row:hover td { background: rgba(0, 0, 0, 0.02); }
+  &__row:hover td { background: var(--color-bg); }
 
   &__empty {
     text-align: center;
     padding: 28px !important;
     color: var(--glacia-ink-dim);
-  }
-
-  &__num {
-    width: 32px;
-    color: var(--glacia-ink-dim);
-    font-weight: 500;
   }
 
   &__name {
@@ -170,14 +177,10 @@ function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg
   }
 
   &__asset {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 12px;
-    color: var(--glacia-ink-dim);
     white-space: nowrap;
   }
 
   &__svc {
-    color: var(--glacia-ink-dim);
     white-space: nowrap;
   }
 
@@ -203,9 +206,19 @@ function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg
   white-space: nowrap;
 }
 
+.cycle-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--glacia-radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .arrow-btn {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--glacia-red);
   color: #fff;

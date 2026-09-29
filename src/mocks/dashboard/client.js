@@ -89,14 +89,14 @@ export const clientDashboardMock = {
 
   // ── 4. Top Vulnerabilities ───────────────────────────────────────────────────
   topVulnerabilities: [
-    { id: 1, name: 'CVE-2025-29847 · OpenSSL heap overflow',  affectedAsset: 'api-prod-O3',  services: 'Domain Inspection', severity: 'critical' },
-    { id: 2, name: 'SQL injection in /api/users',             affectedAsset: 'orders-svc',    services: 'Domain Inspection', severity: 'critical' },
-    { id: 3, name: 'Outdated jQuery 1.12.4',                  affectedAsset: 'web-console',   services: 'Source Code',       severity: 'critical' },
-    { id: 4, name: 'TLS 1.0 still enabled',                   affectedAsset: 'vpn-edge',      services: 'Network',           severity: 'high' },
-    { id: 5, name: 'Weak SSH ciphers detected',               affectedAsset: 'bastion-01',    services: 'Web Application',   severity: 'high' },
-    { id: 6, name: 'Exposed .git directory',                  affectedAsset: 'static-cdn',    services: 'Source Code',       severity: 'high' },
-    { id: 7, name: 'Cross-site scripting in /search',         affectedAsset: 'web-app-02',    services: 'Web Application',   severity: 'high' },
-    { id: 8, name: 'Privilege escalation via SUID binary',    affectedAsset: 'app-srv-03',     services: 'Source Code',       severity: 'critical' },
+    { id: 1, name: 'CVE-2025-29847 · OpenSSL heap overflow',  affectedAsset: 'api-prod-O3',  services: 'Domain Inspection', severity: 'critical', cycle: 'Active' },
+    { id: 2, name: 'SQL injection in /api/users',             affectedAsset: 'orders-svc',    services: 'Domain Inspection', severity: 'critical', cycle: 'Active' },
+    { id: 3, name: 'Outdated jQuery 1.12.4',                  affectedAsset: 'web-console',   services: 'Source Code',       severity: 'critical', cycle: 'Active' },
+    { id: 4, name: 'TLS 1.0 still enabled',                   affectedAsset: 'vpn-edge',      services: 'Network',           severity: 'high',     cycle: 'Active' },
+    { id: 5, name: 'Weak SSH ciphers detected',               affectedAsset: 'bastion-01',    services: 'Web Application',   severity: 'high',     cycle: 'Active' },
+    { id: 6, name: 'Exposed .git directory',                  affectedAsset: 'static-cdn',    services: 'Source Code',       severity: 'high',     cycle: 'Active' },
+    { id: 7, name: 'Cross-site scripting in /search',         affectedAsset: 'web-app-02',    services: 'Web Application',   severity: 'high',     cycle: 'Active' },
+    { id: 8, name: 'Privilege escalation via SUID binary',    affectedAsset: 'app-srv-03',     services: 'Source Code',       severity: 'critical', cycle: 'Active' },
   ],
 
   // ── 5. Scanning in Progress ──────────────────────────────────────────────────
@@ -116,18 +116,18 @@ export const clientDashboardMock = {
 
   // ── 6. Ticket Feed ───────────────────────────────────────────────────────────
   ticketFeed: [
-    { id: 't1',  label: 'Application & System Failures', name: 'API gateway returning 502 on /checkout',        color: '#FF2529', status: 'open' },
-    { id: 't2',  label: 'Application & System Failures', name: 'Memory leak in order-processing pod',           color: '#FF2529', status: 'open' },
-    { id: 't3',  label: 'General Enquiry',               name: 'Request for DAST scope expansion',              color: '#2563EB', status: 'resolved' },
-    { id: 't4',  label: 'Others',                        name: 'OpenSSL CVE-2025-29847 remediation',            color: '#64748B', status: 'open' },
-    { id: 't5',  label: 'Others',                        name: 'Analyst onboarding — new team member',          color: '#64748B', status: 'resolved' },
-    { id: 't6',  label: 'Application & System Failures', name: 'Database connection pool exhausted',            color: '#FF2529', status: 'resolved' },
-    { id: 't7',  label: 'Others',                        name: 'Outdated jQuery 1.12.4 flagged on web-console', color: '#64748B', status: 'open' },
-    { id: 't8',  label: 'General Enquiry',               name: 'Question about credit usage this month',        color: '#2563EB', status: 'resolved' },
-    { id: 't9',  label: 'Others',                        name: 'Revoke access for former contractor',           color: '#64748B', status: 'resolved' },
-    { id: 't10', label: 'Application & System Failures', name: 'Scheduled scan failed to start on time',        color: '#FF2529', status: 'open' },
-    { id: 't11', label: 'Others',                        name: 'Exposed .git directory on static-cdn',          color: '#64748B', status: 'resolved' },
-    { id: 't12', label: 'General Enquiry',               name: 'Clarify scope for upcoming pen test',           color: '#2563EB', status: 'open' },
+    { id: 't1',  label: 'Application & System Failures', name: 'API gateway returning 502 on /checkout',        color: '#FF2529', status: 'open',     date: '05 Sep 2026', ticketId: 'ANO31456123458765' },
+    { id: 't2',  label: 'Application & System Failures', name: 'Memory leak in order-processing pod',           color: '#FF2529', status: 'open',     date: '06 Sep 2026', ticketId: 'ANO31456123458766' },
+    { id: 't3',  label: 'General Enquiry',               name: 'Request for DAST scope expansion',              color: '#2563EB', status: 'resolved', date: '08 Sep 2026', ticketId: 'ANO31456123458767' },
+    { id: 't4',  label: 'Others',                        name: 'OpenSSL CVE-2025-29847 remediation',            color: '#64748B', status: 'open',     date: '09 Sep 2026', ticketId: 'ANO31456123458768' },
+    { id: 't5',  label: 'Others',                        name: 'Analyst onboarding — new team member',          color: '#64748B', status: 'resolved', date: '10 Sep 2026', ticketId: 'ANO31456123458769' },
+    { id: 't6',  label: 'Application & System Failures', name: 'Database connection pool exhausted',            color: '#FF2529', status: 'resolved', date: '11 Sep 2026', ticketId: 'ANO31456123458770' },
+    { id: 't7',  label: 'Others',                        name: 'Outdated jQuery 1.12.4 flagged on web-console', color: '#64748B', status: 'open',     date: '12 Sep 2026', ticketId: 'ANO31456123458771' },
+    { id: 't8',  label: 'General Enquiry',               name: 'Question about credit usage this month',        color: '#2563EB', status: 'resolved', date: '13 Sep 2026', ticketId: 'ANO31456123458772' },
+    { id: 't9',  label: 'Others',                        name: 'Revoke access for former contractor',           color: '#64748B', status: 'resolved', date: '14 Sep 2026', ticketId: 'ANO31456123458773' },
+    { id: 't10', label: 'Application & System Failures', name: 'Scheduled scan failed to start on time',        color: '#FF2529', status: 'open',     date: '15 Sep 2026', ticketId: 'ANO31456123458774' },
+    { id: 't11', label: 'Others',                        name: 'Exposed .git directory on static-cdn',          color: '#64748B', status: 'resolved', date: '15 Sep 2026', ticketId: 'ANO31456123458765' },
+    { id: 't12', label: 'General Enquiry',               name: 'Clarify scope for upcoming pen test',           color: '#2563EB', status: 'open',     date: '16 Sep 2026', ticketId: 'ANO31456123458766' },
   ],
 
   // ── 6b. Vulnerability Cycle Tracker ──────────────────────────────────────────

@@ -188,6 +188,10 @@ const scanDot = {
   Failed: '#dc2626',
 }
 
+// Same scan-type wording as the other asset detail views.
+const scanTypeLabels = { manual: 'Manual Triggered', singular: 'Manual Triggered', scheduled: 'Scheduled Scanning', specified: 'Scheduled Scanning', continuous: 'Continuous Scanning' }
+const scanTypeLabel = computed(() => scanTypeLabels[repo.value.scanType] ?? repo.value.scanType)
+
 // Shown under the timeline heading for continuous repos (e.g. aoc-glasshour).
 const recurrenceLabels = { daily: 'Daily', weekly: 'Weekly', biweekly: 'Every Two Weeks', monthly: 'Monthly' }
 const recurrenceLabel = computed(() =>
@@ -695,10 +699,12 @@ function submitReportDownload() {
             <h1 class="scan-main__title">{{ repo.repo }}</h1>
           </div>
           <div class="scan-main__meta">
-            <span>Date scanned <b class="mono">{{ scans[selectedScan]?.date ? to24Hour(scans[selectedScan].date) : '—' }}</b></span>
-            <span>Total scan time taken <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
-            <span>Branch <b class="mono">{{ repo.branch }}</b></span>
-            <span>Total vulnerabilities <b class="mono">{{ vulns.length.toLocaleString() }}</b></span>
+            <span>Date scanned: <b class="mono">{{ scans[selectedScan]?.date ? to24Hour(scans[selectedScan].date) : '—' }}</b></span>
+            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
+            <span>Scan Type: <b class="mono">{{ scanTypeLabel }}</b></span>
+            <span v-if="recurrenceLabel">Recurrence: <b class="mono">{{ recurrenceLabel }}</b></span>
+            <span>Branch: <b class="mono">{{ repo.branch }}</b></span>
+            <span>Total vulnerabilities: <b class="mono">{{ vulns.length.toLocaleString() }}</b></span>
           </div>
         </div>
         <div class="scan-main__actions">

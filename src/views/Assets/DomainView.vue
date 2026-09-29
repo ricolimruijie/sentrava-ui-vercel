@@ -6,21 +6,21 @@ import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import DateTimePicker from '@/components/reusable/DateTimePicker.vue'
 import GlassField from '@/components/reusable/GlassField.vue'
-import { getNetworks, getNetworkEndpoints } from '@/mocks/assets/network.js'
-import { IconDotsVertical, IconCirclePlus, IconScan, IconCheck, IconX, IconArrowUpRight, IconTrash, IconNetwork, IconPlus, IconArrowRight } from '@tabler/icons-vue'
+import { getDomains, getDomainEndpoints } from '@/mocks/assets/domain.js'
+import { IconDotsVertical, IconCirclePlus, IconScan, IconCheck, IconX, IconArrowUpRight, IconTrash, IconGlobe, IconPlus, IconArrowRight } from '@tabler/icons-vue'
 
 const router = useRouter()
 
-const networks = ref(getNetworks())
+const domains = ref(getDomains())
 
 const columns = [
   { key: '__index', label: '#', width: '24px', dim: true },
-  { key: 'lastScanned', label: 'Last Scanned', width: '14%', truncate: true },
-  { key: 'endpoint', label: 'Endpoint', width: '18%', mono: true, truncate: true },
-  { key: 'targetType', label: 'Target Type', width: '14%', truncate: true},
-  { key: 'registeredCount', label: 'Total Endpoint', width: '13%', align: 'center' },
-  { key: 'scanType', label: 'Scan Type', width: '16%', truncate: true},
-  { key: 'status', label: 'Scanning Status', width: '13%', align: 'center' },
+  { key: 'lastScanned', label: 'Last Scanned', width: '12%', truncate: true },
+  { key: 'endpoint', label: 'Domain', width: '18%', truncate: true },
+  { key: 'registeredCount', label: 'Registered endpoint', width: '14%', align: 'center' },
+  { key: 'owner', label: 'Asset owner', width: '20%', truncate: true },
+  { key: 'scanType', label: 'Scan type', width: '14%', truncate: true},
+  { key: 'status', label: 'Scanning status', width: '12%', align: 'center' },
   { key: 'actions', label: 'Action', width: '32px', align: 'center' },
 ]
 
@@ -33,29 +33,25 @@ const statusMeta = {
   Waiting:    { label: 'Waiting',    pill: 'status-pill--waiting' },
 }
 
-const targetTypeOptions = [
-  { value: 'IP Single', label: 'IP Single' },
-  { value: 'CIDR', label: 'CIDR' },
-]
-
 const scanTypeOptions = [
-  { value: 'manual', label: 'Manual Triggered' },
-  { value: 'scheduled', label: 'Scheduled Scanning' },
-  { value: 'continuous', label: 'Continuous Scanning' },
+  { value: 'manual', label: 'Manual triggered' },
+  { value: 'scheduled', label: 'Scheduled scanning' },
+  { value: 'continuous', label: 'Continuous scanning' },
 ]
 
 // ── Filters ────────────────────────────────────────────────────────────────
-const targetTypeFilter = ref(null)
-const scanTypeFilter = ref(null)
+const domainFilter = ref(null)
 const statusFilter = ref(null)
 const search = ref('')
 
+const domainOptions = computed(() =>
+  [...new Set(domains.value.map((d) => d.endpoint))].sort().map((d) => ({ value: d, label: d })),
+)
 const statusOptions = Object.entries(statusMeta).map(([value, meta]) => ({ value, label: meta.label }))
 
 const filtered = computed(() => {
-  let list = networks.value
-  if (targetTypeFilter.value) list = list.filter((n) => n.targetType === targetTypeFilter.value)
-  if (scanTypeFilter.value) list = list.filter((n) => n.scanType === scanTypeFilter.value)
+  let list = domains.value
+  if (domainFilter.value) list = list.filter((n) => n.endpoint === domainFilter.value)
   if (statusFilter.value) list = list.filter((n) => n.status === statusFilter.value)
   const q = search.value.trim().toLowerCase()
   if (q) list = list.filter((n) => n.endpoint.toLowerCase().includes(q))
@@ -80,20 +76,20 @@ function closeMenu() {
   openMenuId.value = null
 }
 
-function deleteNetwork(id) {
+function deleteDomain(id) {
   closeMenu()
-  deletingNet.value = networks.value.find((n) => n.id === id) ?? null
+  deletingDomain.value = domains.value.find((n) => n.id === id) ?? null
   deleteState.value = 'idle'
   deleteAcknowledged.value = false
   deleteHolding.value = false
   showDeleteModal.value = true
 }
 
-// ── Delete network modal — same hold-to-delete as WebAppView ─────
+// ── Delete domain modal — same hold-to-delete as WebAppView ─────
 // Acknowledge checkbox → press-and-hold Delete (1000ms fill) → deleting
 // spinner → done panel. Close is blocked while deleting.
 const showDeleteModal = ref(false)
-const deletingNet = ref(null)
+const deletingDomain = ref(null)
 const deleteState = ref('idle') // 'idle' | 'loading' | 'saved'
 const deleteAcknowledged = ref(false)
 const deleteHolding = ref(false)
@@ -117,7 +113,7 @@ function closeDeleteModal() {
   clearTimeout(deleteHoldTimer)
   deleteHolding.value = false
   showDeleteModal.value = false
-  deletingNet.value = null
+  deletingDomain.value = null
   deleteState.value = 'idle'
   deleteAcknowledged.value = false
 }
@@ -126,12 +122,12 @@ function toggleDeleteAck() {
   deleteAcknowledged.value = !deleteAcknowledged.value
   deleteHolding.value = false
 }
-function doDeleteNet() {
+function doDeleteDomain() {
   clearTimeout(deleteHoldTimer)
   deleteHolding.value = false
   deleteState.value = 'loading'
   deleteDoneTimer = setTimeout(() => {
-    networks.value = networks.value.filter((n) => n.id !== deletingNet.value.id)
+    domains.value = domains.value.filter((n) => n.id !== deletingDomain.value.id)
     deleteState.value = 'saved'
   }, 1200)
 }
@@ -139,7 +135,7 @@ function deleteHoldStart() {
   if (!deleteReady.value) return
   deleteHolding.value = true
   clearTimeout(deleteHoldTimer)
-  deleteHoldTimer = setTimeout(doDeleteNet, 1000)
+  deleteHoldTimer = setTimeout(doDeleteDomain, 1000)
 }
 function deleteHoldEnd() {
   if (deleteHolding.value) {
@@ -164,7 +160,7 @@ onUnmounted(() => {
 // ── Detail: dedicated page ─────────────────────────────────────────────────
 function seeDetail(id) {
   closeMenu()
-  router.push(`/assets/networks/${id}`)
+  router.push(`/assets/domains/${id}`)
 }
 
 function handleClickOutside(e) {
@@ -174,7 +170,7 @@ function handleClickOutside(e) {
 onMounted(() => document.addEventListener('mousedown', handleClickOutside))
 onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
-// ── Register Network modal — same as Asset Inventory › Network ─────────────
+// ── Register Domain modal — same as Asset Inventory › Domain ─────────────
 const ownerOptions = [
   { value: 'Protergo Cyber Security Ampera', label: 'Protergo Cyber Security Ampera' },
   { value: 'Protergo Cyber Security Jakarta', label: 'Protergo Cyber Security Jakarta' },
@@ -184,103 +180,57 @@ const ownerOptions = [
   { value: 'Beta Ventures Security', label: 'Beta Ventures Security' },
   { value: 'Protergo Labs', label: 'Protergo Labs' },
 ]
-const showRegisterNetworkModal = ref(false)
-const regNetOwner = ref(null)
-const regNetType = ref(null) // 'single' | 'range'
-const regNetState = ref('idle') // 'idle' | 'loading' | 'saved'
-const lastRegisteredNet = ref('')
-const regNetIp = ref('')
-const regNetRange = ref('')
-// Set once Proceed is clicked while the IP fields are still empty — only
-// then do the inline "required" errors show, matching the reference (the
-// button itself stays enabled once Owner + Type are picked; it's the IP
-// fields that block the actual submit).
-const regNetAttempted = ref(false)
-const ipTypeOptions = [
-  { value: 'single', label: 'IP Single' },
-  { value: 'range',  label: 'IP Range' },
-]
-// Owner + Type alone gate whether Proceed is clickable at all.
-// A filled-in but invalid IP / range also blocks Proceed (empty fields stay
-// clickable so the "required" errors can appear on the first attempt).
-const regNetHasInvalidInput = computed(() =>
-  (!!regNetIp.value.trim() && !isValidIpAddress(regNetIp.value)) ||
-  (regNetType.value === 'range' && !!regNetRange.value.trim() && !isValidCidrRange(regNetRange.value)),
-)
-const canRegisterNetwork = computed(() => !!regNetOwner.value && !!regNetType.value && !regNetHasInvalidInput.value)
-const isValidIpAddress = (v) => /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(v.trim())
-const isValidCidrRange = (v) => /^\d{1,2}$/.test(v.trim()) && Number(v.trim()) >= 0 && Number(v.trim()) <= 32
-const IP_FORMAT_ERROR = 'Please enter a valid IP address (e.g., 192.168.**.**)'
-const regNetIpError = computed(() => {
-  // Text is accepted in the field, but flagged right away.
-  if (/[^0-9.]/.test(regNetIp.value)) return IP_FORMAT_ERROR
-  if (!regNetAttempted.value) return ''
-  if (!regNetIp.value.trim()) return 'IP Address is required'
-  if (!isValidIpAddress(regNetIp.value)) return IP_FORMAT_ERROR
+// ── Register Domain modal — same design/behaviour as Asset Inventory › Register Domain
+const showRegisterDomainModal = ref(false)
+const regDomOwner = ref(null)
+const regDomName = ref('')
+const regDomState = ref('idle') // 'idle' | 'loading' | 'saved'
+const lastRegisteredDomain = ref('')
+const canRegisterDomain = computed(() => {
+  const d = regDomName.value.trim()
+  const domainOk = /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(d)
+  return !!regDomOwner.value && domainOk
+})
+const regDomNameError = computed(() => {
+  const d = regDomName.value.trim()
+  if (!d) return ''
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(d)) return 'Please enter a valid domain (e.g., example.com)'
   return ''
 })
-const RANGE_FORMAT_ERROR = 'Please enter a valid range (e.g., 24)'
-const regNetRangeError = computed(() => {
-  if (regNetType.value !== 'range') return ''
-  // Text is accepted in the field, but flagged right away.
-  if (/\D/.test(regNetRange.value)) return RANGE_FORMAT_ERROR
-  if (!regNetAttempted.value) return ''
-  if (!regNetRange.value.trim()) return 'Range is required'
-  if (!isValidCidrRange(regNetRange.value)) return RANGE_FORMAT_ERROR
-  return ''
-})
-
-function openRegisterNetworkModal() {
-  regNetOwner.value = null
-  regNetType.value = null
-  regNetState.value = 'idle'
-  regNetIp.value = ''
-  regNetRange.value = ''
-  regNetAttempted.value = false
-  showRegisterNetworkModal.value = true
+function openRegisterDomainModal() {
+  regDomOwner.value = null
+  regDomName.value = ''
+  regDomState.value = 'idle'
+  showRegisterDomainModal.value = true
 }
-function goToAssetInventoryNetwork() {
-  closeRegisterNetworkModal()
-  router.push('/assets?tab=network')
+function goToAssetInventoryDomain() {
+  closeRegisterDomainModal()
+  router.push('/assets?tab=domain')
 }
-function closeRegisterNetworkModal() {
-  showRegisterNetworkModal.value = false
+function closeRegisterDomainModal() {
+  showRegisterDomainModal.value = false
 }
-function selectRegNetOwner(value) {
-  regNetOwner.value = value
+function selectRegDomOwner(value) {
+  regDomOwner.value = value
 }
-function selectRegNetType(value) {
-  regNetType.value = value
-  regNetIp.value = ''
-  regNetRange.value = ''
-  regNetAttempted.value = false
-}
-function onRegNetIpInput(e) {
-  regNetIp.value = e.target.value
-}
-function onRegNetRangeInput(e) {
-  regNetRange.value = e.target.value
-}
-function submitRegisterNetwork() {
-  if (!canRegisterNetwork.value || regNetState.value !== 'idle') return
-  regNetAttempted.value = true
-  if (regNetIpError.value || regNetRangeError.value) return
-  regNetState.value = 'loading'
+function submitRegisterDomain() {
+  if (!canRegisterDomain.value || regDomState.value !== 'idle') return
+  regDomState.value = 'loading'
   setTimeout(() => {
-    const isSingle = regNetType.value === 'single'
-    const range = Number(regNetRange.value.trim())
-    networks.value.unshift({
-      id: Math.max(0, ...networks.value.map((n) => n.id)) + 1,
-      endpoint: isSingle ? regNetIp.value.trim() : `${regNetIp.value.trim()}/${range}`,
-      targetType: isSingle ? 'IP Single' : 'CIDR',
-      owner: regNetOwner.value,
+    const newId = Math.max(0, ...domains.value.map((n) => n.id)) + 1
+    domains.value.unshift({
+      id: newId,
+      endpoint: regDomName.value.trim().toLowerCase(),
+      targetType: 'Domain',
+      owner: regDomOwner.value,
+      lastScanned: '-',
       scanType: 'manual',
-      registeredCount: isSingle ? 1 : Math.max(1, 2 ** (32 - range) - 2),
+      registeredCount: 0,
       status: 'Scanning',
       tags: [],
     })
-    lastRegisteredNet.value = networks.value[0].endpoint
-    regNetState.value = 'saved'
+    lastRegisteredDomain.value = domains.value[0].endpoint
+    regDomState.value = 'saved'
   }, 500)
 }
 
@@ -288,7 +238,7 @@ function submitRegisterNetwork() {
 const showScanModal = ref(false)
 const scanTargetType = ref(null) // 'IP Single' | 'CIDR'
 const scanAccess = ref(null) // 'selected' | 'all'
-const scanTarget = ref([]) // network ids (IP Single: several, CIDR: one)
+const scanTarget = ref([]) // domain ids (IP Single: several, CIDR: one)
 const scanEndpoints = ref([]) // CIDR + 'Selected endpoint': chosen endpoint ids
 const scanType = ref(null)
 const scanRecurrence = ref(null)
@@ -308,13 +258,12 @@ const scanTargetReady = computed(() => {
 })
 // Dummy discovered endpoints of the chosen CIDR.
 const scanEndpointOptions = computed(() =>
-  getNetworkEndpoints().map((e) => ({ value: e.id, label: e.endpoint })),
+  getDomainEndpoints().map((e) => ({ value: e.id, label: e.endpoint })),
 )
 // IP Single can pick several endpoints (checkboxes); CIDR picks exactly one.
 const scanTargetIsMulti = computed(() => scanTargetType.value === 'IP Single')
 const scanTargetTypeOptions = [
-  { value: 'IP Single', label: 'IP Single' },
-  { value: 'CIDR', label: 'Classless Inter-Domain Routing (CIDR)' },
+  { value: 'Domain', label: 'Domain' },
 ]
 // Manual Triggered runs immediately, so it takes no date & time.
 const scanNeedsNoDate = computed(() => scanType.value === 'manual')
@@ -328,9 +277,9 @@ const scanAccessOptions = [
   { value: 'selected', label: 'Selected endpoint' },
   { value: 'all', label: 'All endpoints' },
 ]
-// Endpoint List only offers networks of the chosen target type.
+// Endpoint List only offers domains of the chosen target type.
 const scanTargetOptions = computed(() =>
-  networks.value
+  domains.value
     .filter((n) => n.targetType === scanTargetType.value)
     .map((n) => ({ value: n.id, label: n.endpoint })),
 )
@@ -434,7 +383,7 @@ function submitScan() {
   if (!canProceedScan.value || scanState.value !== 'idle') return
   scanState.value = 'loading'
   setTimeout(() => {
-    const rows = networks.value.filter((n) => scanTarget.value.includes(n.id))
+    const rows = domains.value.filter((n) => scanTarget.value.includes(n.id))
     rows.forEach((row) => {
       row.status = 'Scanning'
       row.lastScanned = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
@@ -449,19 +398,18 @@ function submitScan() {
 </script>
 
 <template>
-  <div class="network">
-    <div class="network__head">
-      <h1 class="network__title">Network Assessment</h1>
-      <div class="network__actions">
-        <button type="button" class="btn-register" @click="openRegisterNetworkModal"><IconCirclePlus :size="15" /> Register IP Address</button>
+  <div class="domain">
+    <div class="domain__head">
+      <h1 class="domain__title">Domain Inspection Assessment</h1>
+      <div class="domain__actions">
+        <button type="button" class="btn-register" @click="openRegisterDomainModal"><IconCirclePlus :size="15" /> Register Domain</button>
         <button type="button" class="btn-register" @click="openScanModal"><IconScan :size="15" /> Start Scanning</button>
       </div>
     </div>
 
-    <div class="network__controls">
-      <div class="network__filters">
-        <FilterDropdown v-model="targetTypeFilter" :options="targetTypeOptions" placeholder="Target Type" />
-        <FilterDropdown v-model="scanTypeFilter" :options="scanTypeOptions" placeholder="Scan Type" />
+    <div class="domain__controls">
+      <div class="domain__filters">
+        <FilterDropdown v-model="domainFilter" :options="domainOptions" placeholder="Domain" />
         <FilterDropdown v-model="statusFilter" :options="statusOptions" placeholder="Scanning Status" />
       </div>
       <SearchInput v-model="search" placeholder="Search" />
@@ -471,15 +419,12 @@ function submitScan() {
       :columns="columns"
       :items="filtered"
       :loading="false"
-      empty-text="No endpoints found."
+      empty-text="No domains found."
     >
       <template #cell-status="{ row }">
         <span class="status-pill" :class="statusMeta[row.status]?.pill ?? 'status-pill--notstarted'">
           {{ statusMeta[row.status]?.label ?? row.status }}
         </span>
-      </template>
-      <template #cell-lastScanned="{ row }">
-        <span :class="{ dim: !row.lastScanned }">{{ row.lastScanned || 'Not available' }}</span>
       </template>
       <template #cell-scanType="{ row }">
         {{ scanTypeOptions.find((o) => o.value === row.scanType)?.label ?? row.scanType }}
@@ -500,7 +445,7 @@ function submitScan() {
           <IconArrowUpRight :size="15" />
           See Detail
         </button>
-        <button type="button" class="action-menu__item action-menu__item--danger" @click="deleteNetwork(openMenuId)">
+        <button type="button" class="action-menu__item action-menu__item--danger" @click="deleteDomain(openMenuId)">
           <IconTrash :size="15" />
           Delete
         </button>
@@ -509,25 +454,26 @@ function submitScan() {
 
     <Teleport to="body">
       <Transition name="modal-fade">
-        <div v-if="showRegisterNetworkModal" class="modal-backdrop" @mousedown.self="closeRegisterNetworkModal">
+        <div v-if="showRegisterDomainModal" class="modal-backdrop" @mousedown.self="closeRegisterDomainModal">
           <div class="create-modal">
             <div class="create-modal__head">
-              <h2 class="create-modal__title">Register Network</h2>
-              <button type="button" class="create-modal__close" aria-label="Close" @click="closeRegisterNetworkModal">
+              <h2 class="create-modal__title">Register Domain</h2>
+              <button type="button" class="create-modal__close" aria-label="Close" @click="closeRegisterDomainModal">
                 <IconX :size="20" />
               </button>
             </div>
+            <p v-if="regDomState !== 'saved'" class="create-modal__desc">Once the domain is registered, it will go through scanning to discover and find all endpoints that are related to the domain.</p>
 
-            <div v-if="regNetState === 'saved'" class="create-modal__body">
+            <div v-if="regDomState === 'saved'" class="create-modal__body">
               <div class="reg-success">
                 <div class="reg-success__card">
                   <span class="reg-success__icon">
-                    <IconNetwork :size="22" />
+                    <IconGlobe :size="22" />
                     <span class="reg-success__check"><IconCheck :size="11" /></span>
                   </span>
                   <div class="reg-success__card-text">
-                    <p class="reg-success__repo">{{ lastRegisteredNet }}</p>
-                    <p class="reg-success__sub">Network registered</p>
+                    <p class="reg-success__repo">{{ lastRegisteredDomain }}</p>
+                    <p class="reg-success__sub">Domain registered</p>
                   </div>
                   <span class="status-pill status-pill--scanning reg-success__status">
                     <span class="reg-success__status-dot"></span> Scanning
@@ -535,7 +481,7 @@ function submitScan() {
                 </div>
 
                 <p class="reg-success__desc">
-                  <strong>{{ lastRegisteredNet }}</strong> is now being discovered. It will be available to scan for vulnerability assessment once the discovery scan finishes. You can track its progress from Asset Inventory in the meantime.
+                  <strong>{{ lastRegisteredDomain }}</strong> is now being discovered. It will be available to scan for vulnerability assessment once the discovery scan finishes. You can track its progress from Asset Inventory in the meantime.
                 </p>
               </div>
             </div>
@@ -547,80 +493,39 @@ function submitScan() {
                 placeholder="Asset Owner"
                 required
                 :options="ownerOptions"
-                :model-value="regNetOwner"
-                @update:model-value="selectRegNetOwner"
+                :model-value="regDomOwner"
+                @update:model-value="selectRegDomOwner"
                 error-text="Asset Owner is required"
               />
 
               <GlassField
-                type="select"
-                label="IP Address Type"
-                placeholder="IP Address Type"
+                v-model="regDomName"
+                label="Domain"
+                placeholder="Input Domain"
                 required
-                :options="ipTypeOptions"
-                :model-value="regNetType"
-                @update:model-value="selectRegNetType"
-                error-text="IP Address Type is required"
+                :invalid="!!regDomNameError"
+                :error-text="regDomNameError || 'Domain is required'"
               />
-
-              <Transition name="dv-expand">
-                <div v-if="regNetType === 'single'" class="ip-field-gap">
-                  <GlassField
-                    :model-value="regNetIp"
-                    @update:model-value="(v) => onRegNetIpInput({ target: { value: v } })"
-                    label="IP Address"
-                    placeholder="Input IP Address"
-                    required
-                    :invalid="!!regNetIpError"
-                    :error-text="regNetIpError || 'IP Address is required'"
-                  />
-                </div>
-                <div v-else-if="regNetType === 'range'" class="ip-range-row ip-field-gap">
-                  <div class="ip-range-row__field">
-                    <GlassField
-                      :model-value="regNetIp"
-                      @update:model-value="(v) => onRegNetIpInput({ target: { value: v } })"
-                      label="IP Address"
-                      placeholder="IP Address"
-                      required
-                      :invalid="!!regNetIpError"
-                      :error-text="regNetIpError || 'IP Address is required'"
-                    />
-                  </div>
-                  <span class="ip-range-row__sep">/</span>
-                  <div class="ip-range-row__field">
-                    <GlassField
-                      :model-value="regNetRange"
-                      @update:model-value="(v) => onRegNetRangeInput({ target: { value: v } })"
-                      label="Range"
-                      placeholder="Range"
-                      required
-                      :invalid="!!regNetRangeError"
-                      :error-text="regNetRangeError || 'Range is required'"
-                    />
-                  </div>
-                </div>
-              </Transition>
             </div>
 
-            <div v-if="regNetState === 'saved'" class="create-modal__actions create-modal__actions--column">
-              <button type="button" class="reg-success__link" @click="goToAssetInventoryNetwork">
+            <div v-if="regDomState === 'saved'" class="create-modal__actions create-modal__actions--column">
+              <button type="button" class="reg-success__link" @click="goToAssetInventoryDomain">
                 View scanning progress <IconArrowRight :size="16" />
               </button>
-              <button type="button" class="reg-success__close" @click="closeRegisterNetworkModal">Close</button>
+              <button type="button" class="reg-success__close" @click="closeRegisterDomainModal">Close</button>
             </div>
             <div v-else class="create-modal__actions">
-              <button type="button" class="modal-btn modal-btn--cancel" @click="closeRegisterNetworkModal">Cancel</button>
+              <button type="button" class="modal-btn modal-btn--cancel" @click="closeRegisterDomainModal">Cancel</button>
               <button
                 type="button"
                 class="modal-btn"
-                :class="canRegisterNetwork ? { 'modal-btn--save': true, 'modal-btn--saved': regNetState === 'saved' } : 'modal-btn--idle'"
-                :disabled="!canRegisterNetwork"
-                @click="submitRegisterNetwork"
+                :class="canRegisterDomain ? { 'modal-btn--save': true, 'modal-btn--saved': regDomState === 'saved' } : 'modal-btn--create'"
+                :disabled="!canRegisterDomain"
+                @click="submitRegisterDomain"
               >
-                <span v-if="regNetState === 'loading'" class="modal-btn__spinner" />
-                <IconCheck v-else-if="regNetState === 'saved'" :size="18" class="modal-btn__check" />
-                <span v-else>Proceed</span>
+                <span v-if="regDomState === 'loading'" class="modal-btn__spinner" />
+                <IconCheck v-else-if="regDomState === 'saved'" :size="18" class="modal-btn__check" />
+                <span v-else>Register</span>
               </button>
             </div>
           </div>
@@ -633,7 +538,7 @@ function submitScan() {
         <div v-if="showScanModal" class="modal-backdrop" @mousedown.self="closeScanModal">
           <div class="create-modal">
             <div class="create-modal__head">
-              <h2 class="create-modal__title">Network Scan Configuration</h2>
+              <h2 class="create-modal__title">Domain Scan Configuration</h2>
               <button type="button" class="create-modal__close" aria-label="Close" @click="closeScanModal">
                 <IconX :size="20" />
               </button>
@@ -657,7 +562,7 @@ function submitScan() {
                   @update:model-value="(v) => { scanTarget = scanTargetIsMulti ? v : [v]; scanEndpoints = [] }"
                   type="select"
                   :multiple="scanTargetIsMulti"
-                  :label="scanTargetType === 'CIDR' ? 'CIDR List' : 'Endpoint List'"
+                  :label="scanTargetType === 'Domain' ? 'Domain List' : 'Endpoint List'"
                   placeholder="select target asset..."
                   required
                   :options="scanTargetOptions"
@@ -665,7 +570,7 @@ function submitScan() {
                 />
 
                 <GlassField
-                  v-if="scanTargetType === 'CIDR'"
+                  v-if="scanTargetType === 'Domain'"
                   :model-value="scanAccess"
                   @update:model-value="pickScanAccess"
                   type="select"
@@ -677,7 +582,7 @@ function submitScan() {
                 />
 
                 <GlassField
-                  v-if="scanTargetType === 'CIDR' && scanAccess === 'selected'"
+                  v-if="scanTargetType === 'Domain' && scanAccess === 'selected'"
                   v-model="scanEndpoints"
                   type="select"
                   multiple
@@ -788,9 +693,9 @@ function submitScan() {
                     <IconTrash :size="22" />
                   </span>
                   <div class="del-titles">
-                    <span id="del-title" class="del-title">Delete network</span>
+                    <span id="del-title" class="del-title">Delete domain</span>
                     <span class="del-repo">
-                      <IconNetwork :size="14" class="del-repo__icon" /><span class="del-ellip">{{ deletingNet?.endpoint }}</span>
+                      <IconGlobe :size="14" class="del-repo__icon" /><span class="del-ellip">{{ deletingDomain?.endpoint }}</span>
                     </span>
                   </div>
                   <button type="button" class="del-close" aria-label="Close" @click="closeDeleteModal">
@@ -799,7 +704,7 @@ function submitScan() {
                 </div>
 
                 <p class="del-body">
-                  <strong>{{ deletingNet?.endpoint }}</strong> and its scan history will be removed immediately.
+                  <strong>{{ deletingDomain?.endpoint }}</strong> and its scan history will be removed immediately.
                   Once deleted, you won't be able to view or restore its findings.
                 </p>
 
@@ -837,8 +742,8 @@ function submitScan() {
 
               <div class="del-panel del-done" :class="{ 'is-shown': deleteState === 'saved' }">
                 <span class="del-done__icon"><IconCheck :size="28" /></span>
-                <span class="del-done__title">Network deleted</span>
-                <span class="del-done__body"><span class="del-mono">{{ deletingNet?.endpoint }}</span> has been removed.</span>
+                <span class="del-done__title">Domain deleted</span>
+                <span class="del-done__body"><span class="del-mono">{{ deletingDomain?.endpoint }}</span> has been removed.</span>
                 <button type="button" class="del-btn del-btn--cancel del-done__btn" @click="closeDeleteModal">Done</button>
               </div>
             </div>
@@ -850,7 +755,7 @@ function submitScan() {
 </template>
 
 <style scoped lang="scss">
-.network {
+.domain {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1028,10 +933,11 @@ function submitScan() {
   display: flex; flex-direction: column;
   overflow: hidden;
   &__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-shrink: 0; }
-  &__title { font-family: 'Manrope', 'Inter', sans-serif; font-size: 22px; font-weight: 800; color: var(--glacia-ink); margin: 0; }
+  &__title { font-family: 'Manrope', 'Inter', sans-serif; font-size: 26px; font-weight: 800; color: var(--glacia-ink); margin: 0; }
   &__close { width: 32px; height: 32px; border-radius: 8px; border: none; background: none; color: var(--glacia-ink); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; &:hover { background: rgba(0,0,0,0.05); } }
   &__body { margin-top: 12px; padding-bottom: 16px; overflow-y: auto; min-height: 0; flex: 1 1 auto; overscroll-behavior: contain; }
   &__group { display: flex; flex-direction: column; gap: 10px; }
+  &__desc { margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--glacia-ink-dim); flex-shrink: 0; }
   &__label { display: block; margin: 16px 0 8px; font-size: 14px; font-weight: 700; color: var(--glacia-ink); }
   &__required { color: var(--glacia-red); margin-left: 2px; }
   &__input {
@@ -1129,6 +1035,127 @@ function submitScan() {
   &__check { animation: modal-btn-pop 0.4s ease; }
 }
 .dim { color: var(--glacia-ink-dim); }
+
+.reg-success {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 4px;
+
+  &__card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 16px;
+    background: #F4F6F8;
+  }
+
+  &__icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid rgba(16, 24, 32, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__check {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #16a34a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+  }
+
+  &__card-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__repo {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--glacia-ink);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__sub {
+    font-size: 12.5px;
+    color: var(--glacia-ink-dim);
+    margin: 2px 0 0;
+  }
+
+  &__status {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &__desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--glacia-ink-dim);
+    text-align: center;
+    margin: 0;
+
+    strong { color: var(--glacia-ink); font-weight: 700; }
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #2563EB;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.75; }
+  }
+
+  &__close {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--glacia-ink-dim);
+    font-family: 'Manrope', 'Inter', sans-serif;
+    cursor: pointer;
+
+    &:hover { color: var(--glacia-ink); }
+  }
+}
 .reg-success {
   display: flex;
   flex-direction: column;
