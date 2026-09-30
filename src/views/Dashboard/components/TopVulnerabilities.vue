@@ -1,6 +1,7 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { IconChevronRight } from '@tabler/icons-vue'
+import VulnerabilityDetailModal from '@/components/vulnerabilities/VulnerabilityDetailModal.vue'
 
 const props = defineProps({
   items:   { type: Array,   default: () => [] },
@@ -32,6 +33,14 @@ const cyclePill = {
   Mitigated:        { bg: '#dcfce7', color: '#16a34a' },
   Tolerated:        { bg: '#DFF3FC', color: '#1197C2' },
   'False Positive': { bg: '#ECEEF0', color: '#5C6470' },
+}
+
+const showDetailModal = ref(false)
+const selectedFinding = ref(null)
+
+function openDetail(item) {
+  selectedFinding.value = { ...item, severity: item.severity?.toLowerCase(), component: item.affectedAsset, service: item.services }
+  showDetailModal.value = true
 }
 
 function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470' } }
@@ -78,13 +87,15 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
                   >{{ item.cycle }}</span>
                 </td>
               <td class="vtable__arrow">
-                <button type="button" class="arrow-btn"><IconChevronRight :size="11" /></button>
+                <button type="button" class="arrow-btn" aria-label="View vulnerability details" @click="openDetail(item)"><IconChevronRight :size="11" /></button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip hide-line-of-code hide-code-snippet />
   </div>
 </template>
 

@@ -3,12 +3,12 @@ import { endpointSeverity } from './severity.js'
 // Network Assessment seed data.
 export function getNetworks() {
   return structuredClone([
-    { id: 1, endpoint: '10.10.19.2/24', targetType: 'CIDR', scanType: 'manual', lastScanned: '14 July 2026', registeredCount: 30, status: 'Scanning', tags: [] },
-    { id: 3, endpoint: '10.10.20.0/24', targetType: 'CIDR', scanType: 'scheduled', lastScanned: '23 June 2026', registeredCount: 45, status: 'Completed', tags: [] },
-    { id: 4, endpoint: '10.10.21.0/24', targetType: 'CIDR', scanType: 'continuous', lastScanned: '18 June 2026', registeredCount: 12, status: 'Scanning', tags: [], recurrence: 'weekly' },
-    { id: 2, endpoint: '10.10.19.52', targetType: 'IP Single', scanType: 'manual', lastScanned: '14 July 2026', registeredCount: 1, status: 'Scanning', tags: [] },
-    { id: 6, endpoint: '10.10.19.88', targetType: 'IP Single', scanType: 'scheduled', lastScanned: '20 June 2026', registeredCount: 1, status: 'Completed', tags: [] },
-    { id: 7, endpoint: '10.10.19.91', targetType: 'IP Single', scanType: 'continuous', lastScanned: '25 June 2026', registeredCount: 1, status: 'Scanning', tags: [], recurrence: 'weekly' },
+    { id: 1, endpoint: '10.10.19.2/24', targetType: 'CIDR', scanType: 'manual_scan', lastScanned: '14 July 2026', registeredCount: 30, status: 'Scanning', tags: [] },
+    { id: 3, endpoint: '10.10.20.0/24', targetType: 'CIDR', scanType: 'scheduled_scan', lastScanned: '23 June 2026', registeredCount: 45, status: 'Completed', tags: [] },
+    { id: 4, endpoint: '10.10.21.0/24', targetType: 'CIDR', scanType: 'continuous_scan', lastScanned: '18 June 2026', registeredCount: 12, status: 'Scanning', tags: [], recurrence: 'weekly' },
+    { id: 2, endpoint: '10.10.19.52', targetType: 'IP Single', scanType: 'manual_scan', lastScanned: '14 July 2026', registeredCount: 1, status: 'Scanning', tags: [] },
+    { id: 6, endpoint: '10.10.19.88', targetType: 'IP Single', scanType: 'scheduled_scan', lastScanned: '20 June 2026', registeredCount: 1, status: 'Completed', tags: [] },
+    { id: 7, endpoint: '10.10.19.91', targetType: 'IP Single', scanType: 'continuous_scan', lastScanned: '25 June 2026', registeredCount: 1, status: 'Scanning', tags: [], recurrence: 'weekly' },
   ])
 }
 
@@ -153,18 +153,25 @@ const SINGLE_MODIFIERS = [
   ['budiarto', 'budiarto@protergo.id'],
 ]
 
+// Greenbone-style solution types, one per finding.
+const NETWORK_SOLUTION_TYPES = [
+  'Mitigation', 'Vendor Fix', 'Mitigation', 'Workaround', 'Mitigation',
+  'Vendor Fix', 'Workaround', 'Mitigation', 'None Available', 'Mitigation',
+]
+
 export function getNetworkVulns() {
   return structuredClone(SINGLE_VULNS.map((v, i) => ({
     id: `nv-${i + 1}`,
     ...v,
     component: `${v.protocol.toLowerCase()} port ${v.port}`,
     line: v.port,
-    lastModified: 'Monday 10 February 2025',
+    lastModified: 'Mon, 10 Feb 2025',
     modifiedBy: SINGLE_MODIFIERS[i][0],
     modifiedEmail: SINGLE_MODIFIERS[i][1],
     validation: 'Unresolved',
     cycle: 'Active',
     codeLine: v.port,
+    solutionType: NETWORK_SOLUTION_TYPES[i % NETWORK_SOLUTION_TYPES.length],
     ...NET_VULN_DETAILS[i],
   })))
 }

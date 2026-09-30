@@ -19,9 +19,9 @@ const EXTRA_TAGS = [
 ]
 
 const ROWS = [
-  { id: 1, lastScanned: '14 July 2026', name: 'Website Protergo Cyber Security', target: 'https://protergo.id', owner: 'Protergo Cyber Security HQ', scanType: 'manual', status: 'Scanning', extras: [0, 4], auth: 'Inactive' },
-  { id: 2, lastScanned: '16 July 2026', name: 'Customer Portal', target: 'https://portal.protergo.id', owner: 'Protergo Cyber Security Jakarta', scanType: 'scheduled', status: 'Completed', extras: [1, 5], auth: 'Active' },
-  { id: 3, lastScanned: '12 July 2026', name: 'Billing Dashboard', target: 'https://billing.protergo.id', owner: 'Protergo Fintech Solutions', scanType: 'continuous', status: 'Scanning', extras: [0, 8], recurrence: 'weekly', auth: 'Inactive' },
+  { id: 1, lastScanned: '14 July 2026', name: 'Website Protergo Cyber Security', target: 'https://protergo.id', owner: 'Protergo Cyber Security HQ', scanType: 'manual_scan', status: 'Scanning', extras: [0, 4], auth: 'Inactive' },
+  { id: 2, lastScanned: '16 July 2026', name: 'Customer Portal', target: 'https://portal.protergo.id', owner: 'Protergo Cyber Security Jakarta', scanType: 'scheduled_scan', status: 'Completed', extras: [1, 5], auth: 'Active' },
+  { id: 3, lastScanned: '12 July 2026', name: 'Billing Dashboard', target: 'https://billing.protergo.id', owner: 'Protergo Fintech Solutions', scanType: 'continuous_scan', status: 'Scanning', extras: [0, 8], recurrence: 'weekly', auth: 'Inactive' },
 ]
 
 export function getWebApps() {
@@ -193,10 +193,10 @@ const WEB_VULN_DETAILS = {
 
 // Base rows for the findings table — merged with WEB_VULN_DETAILS above.
 const BASE_WEB_VULNS = [
-    { id: 'v1', name: 'SSH Auth Methods - Detection', component: 'etc/ssh/sshd_config', line: 22, severity: 'high', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Check result' },
-    { id: 'v2', name: 'SSH Password-based Authentication', component: 'etc/ssh/sshd_config', line: 57, severity: 'critical', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Check result' },
-    { id: 'v3', name: 'SSH SHA-1 HMAC Algorithms Enabled', component: 'etc/ssh/ssh_config', line: 34, severity: 'medium', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
-    { id: 'v4', name: 'OpenSSH Service - Detect', component: 'usr/sbin/sshd', line: 19, severity: 'low', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
-    { id: 'v5', name: 'CAA Record', component: 'dns/zone/protergo.id', line: 41, severity: 'medium', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
-    { id: 'v6', name: 'SSH Server Software Enumeration', component: 'var/log/auth.log', line: 208, severity: 'info', lastModified: '14 Jul 2026 13:26', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
+    { id: 'v1', name: 'SSH Auth Methods - Detection', component: 'etc/ssh/sshd_config', line: 22, severity: 'high', lastModified: 'Tue, 14 Jul 2026', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Check result' },
+    { id: 'v2', name: 'SSH Password-based Authentication', component: 'etc/ssh/sshd_config', line: 57, severity: 'critical', lastModified: 'Tue, 14 Jul 2026', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Check result' },
+    { id: 'v3', name: 'SSH SHA-1 HMAC Algorithms Enabled', component: 'etc/ssh/ssh_config', line: 34, severity: 'medium', lastModified: 'Tue, 14 Jul 2026', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
+    { id: 'v4', name: 'OpenSSH Service - Detect', component: 'usr/sbin/sshd', line: 19, severity: 'low', lastModified: 'Tue, 14 Jul 2026', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
+    { id: 'v5', name: 'CAA Record', component: 'dns/zone/protergo.id', line: 41, severity: 'medium', lastModified: 'Tue, 14 Jul 2026', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
+    { id: 'v6', name: 'SSH Server Software Enumeration', component: 'var/log/auth.log', line: 208, severity: 'info', lastModified: 'Tue, 14 Jul 2026', modifiedBy: 'Finished scan by system', modifiedEmail: '', cycle: 'Active', validation: 'Unresolved' },
   ]

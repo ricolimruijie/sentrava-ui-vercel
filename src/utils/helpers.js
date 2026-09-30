@@ -25,6 +25,17 @@ export function formatRelativeTime(iso) {
   return formatDate(iso)
 }
 
+export function formatShortDate(value) {
+  if (value == null || value === '') return '—'
+  const d = new Date(value)
+  if (!Number.isNaN(d.getTime())) {
+    return new Intl.DateTimeFormat('en-GB', {
+      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+    }).format(d)
+  }
+  return String(value)
+}
+
 export function greeting() {
   const h = new Date().getHours()
   if (h < 12) return 'Good morning'

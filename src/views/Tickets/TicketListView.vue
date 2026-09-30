@@ -4,6 +4,7 @@ import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import { useRouter } from 'vue-router'
+import { formatShortDate } from '@/utils/helpers'
 import { IconArrowUpRight } from '@tabler/icons-vue'
 
 const rawTickets = [
@@ -23,8 +24,8 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: '#',            width: '24px',  dim: true, align: 'left' },
-  { key: 'date',     label: 'Submission Date', width: '13%', padLeft: '4px', truncate: true },
-  { key: 'name',     label: 'Ticket Name', width: '30%' },
+  { key: 'date',     label: 'Submission Date', width: '15%', padLeft: '4px', truncate: true },
+  { key: 'name',     label: 'Ticket Name', width: '28%' },
   { key: 'category', label: 'Issue Category', width: '18%', truncate: true },
   { key: 'ticketId', label: 'Ticket ID',  width: '17%', truncate: true },
   { key: 'status',   label: 'Ticket Status', width: '12%', align: 'center' },
@@ -110,7 +111,7 @@ function viewTicket(item) {
         </div>
       </template>
       <template #cell-date="{ row }">
-        <span class="ticket-name__title">{{ row.date }}</span>
+        <span class="ticket-name__title">{{ formatShortDate(row.date) }}</span>
       </template>
       <template #cell-category="{ row }">
         <span class="ticket-name__title">{{ row.category }}</span>

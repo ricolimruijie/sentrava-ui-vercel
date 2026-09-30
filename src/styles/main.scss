@@ -63,6 +63,30 @@ body {
   }
 }
 
+// ── Badge tooltip — white fitted variant (v-tooltip class: vd-badge-tip) ─────
+// Teleported to body, so it lives here instead of scoped component styles.
+.p-tooltip.vd-badge-tip {
+  max-width: 240px;
+
+  .p-tooltip-text {
+    background: #fff !important;
+    color: var(--glacia-ink) !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    padding: 8px 12px !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--color-border) !important;
+    box-shadow: 0 8px 24px rgba(16, 24, 32, 0.14) !important;
+    white-space: normal !important;
+  }
+
+  &.p-tooltip-top .p-tooltip-arrow,
+  &.p-tooltip-bottom .p-tooltip-arrow {
+    border-top-color: #fff;
+    border-bottom-color: #fff;
+  }
+}
+
 // ── Utility classes ─────────────────────────────────────────────────────────
 
 .text-primary    { color: var(--color-primary); }

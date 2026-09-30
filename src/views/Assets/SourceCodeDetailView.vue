@@ -5,10 +5,11 @@ import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import VulnerabilityDetailModal from '@/components/vulnerabilities/VulnerabilityDetailModal.vue'
+import { formatShortDate } from '@/utils/helpers'
 import { getSourceCodeRepos, getSourceCodeScans, getSourceCodeVulns } from '@/mocks/assets/sourceCode.js'
 import {
   IconDotsVertical, IconArrowUpRight, IconCheck, IconInfoCircle,
-  IconDownload, IconRefresh, IconChevronDown, IconChevronRight, IconMinus, IconTag,
+  IconDownload, IconRefresh, IconChevronDown, IconChevronRight, IconMinus, IconTag, IconFlag, IconUpload,
   IconX, IconGitBranch, IconLock, IconTrash, IconCode, IconCalendar, IconBuilding, IconClock,
   IconAlertCircle,
 } from '@tabler/icons-vue'
@@ -189,13 +190,13 @@ const scanDot = {
 }
 
 // Same scan-type wording as the other asset detail views.
-const scanTypeLabels = { manual: 'Manual Triggered', singular: 'Manual Triggered', scheduled: 'Scheduled Scanning', specified: 'Scheduled Scanning', continuous: 'Continuous Scanning' }
+const scanTypeLabels = { manual_scan: 'Manual Scan', manual: 'Manual Scan', singular: 'Manual Scan', scheduled_scan: 'Scheduled Scan', scheduled: 'Scheduled Scan', specified: 'Scheduled Scan', continuous_scan: 'Continuous Scan', continuous: 'Continuous Scan' }
 const scanTypeLabel = computed(() => scanTypeLabels[repo.value.scanType] ?? repo.value.scanType)
 
 // Shown under the timeline heading for continuous repos (e.g. aoc-glasshour).
 const recurrenceLabels = { daily: 'Daily', weekly: 'Weekly', biweekly: 'Every Two Weeks', monthly: 'Monthly' }
 const recurrenceLabel = computed(() =>
-  repo.value.scanType === 'continuous' ? (recurrenceLabels[repo.value.recurrence] ?? null) : null,
+  repo.value.scanType === 'continuous_scan' ? (recurrenceLabels[repo.value.recurrence] ?? null) : null,
 )
 
 const tlRef = ref(null)
@@ -400,8 +401,8 @@ const columns = [
   { key: '__index', label: '#', width: '24px', dim: true },
   { key: 'name', label: 'Vulnerability name', width: '42%', truncate: true },
   { key: 'line', label: 'Code Line', width: '100px', align: 'center', dim: true },
-  { key: 'severity', label: 'Severity', width: '100px', align: 'center' },
   { key: 'lastModified', label: 'Last modified', width: '120px', dim: true, truncate: true},
+  { key: 'severity', label: 'Severity', width: '100px', align: 'center' },
   { key: 'action', label: 'Action', width: '70px', align: 'center' },
 ]
 
@@ -461,11 +462,27 @@ function handleClickOutside(e) {
 
 const showDetailModal = ref(false)
 const selectedFinding = ref(null)
+const findingAutoUpload = ref(false)
 
 function viewFinding(id) {
   closeMenu()
+  findingAutoUpload.value = false
   selectedFinding.value = vulns.value.find((v) => v.id === id) ?? null
   showDetailModal.value = true
+}
+
+// Opens the finding on its Evidence tab with the Upload Evidence form ready.
+function uploadEvidence(id) {
+  closeMenu()
+  findingAutoUpload.value = true
+  selectedFinding.value = vulns.value.find((v) => v.id === id) ?? null
+  showDetailModal.value = true
+}
+
+function revalidateFinding(id) {
+  closeMenu()
+  const row = vulns.value.find((v) => v.id === id)
+  if (row) row.validation = 'Queue'
 }
 
 // ── Download Report filter modal (multi-select, horizontal) ──────────────
@@ -522,9 +539,9 @@ function submitReportDownload() {
   if (!repRows.value.length || reportDownloadState.value !== 'idle') return
   reportDownloadState.value = 'loading'
   setTimeout(() => {
-    const rows = [['No', 'Vulnerability name', 'Component', 'Code Line', 'Severity', 'Last modified', 'Modified by']]
+    const rows = [['No', 'Vulnerability name', 'Component', 'Code Line', 'Last modified', 'Severity', 'Modified by']]
     repRows.value.forEach((v, i) => {
-      rows.push([i + 1, `"${v.name.replace(/"/g, '""')}"`, v.component, v.line, severityPill[v.severity]?.label ?? v.severity, v.lastModified, v.modifiedBy])
+      rows.push([i + 1, `"${v.name.replace(/"/g, '""')}"`, v.component, v.line, formatShortDate(v.lastModified), severityPill[v.severity]?.label ?? v.severity, v.modifiedBy])
     })
     const blob = new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
@@ -649,7 +666,7 @@ function submitReportDownload() {
               </button>
             </div>
             <button
-              v-else-if="repo?.scanType === 'continuous' && hasActiveScan"
+              v-else-if="repo?.scanType === 'continuous_scan' && hasActiveScan"
               key="stop"
               type="button"
               class="btn-register btn-register--block"
@@ -785,6 +802,7 @@ function submitReportDownload() {
             :style="{ background: severityPill[row.severity]?.bg, color: severityPill[row.severity]?.color }"
           >{{ severityPill[row.severity]?.label ?? row.severity }}</span>
         </template>
+        <template #cell-lastModified="{ row }">{{ formatShortDate(row.lastModified) }}</template>
         <template #cell-action="{ row }">
           <button type="button" class="action-btn" aria-label="Actions" @click.stop="toggleMenu(row, $event)">
             <IconDotsVertical :size="16" />
@@ -801,7 +819,7 @@ function submitReportDownload() {
         </button>
         <div class="action-menu__row">
           <button type="button" class="action-menu__item" @click.stop="cycleMenuOpen = !cycleMenuOpen">
-            <IconTag :size="15" />
+            <IconFlag :size="15" />
             Change cycle
             <IconChevronRight :size="14" class="action-menu__chevron" />
           </button>
@@ -819,10 +837,18 @@ function submitReportDownload() {
             </button>
           </div>
         </div>
+        <button type="button" class="action-menu__item" @click="revalidateFinding(openMenuId)">
+          <IconRefresh :size="15" />
+          Revalidate
+        </button>
+        <button type="button" class="action-menu__item" @click="uploadEvidence(openMenuId)">
+          <IconUpload :size="15" />
+          Upload evidence
+        </button>
       </div>
     </Teleport>
 
-    <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip hide-cycle-history />
+    <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip hide-cycle-history :auto-upload="findingAutoUpload" :upload-only="findingAutoUpload" />
 
     <Teleport to="body">
       <Transition name="modal-fade">
@@ -1014,7 +1040,7 @@ function submitReportDownload() {
               <button type="button" class="target-modal__delete" @click="openDelTlModal">
                 <IconTrash :size="13" /> Delete Timeline
               </button>
-            </div>
+          </div>
         </div>
       </Transition>
     </Teleport>

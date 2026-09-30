@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { get } from '@/utils/request'
+import { formatShortDate } from '@/utils/helpers'
 import { useFetch } from '@/composables/useFetch'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
@@ -15,9 +16,9 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: '#', width: '52px', dim: true },
-  { key: 'dateTime', label: 'Date and Time', width: '18%', truncate: true},
+  { key: 'dateTime', label: 'Date and Time', width: '20%', dim: true, truncate: true },
   { key: 'repository', label: 'Repository', width: '24%', dim: true, truncate: true},
-  { key: 'branch', label: 'Branch', width: '22%', dim: true, truncate: true},
+  { key: 'branch', label: 'Branch', width: '20%', dim: true, truncate: true},
   { key: 'scanId', label: 'Scan ID', width: '12%', dim: true, truncate: true },
   { key: 'status', label: 'Scanning status', width: '15%', align: 'center' },
   { key: 'action', label: 'Action', width: '76px', align: 'center' },
@@ -39,10 +40,12 @@ function s(status) {
   return statusMeta[key] ?? { label: status, color: '#64748b', bg: 'rgba(100, 116, 139, 0.12)' }
 }
 
+// Date matches the Last Modified column (e.g. "Mon, 10 Feb 2025"), plus 24h time.
 function fmt(iso) {
-  return new Date(iso).toLocaleString('en-US', {
-    month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
-  })
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return formatShortDate(iso)
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })
+  return `${formatShortDate(d)}, ${time}`
 }
 
 // ── Scanning status filter ───────────────────────────────────────────────────

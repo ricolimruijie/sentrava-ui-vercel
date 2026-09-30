@@ -9,6 +9,13 @@ import GlassField from '@/components/reusable/GlassField.vue'
 import { getWebApps } from '@/mocks/assets/webApp.js'
 import { IconDotsVertical, IconCirclePlus, IconScan, IconX, IconTag, IconArrowUpRight, IconTrash, IconCheck, IconFolder, IconPlus, IconBuilding, IconKey, IconInfoCircle, IconArrowRight, IconBrowser } from '@tabler/icons-vue'
 
+// modalOnly: rendered from the Dashboard's Start Scan menu — shows just the
+// Start Scanning modal (opened on mount) and tells the parent when it closes.
+const props = defineProps({
+  modalOnly: { type: Boolean, default: false },
+})
+const emit = defineEmits(['close-scan'])
+
 const router = useRouter()
 
 const apps = ref(getWebApps())
@@ -45,9 +52,9 @@ const statusMeta = {
 }
 
 const scanTypeOptions = [
-  { value: 'manual', label: 'Manual Triggered' },
-  { value: 'scheduled', label: 'Scheduled Scanning' },
-  { value: 'continuous', label: 'Continuous Scanning' },
+  { value: 'manual_scan', label: 'Manual Scan' },
+  { value: 'scheduled_scan', label: 'Scheduled Scan' },
+  { value: 'continuous_scan', label: 'Continuous Scan' },
 ]
 
 // ── Filters ────────────────────────────────────────────────────────────────
@@ -313,7 +320,7 @@ function submitUrl() {
       name,
       target: regUrl.value.trim(),
       owner: regUrlOwner.value,
-      scanType: 'manual',
+      scanType: 'manual_scan',
       tags: [],
       status: 'Scanning',
     })
@@ -389,18 +396,18 @@ const scanRecurrenceOptions = [
 ]
 const canProceedScan = computed(() => {
   if (!scanApp.value || !scanType.value) return false
-  // Manual Triggered runs immediately — no schedule needed.
-  if (scanType.value === 'manual') return true
+  // Manual Scan runs immediately — no schedule needed.
+  if (scanType.value === 'manual_scan') return true
   // Scheduled scans need at least one fully-picked date & time.
-  if (scanType.value === 'scheduled') {
+  if (scanType.value === 'scheduled_scan') {
     return scanSchedules.value.length > 0 && scanSchedules.value.every((s) => !!s.value)
   }
   // Continuous scans also need a recurrence.
-  if (scanType.value === 'continuous') return !!scanDate.value && !!scanRecurrence.value
+  if (scanType.value === 'continuous_scan') return !!scanDate.value && !!scanRecurrence.value
   return !!scanDate.value
 })
 
-// ── Multiple schedules (Scheduled Scanning only) ───────────────────────────
+// ── Multiple schedules (Scheduled Scan only) ───────────────────────────
 const scanSchedules = ref([]) // [{ id, value: 'YYYY-MM-DD HH:mm', open }]
 let scheduleSeq = 0
 const anyScheduleOpen = computed(() => scanSchedules.value.some((s) => s.open))
@@ -454,6 +461,8 @@ function openScanModal() {
 
 function closeScanModal() {
   showScanModal.value = false
+  // Let the modal's leave transition finish before the parent unmounts us.
+  if (props.modalOnly) setTimeout(() => emit('close-scan'), 300)
   scanDateOpen.value = false
   scanState.value = 'idle'
 }
@@ -463,17 +472,17 @@ function pickScanField(name, value) {
   if (name === 'type') {
     scanType.value = value
     scanDateOpen.value = false
-    // Manual Triggered has no schedule — drop any previously picked date.
-    if (value === 'manual') {
+    // Manual Scan has no schedule — drop any previously picked date.
+    if (value === 'manual_scan') {
       scanDate.value = ''
     }
     // Scheduled scans collect their own list of dates.
-    if (value === 'scheduled' && scanSchedules.value.length === 0) {
+    if (value === 'scheduled_scan' && scanSchedules.value.length === 0) {
       addScheduleRow(false)
     }
-    if (value !== 'scheduled') scanSchedules.value = []
+    if (value !== 'scheduled_scan') scanSchedules.value = []
     // Recurrence only applies to Continuous scans.
-    if (value !== 'continuous') scanRecurrence.value = null
+    if (value !== 'continuous_scan') scanRecurrence.value = null
   }
   if (name === 'recurrence') scanRecurrence.value = value
 }
@@ -495,16 +504,20 @@ function submitScan() {
       a.lastScanned = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
       a.scanType = scanType.value
       // Persist recurrence so detail views can show it on the timeline.
-      a.recurrence = scanType.value === 'continuous' ? scanRecurrence.value : null
+      a.recurrence = scanType.value === 'continuous_scan' ? scanRecurrence.value : null
     })
     scanState.value = 'saved'
     setTimeout(closeScanModal, 700)
   }, 500)
 }
+
+onMounted(() => {
+  if (props.modalOnly) openScanModal()
+})
 </script>
 
 <template>
-  <div class="web-app">
+  <div class="web-app" :class="{ 'web-app--modal-only': modalOnly }">
     <div class="web-app__head">
       <h1 class="web-app__title">Web Application Assessment</h1>
       <div class="web-app__actions">
@@ -865,7 +878,7 @@ function submitScan() {
                   />
                 </div>
 
-                <template v-if="scanType === 'continuous'">
+                <template v-if="scanType === 'continuous_scan'">
                   <div class="scan-field">
                     <GlassField
                       :model-value="scanRecurrence"
@@ -882,7 +895,7 @@ function submitScan() {
                 </template>
               </div>
 
-              <template v-if="scanType === 'scheduled'">
+              <template v-if="scanType === 'scheduled_scan'">
                 <div v-show="!anyScheduleOpen" class="schedule-block">
                   <span class="schedule-block__label">Scheduled Dates &amp; Times<span class="create-modal__required">*</span></span>
                 </div>
@@ -916,7 +929,7 @@ function submitScan() {
                 </div>
               </template>
 
-              <template v-if="scanType === 'continuous'">
+              <template v-if="scanType === 'continuous_scan'">
                 <label v-show="!scanDateOpen" class="create-modal__label">Initial Date and Time<span class="create-modal__required">*</span></label>
                 <DateTimePicker
                   v-model="scanDate"
@@ -939,7 +952,7 @@ function submitScan() {
               >
                 <span v-if="scanState === 'loading'" class="modal-btn__spinner" />
                 <IconCheck v-else-if="scanState === 'saved'" :size="18" class="modal-btn__check" />
-                <span v-else>Proceed</span>
+                <span v-else>Initiate Scan</span>
               </button>
             </div>
           </div>
@@ -1988,5 +2001,9 @@ function submitScan() {
     transition-duration: 1ms !important;
     animation-duration: 1ms !important;
   }
+}
+
+.web-app--modal-only {
+  display: none;
 }
 </style>

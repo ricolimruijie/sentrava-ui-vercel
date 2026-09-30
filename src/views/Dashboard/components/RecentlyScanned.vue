@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { pushFromDashboard } from '@/utils/navOrigin'
 import SeverityBadge from '@/components/reusable/SeverityBadge.vue'
 import SkeletonCard  from '@/components/reusable/SkeletonCard.vue'
 import EmptyState    from '@/components/reusable/EmptyState.vue'
@@ -38,7 +39,7 @@ function assetIcon(type) { return typeIcon[type] ?? IconScanEye }
       title="No scans completed yet"
       message="Run your first scan to see results here."
       cta-label="Start a Scan"
-      @cta="router.push('/scans/run')"
+      @cta="pushFromDashboard(router, '/scans/run')"
     >
       <template #icon><IconScanEye :size="32" stroke-width="1.5" /></template>
     </EmptyState>

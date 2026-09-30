@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { navSections } from '@/config/navSections'
 import { get } from '@/utils/request'
+import { dashboardOrigin } from '@/utils/navOrigin'
 import { useFetch } from '@/composables/useFetch'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import {
@@ -93,7 +94,10 @@ const activeTabLabel = computed(() => {
 })
 
 const breadcrumbCrumbs = computed(() => {
-  const base = route.meta.crumbs ?? []
+  // Reached from the Dashboard: breadcrumb starts at Dashboard, not the section.
+  const base = dashboardOrigin.value === route.path
+    ? [{ label: 'Dashboard', to: '/dashboard' }]
+    : (route.meta.crumbs ?? [])
   return activeTabLabel.value ? [...base, { label: route.meta.title, to: route.path }] : base
 })
 

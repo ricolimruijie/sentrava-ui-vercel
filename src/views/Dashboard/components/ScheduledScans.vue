@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { pushFromDashboard } from '@/utils/navOrigin'
 import SkeletonCard from '@/components/reusable/SkeletonCard.vue'
 import EmptyState   from '@/components/reusable/EmptyState.vue'
 import { formatDate } from '@/utils/helpers'
@@ -35,7 +36,7 @@ function dotColor(t) { return typeColors[t] ?? '#6B7280' }
       title="No scheduled scans"
       message="Automate your security posture by scheduling recurring scans."
       cta-label="Schedule a Scan"
-      @cta="router.push('/scans/scheduled')"
+      @cta="pushFromDashboard(router, '/scans/scheduled')"
     >
       <template #icon><IconCalendar :size="32" stroke-width="1.5" /></template>
     </EmptyState>

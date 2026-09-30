@@ -5,7 +5,7 @@ import TablePagination from '@/components/table/TablePagination.vue'
 
 const props = defineProps({
   // [{ key, label, width?, align?: 'left'|'center'|'right', mono?, truncate?, bold?, dim?, compact?, padLeft?, padRight? }]
-  // key === '__index' renders the row number (1-based, across pages) by default.
+  // key === '__index' renders the row number (1-based, across pages, zero-padded to 2 digits: 01, 02…) by default.
   columns: { type: Array, required: true },
   items: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
@@ -102,7 +102,7 @@ defineExpose({ pagination })
               }"
             >
               <slot :name="`cell-${col.key}`" :row="row" :index="pagination.offset.value + i">
-                <template v-if="col.key === '__index'">{{ pagination.offset.value + i + 1 }}.</template>
+                <template v-if="col.key === '__index'">{{ String(pagination.offset.value + i + 1).padStart(2, '0') }}</template>
                 <template v-else>{{ row[col.key] }}</template>
               </slot>
             </td>

@@ -3,9 +3,9 @@ import { endpointSeverity } from './severity.js'
 // Domain Inspection seed data.
 export function getDomains() {
   return structuredClone([
-    { id: 1, endpoint: 'protergo.id', targetType: 'Domain', scanType: 'manual', lastScanned: '14 July 2026', registeredCount: 10, status: 'Scanning', tags: [], owner: 'Protergo Cyber Security Rempoa' },
-    { id: 2, endpoint: 'acme-corp.com', targetType: 'Domain', scanType: 'scheduled', lastScanned: '23 June 2026', registeredCount: 10, status: 'Completed', tags: [], owner: 'Protergo Cyber Security Ampera' },
-    { id: 3, endpoint: 'beta-ventures.io', targetType: 'Domain', scanType: 'continuous', lastScanned: '25 June 2026', registeredCount: 10, status: 'Scanning', tags: [], owner: 'Protergo Cyber Security Surabaya', recurrence: 'weekly' },
+    { id: 1, endpoint: 'protergo.id', targetType: 'Domain', scanType: 'manual_scan', lastScanned: '14 July 2026', registeredCount: 10, status: 'Scanning', tags: [], owner: 'Protergo Cyber Security Rempoa' },
+    { id: 2, endpoint: 'acme-corp.com', targetType: 'Domain', scanType: 'scheduled_scan', lastScanned: '23 June 2026', registeredCount: 10, status: 'Completed', tags: [], owner: 'Protergo Cyber Security Ampera' },
+    { id: 3, endpoint: 'beta-ventures.io', targetType: 'Domain', scanType: 'continuous_scan', lastScanned: '25 June 2026', registeredCount: 10, status: 'Scanning', tags: [], owner: 'Protergo Cyber Security Surabaya', recurrence: 'weekly' },
   ])
 }
 
@@ -174,18 +174,25 @@ const DOMAIN_MODIFIERS = [
   ['budiarto', 'budiarto@protergo.id'],
 ]
 
+// Greenbone-style solution types, one per finding (same set as network).
+const DOMAIN_SOLUTION_TYPES = [
+  'Mitigation', 'Vendor Fix', 'Mitigation', 'Workaround', 'Mitigation',
+  'Vendor Fix', 'Workaround', 'Mitigation', 'None Available', 'Mitigation',
+]
+
 export function getDomainVulns() {
   return structuredClone(DOMAIN_VULNS.map((v, i) => ({
     id: `nv-${i + 1}`,
     ...v,
     component: `${v.protocol.toLowerCase()} port ${v.port}`,
     line: v.port,
-    lastModified: 'Monday 10 February 2025',
+    lastModified: 'Mon, 10 Feb 2025',
     modifiedBy: DOMAIN_MODIFIERS[i][0],
     modifiedEmail: DOMAIN_MODIFIERS[i][1],
     validation: 'Unresolved',
     cycle: 'Active',
     codeLine: v.port,
+    solutionType: DOMAIN_SOLUTION_TYPES[i % DOMAIN_SOLUTION_TYPES.length],
     ...DOMAIN_VULN_DETAILS[i],
   })))
 }

@@ -1,9 +1,8 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import { greeting } from '@/utils/helpers'
-import { IconRadar, IconChevronDown, IconWorld, IconNetwork, IconBrowser, IconCode } from '@tabler/icons-vue'
+import { IconChevronDown, IconWorld, IconNetwork, IconBrowser, IconCode } from '@tabler/icons-vue'
 
 const props = defineProps({
   companies: { type: Array, default: () => [] },
@@ -11,14 +10,18 @@ const props = defineProps({
 const emit = defineEmits(['run-scan'])
 
 const auth = useAuthStore()
-const router = useRouter()
 
+// Each module's Start Scanning modal lives in its asset view; the view's
+// modal-only mode lets it open here without leaving the dashboard.
 const modules = [
-  { key: 'domain',  label: 'Domain Inspection', icon: IconWorld,   route: '/assets/domains' },
-  { key: 'network', label: 'Network',           icon: IconNetwork, route: '/assets/networks' },
-  { key: 'webapp',  label: 'Web Application',   icon: IconBrowser, route: '/assets/webapps' },
-  { key: 'source',  label: 'Source Code',       icon: IconCode,    route: '/assets/source-code' },
+  { key: 'domain',  label: 'Domain Inspection', icon: IconWorld,   view: defineAsyncComponent(() => import('@/views/Assets/DomainView.vue')) },
+  { key: 'network', label: 'Network',           icon: IconNetwork, view: defineAsyncComponent(() => import('@/views/Assets/NetworkView.vue')) },
+  { key: 'webapp',  label: 'Web Application',   icon: IconBrowser, view: defineAsyncComponent(() => import('@/views/Assets/WebAppView.vue')) },
+  { key: 'source',  label: 'Source Code',       icon: IconCode,    view: defineAsyncComponent(() => import('@/views/Assets/SourceCodeView.vue')) },
 ]
+
+const scanModule = ref(null)
+const scanView = computed(() => modules.find((m) => m.key === scanModule.value)?.view ?? null)
 
 const showScanMenu = ref(false)
 const scanMenuRef = ref(null)
@@ -34,8 +37,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 function runScan(moduleKey) {
   showScanMenu.value = false
-  const target = modules.find((m) => m.key === moduleKey)?.route
-  if (target) router.push(target)
+  scanModule.value = moduleKey
 }
 
 const name = computed(() => {
@@ -58,8 +60,7 @@ const hi = computed(() => greeting())
           :class="{ 'btn-scan--open': showScanMenu }"
           @click="showScanMenu = !showScanMenu"
         >
-          <IconRadar :size="15" />
-          Run Scan
+          Start Scan
           <IconChevronDown
             :size="14"
             class="btn-scan__chevron"
@@ -83,6 +84,8 @@ const hi = computed(() => greeting())
         </transition>
       </div>
     </div>
+
+    <component :is="scanView" v-if="scanView" :key="scanModule" modal-only @close-scan="scanModule = null" />
   </div>
 </template>
 

@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { pushFromDashboard } from '@/utils/navOrigin'
 import SkeletonCard from '@/components/reusable/SkeletonCard.vue'
 import EmptyState   from '@/components/reusable/EmptyState.vue'
 import ProgressBar  from 'primevue/progressbar'
@@ -33,7 +34,7 @@ function assetIcon(t) { return typeIcon[t] ?? IconLoader2 }
       title="No active scans"
       message="Start a scan to monitor progress here in real time."
       cta-label="Run a Scan"
-      @cta="router.push('/scans/run')"
+      @cta="pushFromDashboard(router, '/scans/run')"
     >
       <template #icon><IconLoader2 :size="32" stroke-width="1.5" /></template>
     </EmptyState>

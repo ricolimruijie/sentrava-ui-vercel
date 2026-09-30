@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { IconChevronRight } from '@tabler/icons-vue'
+import { pushFromDashboard } from '@/utils/navOrigin'
+import { formatShortDate } from '@/utils/helpers'
 
 const router = useRouter()
 
@@ -14,11 +16,11 @@ const props = defineProps({
 const visibleItems = computed(() => (props.items ?? []).slice(-8))
 
 function goTickets() {
-  router.push('/tickets')
+  pushFromDashboard(router, '/tickets')
 }
 
 function goTicket(item) {
-  router.push(`/tickets/${item.ticketId}`)
+  pushFromDashboard(router, `/tickets/${item.ticketId}`)
 }
 </script>
 
@@ -37,8 +39,8 @@ function goTicket(item) {
           <thead>
             <tr>
               <th class="ttable__date">Date</th>
-              <th>Ticket Name</th>
-              <th>Category</th>
+              <th class="ttable__name">Ticket Name</th>
+              <th class="ttable__cat">Category</th>
               <th class="ttable__status">Ticket Status</th>
               <th class="ttable__arrow"></th>
             </tr>
@@ -47,7 +49,7 @@ function goTicket(item) {
             <tr v-if="loading"><td colspan="4" class="ttable__empty">Loading…</td></tr>
             <tr v-else-if="!visibleItems.length"><td colspan="4" class="ttable__empty">No tickets.</td></tr>
             <tr v-for="item in visibleItems" :key="item.id">
-              <td class="ttable__date">{{ item.date }}</td>
+              <td class="ttable__date">{{ formatShortDate(item.date) }}</td>
               <td class="ttable__name">{{ item.name }}</td>
               <td class="ttable__cat">{{ item.label }}</td>
               <td class="ttable__status">
@@ -154,15 +156,19 @@ function goTicket(item) {
 
   tr:hover td { background: var(--color-bg); }
 
+  // Every column except the arrow button shares the same width.
+  &__date,
+  &__name,
+  &__cat,
+  &__status {
+    width: 23%;
+  }
+
   &__date {
-    width: 112px;
     white-space: nowrap;
   }
 
   &__cat {
-    // Hugs "Application & System Failures" — the longest category label —
-    // so it never truncates, instead of an arbitrary percentage.
-    width: 228px;
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -178,7 +184,6 @@ function goTicket(item) {
   }
 
   &__status {
-    width: 120px;
     text-align: center;
   }
 
@@ -189,7 +194,7 @@ function goTicket(item) {
   }
 
   &__arrow {
-    width: 64px;
+    width: 8%;
     padding-right: 0;
   }
 

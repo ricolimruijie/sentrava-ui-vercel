@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { formatShortDate } from '@/utils/helpers'
 import { IconUser, IconPhoto, IconFile, IconSend2, IconArrowLeft, IconX, IconTicket, IconCheck } from '@tabler/icons-vue'
 
 const route = useRoute()
@@ -217,7 +218,7 @@ function closeAttachmentModal() {
         <div class="main-head">
           <div class="main-head__id">{{ ticket.id }} <span class="status-pill status-pill--open">{{ ticket.status }}</span></div>
           <h1 class="main-head__title">{{ ticket.title }}</h1>
-          <div class="main-head__meta">Submission Date: {{ ticket.submissionDate }}</div>
+          <div class="main-head__meta">Submission Date: {{ formatShortDate(ticket.submissionDate) }}</div>
         </div>
 
         <div ref="chatRef" class="chat">

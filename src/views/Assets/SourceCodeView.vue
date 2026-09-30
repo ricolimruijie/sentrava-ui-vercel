@@ -9,6 +9,13 @@ import GlassField from '@/components/reusable/GlassField.vue'
 import { IconDotsVertical, IconCirclePlus, IconScan, IconArrowUpRight, IconArrowRight, IconTrash, IconX, IconChevronDown, IconCheck, IconPlus, IconTag, IconFolder } from '@tabler/icons-vue'
 import { getSourceCodeRepos } from '@/mocks/assets/sourceCode.js'
 
+// modalOnly: rendered from the Dashboard's Start Scan menu — shows just the
+// Start Scanning modal (opened on mount) and tells the parent when it closes.
+const props = defineProps({
+  modalOnly: { type: Boolean, default: false },
+})
+const emit = defineEmits(['close-scan'])
+
 const router = useRouter()
 const repos = ref(getSourceCodeRepos())
 
@@ -89,9 +96,9 @@ const scanBranchOptions = computed(() => {
   return [...branches].map((b) => ({ value: b, label: b }))
 })
 const scanTypeOptions = [
-  { value: 'manual', label: 'Manual Triggered' },
-  { value: 'scheduled', label: 'Scheduled Scanning' },
-  { value: 'continuous', label: 'Continuous Scanning' },
+  { value: 'manual_scan', label: 'Manual Scan' },
+  { value: 'scheduled_scan', label: 'Scheduled Scan' },
+  { value: 'continuous_scan', label: 'Continuous Scan' },
 ]
 const scanRecurrenceOptions = [
   { value: 'daily', label: 'Daily' },
@@ -102,18 +109,18 @@ const scanRecurrenceOptions = [
 const scanRecurrence = ref(null)
 const canProceedScan = computed(() => {
   if (!scanRepo.value || !scanBranch.value || !scanType.value) return false
-  // Manual Triggered runs immediately — no schedule needed.
-  if (scanType.value === 'manual') return true
+  // Manual Scan runs immediately — no schedule needed.
+  if (scanType.value === 'manual_scan') return true
   // Scheduled scans need at least one fully-picked date & time.
-  if (scanType.value === 'scheduled') {
+  if (scanType.value === 'scheduled_scan') {
     return scanSchedules.value.length > 0 && scanSchedules.value.every((s) => !!s.value)
   }
   // Continuous scans also need a recurrence.
-  if (scanType.value === 'continuous') return !!scanDate.value && !!scanRecurrence.value
+  if (scanType.value === 'continuous_scan') return !!scanDate.value && !!scanRecurrence.value
   return !!scanDate.value
 })
 
-// ── Multiple schedules (Scheduled Scanning only) ───────────────────────────
+// ── Multiple schedules (Scheduled Scan only) ───────────────────────────
 const scanSchedules = ref([]) // [{ id, value: 'YYYY-MM-DD HH:mm', open }]
 let scheduleSeq = 0
 const anyScheduleOpen = computed(() => scanSchedules.value.some((s) => s.open))
@@ -172,6 +179,8 @@ function openScanModal() {
 
 function closeScanModal() {
   showScanModal.value = false
+  // Let the modal's leave transition finish before the parent unmounts us.
+  if (props.modalOnly) setTimeout(() => emit('close-scan'), 300)
   scanField.value = null
   scanDateOpen.value = false
   scanState.value = 'idle'
@@ -183,17 +192,17 @@ function pickScanField(name, value) {
   if (name === 'type') {
     scanType.value = value
     scanDateOpen.value = false
-    // Manual Triggered has no schedule — drop any previously picked date.
-    if (value === 'manual') {
+    // Manual Scan has no schedule — drop any previously picked date.
+    if (value === 'manual_scan') {
       scanDate.value = ''
     }
     // Scheduled scans collect their own list of dates.
-    if (value === 'scheduled' && scanSchedules.value.length === 0) {
+    if (value === 'scheduled_scan' && scanSchedules.value.length === 0) {
       addScheduleRow(false)
     }
-    if (value !== 'scheduled') scanSchedules.value = []
+    if (value !== 'scheduled_scan') scanSchedules.value = []
     // Recurrence only applies to Continuous scans.
-    if (value !== 'continuous') scanRecurrence.value = null
+    if (value !== 'continuous_scan') scanRecurrence.value = null
   }
   if (name === 'recurrence') scanRecurrence.value = value
   scanField.value = null
@@ -217,7 +226,7 @@ function submitScan() {
       r.lastScanned = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
       r.scanType = scanType.value
       // Persist recurrence so detail views can show it on the timeline.
-      r.recurrence = scanType.value === 'continuous' ? scanRecurrence.value : null
+      r.recurrence = scanType.value === 'continuous_scan' ? scanRecurrence.value : null
     })
     scanState.value = 'saved'
     setTimeout(closeScanModal, 700)
@@ -476,10 +485,14 @@ function handleClickOutside(e) {
 
 onMounted(() => document.addEventListener('mousedown', handleClickOutside))
 onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
+
+onMounted(() => {
+  if (props.modalOnly) openScanModal()
+})
 </script>
 
 <template>
-  <div class="source-code">
+  <div class="source-code" :class="{ 'source-code--modal-only': modalOnly }">
     <div class="source-code__head">
       <h1 class="source-code__title">Source Code Assessment</h1>
       <div class="source-code__actions">
@@ -651,7 +664,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
                 />
               </div>
 
-              <template v-if="scanType === 'continuous'">
+              <template v-if="scanType === 'continuous_scan'">
                 <div class="scan-field">
                   <GlassField
                     :model-value="scanRecurrence"
@@ -668,7 +681,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
               </template>
               </div>
 
-              <template v-if="scanType === 'scheduled'">
+              <template v-if="scanType === 'scheduled_scan'">
                 <div v-show="!anyScheduleOpen" class="schedule-block">
                   <span class="schedule-block__label">Scheduled Dates &amp; Times<span class="create-modal__required">*</span></span>
                 </div>
@@ -702,8 +715,8 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
                 </div>
               </template>
 
-              <template v-if="scanType === 'continuous'">
-                <label v-show="!scanDateOpen" class="create-modal__label">{{ scanType === 'continuous' ? 'Initial Date and Time' : 'Date & Time' }}<span class="create-modal__required">*</span></label>
+              <template v-if="scanType === 'continuous_scan'">
+                <label v-show="!scanDateOpen" class="create-modal__label">{{ scanType === 'continuous_scan' ? 'Initial Date and Time' : 'Date & Time' }}<span class="create-modal__required">*</span></label>
                 <DateTimePicker
                   v-model="scanDate"
                   :open="scanDateOpen"
@@ -725,7 +738,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
               >
                 <span v-if="scanState === 'loading'" class="modal-btn__spinner" />
                 <IconCheck v-else-if="scanState === 'saved'" :size="18" class="modal-btn__check" />
-                <span v-else>Proceed</span>
+                <span v-else>Initiate Scan</span>
               </button>
             </div>
           </div>
@@ -1724,5 +1737,9 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     transition-duration: 1ms !important;
     animation-duration: 1ms !important;
   }
+}
+
+.source-code--modal-only {
+  display: none;
 }
 </style>

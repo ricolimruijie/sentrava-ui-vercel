@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/auth'
 import AppLayout    from '@/components/layout/AppLayout.vue'
 import authRoutes   from './auth'
 import dashboardRoutes from './dashboard'
+import { dashboardOrigin } from '@/utils/navOrigin'
 
 // Stub placeholder for future pages (render function — the bundler uses the
 // runtime-only Vue build, so a `template:` string would never compile).
@@ -140,6 +141,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  if (dashboardOrigin.value && to.path !== dashboardOrigin.value) dashboardOrigin.value = null
   const auth = useAuthStore()
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } }

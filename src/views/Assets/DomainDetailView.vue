@@ -7,10 +7,11 @@ import SearchInput from '@/components/reusable/SearchInput.vue'
 import RelatedDomains from '@/components/reusable/RelatedDomains.vue'
 import FindingsBadge from '@/components/reusable/FindingsBadge.vue'
 import VulnerabilityDetailModal from '@/components/vulnerabilities/VulnerabilityDetailModal.vue'
+import { formatShortDate } from '@/utils/helpers'
 import { getDomains, getDomainScans, getDomainEndpoints, getDomainVulns, getDomainReputation } from '@/mocks/assets/domain.js'
 import {
   IconEye, IconDownload, IconRefresh, IconChevronDown, IconChevronRight, IconX, IconInfoCircle,
-  IconDotsVertical, IconCheck, IconMinus, IconPencil, IconTrash, IconArrowUpRight, IconTag, IconScan,
+  IconDotsVertical, IconCheck, IconMinus, IconPencil, IconTrash, IconArrowUpRight, IconTag, IconScan, IconFlag,
   IconCalendar, IconClock, IconBuilding, IconLink, IconLoader2, IconUpload,
 } from '@tabler/icons-vue'
 
@@ -141,18 +142,18 @@ const hasActiveScan = computed(() => scans.value.some((s) => s.status === 'Scann
 // schedule and show no manual control, same as WebAppDetailView.
 const scanActionKind = computed(() => {
   const t = domain.value.scanType
-  if (t === 'manual' || t === 'singular') return 'manual'
-  if (t === 'continuous') return 'continuous'
+  if (t === 'manual_scan' || t === 'manual' || t === 'singular') return 'manual_scan'
+  if (t === 'continuous_scan' || t === 'continuous') return 'continuous_scan'
   return 'none'
 })
 
-const scanTypeLabels = { manual: 'Manual Triggered', singular: 'Manual Triggered', scheduled: 'Scheduled Scanning', specified: 'Scheduled Scanning', continuous: 'Continuous Scanning' }
+const scanTypeLabels = { manual_scan: 'Manual Scan', manual: 'Manual Scan', singular: 'Manual Scan', scheduled_scan: 'Scheduled Scan', scheduled: 'Scheduled Scan', specified: 'Scheduled Scan', continuous_scan: 'Continuous Scan', continuous: 'Continuous Scan' }
 const scanTypeLabel = computed(() => scanTypeLabels[domain.value.scanType] ?? domain.value.scanType)
 
 // Shown under the timeline heading for continuous targets.
 const recurrenceLabels = { daily: 'Daily', weekly: 'Weekly', biweekly: 'Every Two Weeks', monthly: 'Monthly' }
 const recurrenceLabel = computed(() =>
-  domain.value.scanType === 'continuous' ? (recurrenceLabels[domain.value.recurrence] ?? null) : null,
+  domain.value.scanType === 'continuous_scan' ? (recurrenceLabels[domain.value.recurrence] ?? null) : null,
 )
 
 function stopScanning() {
@@ -438,7 +439,7 @@ const epSearch = ref('')
 const epSeverity = ref(null)
 
 const epFiltered = computed(() => {
-  let list = vulns.value
+  let list = vulns.value.filter((v) => v.cycle === activeCycle.value)
   if (epSeverity.value) list = list.filter((v) => v.severity === epSeverity.value)
   const q = epSearch.value.trim().toLowerCase()
   if (q) list = list.filter((v) => v.name.toLowerCase().includes(q))
@@ -449,8 +450,8 @@ const epColumns = [
   { key: 'check', label: '', width: '32px', align: 'center', compact: true },
   { key: '__index', label: '#', width: '24px', dim: true },
   { key: 'name', label: 'Vulnerability Name', width: '36%', truncate: true },
-  { key: 'severity', label: 'Severity', width: '96px', align: 'center' },
   { key: 'lastModified', label: 'Last Modified', width: '120px', dim: true },
+  { key: 'severity', label: 'Severity', width: '96px', align: 'center' },
   { key: 'validation', label: 'Validation Cycle', width: '150px', align: 'center' },
   { key: 'action', label: 'Action', width: '70px', align: 'center' },
 ]
@@ -540,6 +541,17 @@ const sevPill = {
   info: { label: 'Info', bg: '#DFF3FC', color: '#1197C2' },
 }
 
+// Same validation palette as WebAppDetailView so Queue/Resolved/etc. get
+// their color the moment Revalidate (or any cycle action) sets them.
+const validationPill = {
+  Unresolved: { bg: '#ECEEF0', color: '#5C6470' },
+  'Check result': { bg: '#fee2e2', color: '#dc2626' },
+  Queue:      { bg: '#DFF3FC', color: '#1197C2' },
+  Scanning:   { bg: '#fef3c7', color: '#b45309' },
+  Failed:     { bg: '#fee2e2', color: '#dc2626' },
+  Resolved:   { bg: '#dcfce7', color: '#16a34a' },
+}
+
 const filteredVulns = computed(() => {
   let list = vulns.value.filter((v) => v.cycle === activeCycle.value)
   if (vulnSeverityFilter.value) list = list.filter((v) => v.severity === vulnSeverityFilter.value)
@@ -552,8 +564,8 @@ const vulnColumns = [
   { key: 'check', label: '', width: '32px', align: 'center', compact: true },
   { key: '__index', label: '#', width: '24px', dim: true },
   { key: 'name', label: 'Vulnerability Name', width: '36%', truncate: true },
-  { key: 'severity', label: 'Severity', width: '96px', align: 'center' },
   { key: 'lastModified', label: 'Last Modified', width: '120px', dim: true },
+  { key: 'severity', label: 'Severity', width: '96px', align: 'center' },
   { key: 'validation', label: 'Validation Cycle', width: '150px', align: 'center' },
   { key: 'action', label: 'Action', width: '70px', align: 'center' },
 ]
@@ -815,7 +827,7 @@ function submitReportDownload() {
     reportEndpointList.value.forEach((ep) => {
       repRows.value.forEach((v) => {
         n += 1
-        rows.push([n, ep.endpoint, `"${v.name.replace(/"/g, '""')}"`, v.component, v.line, repSeverityPill[v.severity]?.label ?? v.severity, v.lastModified, v.modifiedBy])
+        rows.push([n, ep.endpoint, `"${v.name.replace(/"/g, '""')}"`, v.component, v.line, repSeverityPill[v.severity]?.label ?? v.severity, formatShortDate(v.lastModified), v.modifiedBy])
       })
     })
     const blob = new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' })
@@ -1018,7 +1030,7 @@ onUnmounted(() => {
             </button>
           </div>
           <button
-            v-else-if="scanActionKind === 'continuous' && hasActiveScan"
+            v-else-if="scanActionKind === 'continuous_scan' && hasActiveScan"
             key="stop"
             type="button"
             class="btn-register btn-register--block"
@@ -1027,7 +1039,7 @@ onUnmounted(() => {
             Stop scanning
           </button>
           <button
-            v-else-if="scanActionKind === 'manual'"
+            v-else-if="scanActionKind === 'manual_scan'"
             key="rescan"
             type="button"
             class="btn-register btn-register--block"
@@ -1327,8 +1339,12 @@ onUnmounted(() => {
           >{{ sevPill[row.severity]?.label ?? row.severity }}</span>
         </template>
         <template #cell-validation="{ row }">
-          <span class="validation-pill">{{ row.validation }}</span>
+          <span
+            class="validation-pill"
+            :style="{ background: validationPill[row.validation]?.bg, color: validationPill[row.validation]?.color }"
+          >{{ row.validation }}</span>
         </template>
+        <template #cell-lastModified="{ row }">{{ formatShortDate(row.lastModified) }}</template>
         <template #cell-action="{ row }">
           <button type="button" class="action-btn" aria-label="Actions" @click.stop="toggleVulnMenu(row, $event)">
             <IconDotsVertical :size="16" />
@@ -1430,8 +1446,12 @@ onUnmounted(() => {
           </span>
         </template>
         <template #cell-validation="{ row }">
-          <span class="validation-pill">{{ row.validation }}</span>
+          <span
+            class="validation-pill"
+            :style="{ background: validationPill[row.validation]?.bg, color: validationPill[row.validation]?.color }"
+          >{{ row.validation }}</span>
         </template>
+        <template #cell-lastModified="{ row }">{{ formatShortDate(row.lastModified) }}</template>
         <template #cell-action="{ row }">
           <button type="button" class="action-btn" aria-label="Actions" @click.stop="toggleVulnMenu(row, $event)">
             <IconDotsVertical :size="16" />
@@ -1586,13 +1606,9 @@ onUnmounted(() => {
         </button>
         <div class="action-menu__row">
           <button type="button" class="action-menu__item" @click.stop="vulnCycleMenuOpen = !vulnCycleMenuOpen">
-            <IconTag :size="15" />
+            <IconFlag :size="15" />
             Change cycle
-            <IconChevronRight
-              :size="14"
-              class="action-menu__chevron"
-              :class="{ 'action-menu__chevron--open': vulnCycleMenuOpen }"
-            />
+            <IconChevronRight :size="14" class="action-menu__chevron" />
           </button>
           <div v-if="vulnCycleMenuOpen" class="action-menu__submenu">
             <button
@@ -1745,7 +1761,7 @@ onUnmounted(() => {
       </Transition>
     </Teleport>
 
-    <VulnerabilityDetailModal v-model="showFindingModal" :item="selectedFinding" summary-strip :auto-upload="findingAutoUpload" />
+    <VulnerabilityDetailModal v-model="showFindingModal" :item="selectedFinding" summary-strip :auto-upload="findingAutoUpload" :upload-only="findingAutoUpload" raw-badge hide-likelihood show-qod hide-line-of-code hide-finding-type show-validation-cycle show-solution-type hide-port-ref />
     <Teleport to="body">
       <Transition name="target-panel-fade">
         <div v-if="showTargetDetailModal" class="target-modal" :style="{ top: `${targetDetailPos.top}px`, left: `${targetDetailPos.left}px` }">
@@ -1784,10 +1800,10 @@ onUnmounted(() => {
                 <div class="target-stat-row">
                   <span class="target-stat-row__icon"><IconBuilding :size="16" /></span>
                   <div class="target-stat-row__text">
-                    <p class="target-stat-row__label">Total Endpoints</p>
+                    <p class="target-stat-row__label">Total Vulnerabilities</p>
                     <p class="target-stat-row__value">
-                      {{ endpoints.length }}
-                      <span class="target-stat-row__unit">endpoints</span>
+                      {{ selectedEndpoint ? vulns.length : totalFindings.toLocaleString() }}
+                      <span class="target-stat-row__unit">vulnerabilities</span>
                     </p>
                   </div>
                 </div>

@@ -5,10 +5,11 @@ import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import VulnerabilityDetailModal from '@/components/vulnerabilities/VulnerabilityDetailModal.vue'
+import { formatShortDate } from '@/utils/helpers'
 import { getWebApps, getWebAppScans, getWebAppVulns } from '@/mocks/assets/webApp.js'
 import {
   IconDotsVertical, IconArrowUpRight, IconCheck, IconInfoCircle,
-  IconDownload, IconPencil, IconRefresh, IconChevronDown, IconChevronRight, IconMinus, IconTag,
+  IconDownload, IconPencil, IconRefresh, IconChevronDown, IconChevronRight, IconMinus, IconTag, IconFlag, IconUpload,
   IconX, IconLink, IconCalendar, IconBuilding, IconClock, IconTrash,
 } from '@tabler/icons-vue'
 
@@ -22,7 +23,7 @@ const app = computed(() => {
 
 // Same scan-type wording as the other asset detail views (also used by the
 // Target Details pill below).
-const scanTypeLabels = { manual: 'Manual Triggered', singular: 'Manual Triggered', scheduled: 'Scheduled Scanning', specified: 'Scheduled Scanning', continuous: 'Continuous Scanning' }
+const scanTypeLabels = { manual_scan: 'Manual Scan', manual: 'Manual Scan', singular: 'Manual Scan', scheduled_scan: 'Scheduled Scan', scheduled: 'Scheduled Scan', specified: 'Scheduled Scan', continuous_scan: 'Continuous Scan', continuous: 'Continuous Scan' }
 
 // Same palette as WebAppView/SourceCodeView so tags render identically.
 const tagColors = [
@@ -238,7 +239,7 @@ function confirmRescan() {
 // Shown under the timeline heading for continuous apps.
 const recurrenceLabels = { daily: 'Daily', weekly: 'Weekly', biweekly: 'Every Two Weeks', monthly: 'Monthly' }
 const recurrenceLabel = computed(() =>
-  app.value.scanType === 'continuous' ? (recurrenceLabels[app.value.recurrence] ?? null) : null,
+  app.value.scanType === 'continuous_scan' ? (recurrenceLabels[app.value.recurrence] ?? null) : null,
 )
 
 onMounted(() => {
@@ -407,9 +408,20 @@ function handleClickOutside(e) {
 
 const showDetailModal = ref(false)
 const selectedFinding = ref(null)
+const findingAutoUpload = ref(false)
 
 function viewFinding(id) {
   closeMenu()
+  findingAutoUpload.value = false
+  const found = vulns.value.find((v) => v.id === id) ?? null
+  selectedFinding.value = found ? { ...found, line: undefined, codeLine: undefined, url: app.value?.target, verified: true } : null
+  showDetailModal.value = true
+}
+
+// Opens the finding on its Evidence tab with the Upload Evidence form ready.
+function uploadEvidence(id) {
+  closeMenu()
+  findingAutoUpload.value = true
   const found = vulns.value.find((v) => v.id === id) ?? null
   selectedFinding.value = found ? { ...found, line: undefined, codeLine: undefined, url: app.value?.target, verified: true } : null
   showDetailModal.value = true
@@ -499,7 +511,7 @@ function submitReportDownload() {
   setTimeout(() => {
     const rows = [['No', 'Vulnerability Name', 'Component', 'Line', 'Severity', 'Last Modified', 'Modified By']]
     repRows.value.forEach((v, i) => {
-      rows.push([i + 1, `"${v.name.replace(/"/g, '""')}"`, v.component, v.line, severityPill[v.severity]?.label ?? v.severity, v.lastModified, v.modifiedBy])
+      rows.push([i + 1, `"${v.name.replace(/"/g, '""')}"`, v.component, v.line, severityPill[v.severity]?.label ?? v.severity, formatShortDate(v.lastModified), v.modifiedBy])
     })
     const blob = new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
@@ -702,7 +714,7 @@ onUnmounted(() => {
               </button>
             </div>
             <button
-              v-else-if="app.scanType === 'continuous' && hasActiveScan"
+              v-else-if="app.scanType === 'continuous_scan' && hasActiveScan"
               key="stop"
               type="button"
               class="btn-register btn-register--block"
@@ -711,7 +723,7 @@ onUnmounted(() => {
               Stop scanning
             </button>
             <button
-              v-else-if="app.scanType === 'manual'"
+              v-else-if="app.scanType === 'manual_scan'"
               key="rescan"
               type="button"
               class="btn-register btn-register--block"
@@ -848,6 +860,7 @@ onUnmounted(() => {
             :style="{ background: validationPill[row.validation ?? 'Unresolved']?.bg, color: validationPill[row.validation ?? 'Unresolved']?.color }"
           >{{ row.validation ?? 'Unresolved' }}</span>
         </template>
+        <template #cell-lastModified="{ row }">{{ formatShortDate(row.lastModified) }}</template>
         <template #cell-action="{ row }">
           <button type="button" class="action-btn" aria-label="Actions" @click.stop="toggleMenu(row, $event)">
             <IconDotsVertical :size="16" />
@@ -864,13 +877,9 @@ onUnmounted(() => {
         </button>
         <div class="action-menu__row">
           <button type="button" class="action-menu__item" @click.stop="cycleMenuOpen = !cycleMenuOpen">
-            <IconTag :size="15" />
+            <IconFlag :size="15" />
             Change cycle
-            <IconChevronRight
-              :size="14"
-              class="action-menu__chevron"
-              :class="{ 'action-menu__chevron--open': cycleMenuOpen }"
-            />
+            <IconChevronRight :size="14" class="action-menu__chevron" />
           </button>
           <div v-if="cycleMenuOpen" class="action-menu__submenu">
             <button
@@ -894,10 +903,18 @@ onUnmounted(() => {
           <IconRefresh :size="15" />
           Revalidate
         </button>
+        <button
+          type="button"
+          class="action-menu__item"
+          @click="uploadEvidence(openMenuId)"
+        >
+          <IconUpload :size="15" />
+          Upload evidence
+        </button>
       </div>
     </Teleport>
 
-    <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip hide-risk-chips hide-code-snippet heading-title="Web Application Vulnerability Details" show-revalidation-status />
+    <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip hide-risk-chips hide-code-snippet heading-title="Web Application Vulnerability Details" show-revalidation-status show-validation-cycle :auto-upload="findingAutoUpload" :upload-only="findingAutoUpload" />
 
     <Teleport to="body">
       <Transition name="modal-fade">
