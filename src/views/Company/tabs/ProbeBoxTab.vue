@@ -6,7 +6,8 @@ import DataTable from '@/components/table/DataTable.vue'
 import TablePagination from '@/components/table/TablePagination.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
-import { IconDotsVertical, IconRefresh, IconTrash } from '@tabler/icons-vue'
+import ProbeBoxOverviewModal from '@/components/company/ProbeBoxOverviewModal.vue'
+import { IconDotsVertical, IconArrowUpRight, IconRefresh, IconTrash } from '@tabler/icons-vue'
 
 const { data, loading } = useFetch(() => get('/company/probes'))
 
@@ -18,7 +19,7 @@ const columns = [
   { key: 'ip', label: 'IP Address', width: '20%', mono: true, dim: true, truncate: true},
   { key: 'lastSeen', label: 'Last Checked', width: '24%', dim: true, truncate: true},
   { key: 'status', label: 'Status', width: '18%', align: 'center' },
-  { key: 'action', label: 'Action', width: '32px', align: 'center' },
+  { key: 'action', label: 'Action', width: '76px', align: 'center' },
 ]
 
 const statusMeta = {
@@ -51,7 +52,7 @@ const filteredData = computed(() => {
 })
 
 const openMenuId = ref(null)
-const menuPos = ref({ top: 0, left: 0 })
+const menuPos = ref({ top: 0, right: 0 })
 
 function toggleMenu(item, event) {
   if (openMenuId.value === item.id) {
@@ -59,11 +60,25 @@ function toggleMenu(item, event) {
     return
   }
   const rect = event.currentTarget.getBoundingClientRect()
-  menuPos.value = { top: rect.bottom + 6, left: rect.right - 176 }
+  // Anchored by its right edge so the menu can size to its widest item.
+  menuPos.value = { top: rect.bottom + 6, right: window.innerWidth - rect.right }
   openMenuId.value = item.id
 }
 function closeMenu() { openMenuId.value = null }
 
+const showOverview = ref(false)
+const overviewProbe = ref(null)
+
+function viewProbe(item) {
+  closeMenu()
+  overviewProbe.value = item
+  showOverview.value = true
+}
+// Keep the table row in sync with edits/checks made in the modal.
+function updateProbe(patch) {
+  data.value = (data.value ?? []).map((p) => (p.id === patch.id ? { ...p, ...patch } : p))
+  if (overviewProbe.value?.id === patch.id) overviewProbe.value = { ...overviewProbe.value, ...patch }
+}
 function restartProbe(item) {
   closeMenu()
   console.info('Restart probe', item.id)
@@ -114,8 +129,14 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       </template>
     </DataTable>
 
+    <ProbeBoxOverviewModal v-model="showOverview" :probe="overviewProbe" @update="updateProbe" />
+
     <Teleport to="body">
-      <div v-if="openMenuId" class="action-menu" :style="{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }">
+      <div v-if="openMenuId" class="action-menu" :style="{ top: `${menuPos.top}px`, right: `${menuPos.right}px` }">
+        <button type="button" class="action-menu__item" @click="viewProbe((data ?? []).find((i) => i.id === openMenuId))">
+          <IconArrowUpRight :size="15" />
+          See Details
+        </button>
         <button type="button" class="action-menu__item" @click="restartProbe((data ?? []).find((i) => i.id === openMenuId))">
           <IconRefresh :size="15" />
           Restart integration
@@ -184,7 +205,8 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 .action-menu {
   position: fixed;
-  width: 176px;
+  width: max-content;
+  min-width: 176px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
@@ -207,6 +229,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     font-size: 13px;
     font-weight: 500;
     font-family: 'Manrope', 'Inter', sans-serif;
+    white-space: nowrap;
     cursor: pointer;
     text-align: left;
     transition: background 0.13s, color 0.13s;

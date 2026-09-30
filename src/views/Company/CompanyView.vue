@@ -9,6 +9,7 @@ import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import CompanyListTab from './tabs/CompanyListTab.vue'
 import AuditLogTab from './tabs/AuditLogTab.vue'
 import ProbeBoxTab from './tabs/ProbeBoxTab.vue'
+import QuotaInfoModal from '@/components/company/QuotaInfoModal.vue'
 import {
   IconBuildingSkyscraper, IconChartBar, IconUsers, IconFileText,
   IconChevronRight, IconChevronLeft, IconPower, IconDotsVertical,
@@ -1006,48 +1007,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
       </Transition>
     </Teleport>
 
-    <Teleport to="body">
-      <Transition name="modal-fade">
-        <div v-if="showQuotaModal" class="modal-backdrop" @mousedown.self="closeQuotaModal">
-          <div class="create-modal create-modal--wide create-modal--quota">
-            <div class="create-modal__head">
-              <h2 class="create-modal__title">Monthly Quota Information</h2>
-              <button type="button" class="create-modal__close" aria-label="Close" @click="closeQuotaModal">
-                <IconX :size="20" />
-              </button>
-            </div>
-
-            <div class="activation-info">
-              <div class="activation-info__label">Company Name</div>
-              <div class="activation-info__value">{{ company?.name ?? '—' }}</div>
-            </div>
-
-            <div class="activation-divider" />
-
-            <div class="quota-info-list">
-              <div v-for="row in quotaRows" :key="row.key" class="quota-info-row">
-                <div class="quota-info-row__main">
-                  <div class="quota-info-row__title">{{ row.label }}</div>
-                  <div class="quota-info-row__stats">
-                    <span>Monthly Quota: {{ row.count }}</span>
-                    <span>Used: {{ row.used }}</span>
-                    <span>Remaining: {{ row.remaining }}</span>
-                  </div>
-                </div>
-                <span class="quota-info-row__divider" aria-hidden="true" />
-                <div class="quota-info-row__extra">
-                  <div class="quota-info-row__title">Additional Quota</div>
-                  <div class="quota-info-row__stats">
-                    <span>Additional Monthly Quota: {{ row.additional ?? '-' }}</span>
-                    <span>Validity Until: {{ row.validity ? formatDate(row.validity) : '-' }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <QuotaInfoModal v-model="showQuotaModal" :company-name="company?.name ?? ''" :rows="quotaRows" />
 
     <Teleport to="body">
       <Transition name="modal-fade">
@@ -2943,54 +2903,4 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   margin: 0 -2px;
 }
 
-.quota-info-list {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  margin-top: 18px;
-}
-
-.quota-info-row {
-  display: grid;
-  grid-template-columns: 1fr 3px 1fr;
-  gap: 0 18px;
-  align-items: start;
-
-  @media (max-width: 560px) {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  &__divider {
-    width: 3px;
-    height: 18px;
-    border-radius: 999px;
-    background: #e85a28;
-    justify-self: center;
-    align-self: start;
-    margin-top: 4px;
-
-    @media (max-width: 560px) {
-      display: none;
-    }
-  }
-
-  &__title {
-    font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--glacia-ink);
-    line-height: 1.3;
-  }
-
-  &__stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 14px;
-    margin-top: 6px;
-    font-size: 13px;
-    line-height: 1.4;
-    color: var(--glacia-ink);
-  }
-}
 </style>
