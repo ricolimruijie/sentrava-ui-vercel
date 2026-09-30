@@ -110,11 +110,59 @@ const ENDPOINT_TAGS = [
 // Domain reputation engine results for the Domain detail card (dummy data).
 const REPUTATION = {
   1: { total: 100, passed: 100, failed: 0 },
-  2: { total: 100, passed: 92, failed: 8 },
+  2: { total: 100, passed: 20, failed: 80 },
   3: { total: 100, passed: 64, failed: 36 },
 }
 export function getDomainReputation(id) {
   return { ...(REPUTATION[id] ?? REPUTATION[1]) }
+}
+
+// Reputation engines shown in the "View details" modal (dummy data). The first
+// `total` names are used so the list always matches the card's counts.
+const REPUTATION_ENGINES = [
+  'Badbitcoin', 'ANJ Blocked Sites', 'Abusix', 'Acronis', 'ADMINUSLabs', 'AlienVault', 'AhnLab-V3', 'Antiy-AVL', 'ArcSight Threat Intelligence', 'AutoShun',
+  'Avira', 'Bambenek Consulting', 'Barracuda', 'BitcoinAbuse', 'Bitdefender', 'Blocklist.de', 'Blueliv', 'Certego', 'Check Point', 'Cisco Talos',
+  'CINS Army', 'CLEAN MX', 'CMC Threat Intelligence', 'Comodo Valkyrie', 'Criminal IP', 'CrowdSec', 'CRDF', 'Cyan', 'Cyble', 'Cyradar',
+  'desenmascara.me', 'DNS8', 'Dr.Web', 'Emerging Threats', 'Emsisoft', 'ESET', 'ESTsecurity', 'Forcepoint ThreatSeeker', 'Fortinet', 'G-Data',
+  'Google Safebrowsing', 'GreenSnow', 'Gridinsoft', 'Heimdal Security', 'Hybrid Analysis', 'Hunt.io', 'IPsum', 'Juniper Networks', 'Kaspersky', 'Lionic',
+  'Malwarebytes hpHosts', 'Malware Domain Blocklist', 'MalwarePatrol', 'MalwareURL', 'McAfee', 'Mimecast', 'Netcraft', 'OpenPhish', 'Palo Alto Networks', 'Phishing Database',
+  'PhishLabs', 'Phishtank', 'PREBYTES', 'Proofpoint', 'Quick Heal', 'Quttera', 'Rising', 'SafeToOpen', 'Sangfor', 'Scantitan',
+  'Seclookup', 'Securolytics', 'SOCRadar', 'Sophos', 'Spam404', 'SpamCop', 'Spamhaus', 'StopForumSpam', 'Sucuri SiteCheck', 'SURBL',
+  'Symantec', 'ThreatHive', 'Threatsourcing', 'Trend Micro', 'Trustwave', 'Underworld', 'URLhaus', 'URLQuery', 'VIPRE', 'ViriBack',
+  'VX Vault', 'Webroot', 'Yandex Safebrowsing', 'ZeroCERT', 'ZeroFox', 'Zvelo', 'Xcitium', 'Segasec', 'Nucleon', 'Jiangmin',
+]
+
+const ENGINE_DESCRIPTIONS = {
+  Badbitcoin: 'Lists websites involved in cryptocurrency scams and fraud.',
+  'ANJ Blocked Sites': 'A domain blocklist maintained by Asahi Net Japan (ANJ), primarily used to protect Japanese users. It flags domains hosting malware, phishing content, or violating local internet safety policies.',
+  Spamhaus: 'Tracks domains and IPs used to send spam or host malicious infrastructure.',
+  PhishLabs: 'Monitors domains impersonating brands for phishing campaigns.',
+  URLhaus: 'Collects URLs that distribute malware, shared by the abuse.ch project.',
+}
+
+// Short name used in the "contact ..." step of the solution text.
+const ENGINE_CONTACT = { 'ANJ Blocked Sites': 'ANJ' }
+
+// Indexes (into the engine list) that flag each domain as failed.
+// Domains listed in PASSED_AT fail every engine except those indexes.
+const PASSED_AT = { 2: [1, 5, 9, 12, 17, 22, 26, 30, 35, 41, 47, 52, 58, 64, 69, 75, 81, 86, 91, 96] }
+const FAILED_AT = { 3: [0, 2, 4, 6, 9, 12, 15, 19, 21, 26, 28, 33, 37, 40, 44, 49, 52, 55, 59, 63, 66, 70, 74, 77, 79, 83, 85, 90, 93, 95, 97, 98, 99, 60, 68, 82] }
+
+export function getDomainReputationEngines(id) {
+  const { total, failed } = getDomainReputation(id)
+  const failedIdx = PASSED_AT[id]
+    ? new Set(Array.from({ length: total }, (_, i) => i).filter((i) => !PASSED_AT[id].includes(i)))
+    : new Set((FAILED_AT[id] ?? []).slice(0, failed))
+  return REPUTATION_ENGINES.slice(0, total).map((name, i) => {
+    const isFailed = failedIdx.has(i)
+    return {
+      id: `eng-${i + 1}`,
+      name,
+      status: isFailed ? 'Failed' : 'Passed',
+      description: ENGINE_DESCRIPTIONS[name] ?? `${name} maintains a reputation database of domains linked to malicious or unwanted activity.`,
+      solution: `Scan the domain for malware or phishing content, remove any threats, update all outdated software, and secure the site. Once clean, contact ${isFailed ? 'the engine maintainer' : (ENGINE_CONTACT[name] ?? name)} with details of the remediation to request delisting.`,
+    }
+  })
 }
 
 const RELATED_PREFIXES = [

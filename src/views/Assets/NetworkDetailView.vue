@@ -1075,6 +1075,8 @@ onUnmounted(() => {
             <h1 class="scan-main__title">{{ selectedEndpoint.endpoint }}</h1>
           </div>
           <div class="scan-main__meta">
+            <span>Date Scanned: <b class="mono">{{ to24Hour(scans[selectedScan]?.date ?? '') }}</b></span>
+            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
             <span>Total Vulnerabilities: <b class="mono">{{ vulns.length }}</b></span>
           </div>
         </div>

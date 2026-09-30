@@ -8,7 +8,8 @@ import RelatedDomains from '@/components/reusable/RelatedDomains.vue'
 import FindingsBadge from '@/components/reusable/FindingsBadge.vue'
 import VulnerabilityDetailModal from '@/components/vulnerabilities/VulnerabilityDetailModal.vue'
 import { formatShortDate } from '@/utils/helpers'
-import { getDomains, getDomainScans, getDomainEndpoints, getDomainVulns, getDomainReputation } from '@/mocks/assets/domain.js'
+import { getDomains, getDomainScans, getDomainEndpoints, getDomainVulns, getDomainReputation, getDomainReputationEngines } from '@/mocks/assets/domain.js'
+import ReputationModal from '@/components/reusable/ReputationModal.vue'
 import {
   IconEye, IconDownload, IconRefresh, IconChevronDown, IconChevronRight, IconX, IconInfoCircle,
   IconDotsVertical, IconCheck, IconMinus, IconPencil, IconTrash, IconArrowUpRight, IconTag, IconScan, IconFlag,
@@ -31,6 +32,10 @@ const isDomain = computed(() => domain.value.targetType === 'Domain')
 const reputation = computed(() => getDomainReputation(domain.value.id))
 // On a single endpoint's findings page the score describes that host's IP.
 const repTitle = computed(() => (selectedEndpoint.value ? 'IP Reputation' : 'Domain Reputation'))
+// "View details" opens the per-engine breakdown modal.
+const showReputationModal = ref(false)
+const repEngines = computed(() => getDomainReputationEngines(domain.value.id))
+const repSubject = computed(() => (selectedEndpoint.value ? (selectedEndpoint.value.ip ?? selectedEndpoint.value.endpoint) : domain.value.endpoint))
 const repScore = computed(() => {
   const { total, passed } = reputation.value
   return total ? Math.round((passed / total) * 100) : 0
@@ -1072,7 +1077,7 @@ onUnmounted(() => {
       <section v-if="isDomain" class="side-card rep-card">
         <div class="rep-card__head">
           <h2 class="scan-timeline__section">{{ repTitle }}</h2>
-          <button type="button" class="rep-card__more">View details</button>
+          <button type="button" class="rep-card__more" @click="showReputationModal = true">View details</button>
         </div>
 
         <svg class="rep-gauge" viewBox="0 0 240 140" role="img" :aria-label="`${repTitle} ${repScore} percent, ${repTone.label}`">
@@ -1262,6 +1267,8 @@ onUnmounted(() => {
             <h1 class="scan-main__title">{{ selectedEndpoint.ip ?? selectedEndpoint.endpoint }}</h1>
           </div>
           <div class="scan-main__meta">
+            <span>Date Scanned: <b class="mono">{{ to24Hour(scans[selectedScan]?.date ?? '') }}</b></span>
+            <span>Total scan time taken: <b class="mono">{{ scans[selectedScan]?.duration ?? '—' }}</b></span>
             <span>Total Vulnerabilities: <b class="mono">{{ vulns.length }}</b></span>
           </div>
         </div>
@@ -1761,6 +1768,7 @@ onUnmounted(() => {
       </Transition>
     </Teleport>
 
+    <ReputationModal v-model="showReputationModal" :title="repTitle" :subject="repSubject" :engines="repEngines" />
     <VulnerabilityDetailModal v-model="showFindingModal" :item="selectedFinding" summary-strip :auto-upload="findingAutoUpload" :upload-only="findingAutoUpload" raw-badge hide-likelihood show-qod hide-line-of-code hide-finding-type show-validation-cycle show-solution-type hide-port-ref />
     <Teleport to="body">
       <Transition name="target-panel-fade">

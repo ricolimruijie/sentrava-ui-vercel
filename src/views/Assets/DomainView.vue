@@ -240,35 +240,30 @@ function submitRegisterDomain() {
 
 // ── Start Scanning modal ───────────────────────────────────────────────────
 const showScanModal = ref(false)
-const scanTargetType = ref(null) // 'IP Single' | 'CIDR'
 const scanAccess = ref(null) // 'selected' | 'all'
-const scanTarget = ref([]) // domain ids (IP Single: several, CIDR: one)
-const scanEndpoints = ref([]) // CIDR + 'Selected endpoint': chosen endpoint ids
+const scanTarget = ref([]) // the chosen domain id (single)
+const scanEndpoints = ref([]) // 'Selected endpoint': chosen endpoint ids
 const scanType = ref(null)
 const scanRecurrence = ref(null)
 const scanDate = ref('')
 const scanDateOpen = ref(false)
 const scanState = ref('idle') // 'idle' | 'loading' | 'saved'
 
-// Target access only applies to CIDR; it decides between all endpoints of the
-// chosen CIDR and a hand-picked (checkbox) endpoint list.
-const scanAccessEffective = computed(() => (scanTargetType.value === 'IP Single' ? 'selected' : scanAccess.value))
+// The domain comes first, then Target access decides between all endpoints of
+// that domain and a hand-picked (checkbox) endpoint list.
 // Scan type + Date & Time only appear once the target itself is fully chosen.
+// Domain + access picked: Scan type shows alongside the Endpoint List.
+const scanTargetChosen = computed(() => scanTarget.value.length > 0 && !!scanAccess.value)
+// Selected endpoint additionally needs at least one endpoint before proceeding.
 const scanTargetReady = computed(() => {
-  if (!scanTargetType.value || !scanTarget.value.length) return false
-  if (scanTargetType.value === 'IP Single') return true
+  if (!scanTarget.value.length) return false
   if (!scanAccess.value) return false
   return scanAccess.value === 'all' || scanEndpoints.value.length > 0
 })
-// Dummy discovered endpoints of the chosen CIDR.
+// Dummy discovered endpoints of the chosen domain, listed by IP address.
 const scanEndpointOptions = computed(() =>
-  getDomainEndpoints().map((e) => ({ value: e.id, label: e.endpoint })),
+  getDomainEndpoints().map((e) => ({ value: e.id, label: e.ip })),
 )
-// IP Single can pick several endpoints (checkboxes); CIDR picks exactly one.
-const scanTargetIsMulti = computed(() => scanTargetType.value === 'IP Single')
-const scanTargetTypeOptions = [
-  { value: 'Domain', label: 'Domain' },
-]
 // Manual Scan runs immediately, so it takes no date & time.
 const scanNeedsNoDate = computed(() => scanType.value === 'manual_scan')
 const scanRecurrenceOptions = [
@@ -281,11 +276,8 @@ const scanAccessOptions = [
   { value: 'selected', label: 'Selected endpoint' },
   { value: 'all', label: 'All endpoints' },
 ]
-// Endpoint List only offers domains of the chosen target type.
 const scanTargetOptions = computed(() =>
-  domains.value
-    .filter((n) => n.targetType === scanTargetType.value)
-    .map((n) => ({ value: n.id, label: n.endpoint })),
+  domains.value.map((n) => ({ value: n.id, label: n.endpoint })),
 )
 const canProceedScan = computed(() => {
   if (!scanTargetReady.value || !scanType.value) return false
@@ -347,19 +339,12 @@ function pickScanType(value) {
   if (value !== 'continuous_scan') scanRecurrence.value = null
 }
 
-function pickScanTargetType(value) {
-  scanTargetType.value = value
-  scanTarget.value = []
-  scanEndpoints.value = []
-  if (value === 'IP Single') scanAccess.value = null
-}
 function pickScanAccess(value) {
   scanAccess.value = value
   scanEndpoints.value = []
 }
 
 function openScanModal() {
-  scanTargetType.value = null
   scanAccess.value = null
   scanTarget.value = []
   scanEndpoints.value = []
@@ -556,31 +541,17 @@ onMounted(() => {
             <div class="create-modal__body">
               <div v-show="!pickerOpen" class="create-modal__group">
                 <GlassField
-                  :model-value="scanTargetType"
-                  @update:model-value="pickScanTargetType"
+                  :model-value="scanTarget[0] ?? null"
+                  @update:model-value="(v) => { scanTarget = [v]; scanEndpoints = [] }"
                   type="select"
-                  label="Target type"
-                  placeholder="select target type..."
-                  required
-                  :options="scanTargetTypeOptions"
-                  error-text="Target type is required."
-                />
-
-                <GlassField
-                  v-if="scanTargetType"
-                  :model-value="scanTargetIsMulti ? scanTarget : (scanTarget[0] ?? null)"
-                  @update:model-value="(v) => { scanTarget = scanTargetIsMulti ? v : [v]; scanEndpoints = [] }"
-                  type="select"
-                  :multiple="scanTargetIsMulti"
-                  :label="scanTargetType === 'Domain' ? 'Domain List' : 'Endpoint List'"
-                  placeholder="select target asset..."
+                  label="Domain"
+                  placeholder="select domain..."
                   required
                   :options="scanTargetOptions"
-                  error-text="Endpoint is required."
+                  error-text="Domain is required."
                 />
 
                 <GlassField
-                  v-if="scanTargetType === 'Domain'"
                   :model-value="scanAccess"
                   @update:model-value="pickScanAccess"
                   type="select"
@@ -592,7 +563,7 @@ onMounted(() => {
                 />
 
                 <GlassField
-                  v-if="scanTargetType === 'Domain' && scanAccess === 'selected'"
+                  v-if="scanAccess === 'selected'"
                   v-model="scanEndpoints"
                   type="select"
                   multiple
@@ -604,7 +575,7 @@ onMounted(() => {
                 />
 
                 <GlassField
-                  v-if="scanTargetReady"
+                  v-if="scanTargetChosen"
                   :model-value="scanType"
                   @update:model-value="pickScanType"
                   type="select"
@@ -616,7 +587,7 @@ onMounted(() => {
                 />
 
                 <GlassField
-                  v-if="scanTargetReady && scanType === 'continuous_scan'"
+                  v-if="scanTargetChosen && scanType === 'continuous_scan'"
                   v-model="scanRecurrence"
                   type="select"
                   label="Recurrence"
@@ -627,7 +598,7 @@ onMounted(() => {
                 />
               </div>
 
-              <template v-if="scanTargetReady && scanType === 'scheduled_scan'">
+              <template v-if="scanTargetChosen && scanType === 'scheduled_scan'">
                 <div v-show="!anyScheduleOpen" class="schedule-block">
                   <span class="schedule-block__label">Scheduled Dates &amp; Times<span class="create-modal__required">*</span></span>
                 </div>
@@ -661,7 +632,7 @@ onMounted(() => {
                 </div>
               </template>
 
-              <template v-else-if="scanTargetReady && scanType && !scanNeedsNoDate">
+              <template v-else-if="scanTargetChosen && scanType && !scanNeedsNoDate">
                 <label v-show="!scanDateOpen" class="create-modal__label">{{ scanType === 'continuous_scan' ? 'Initial Date and Time' : 'Date & Time' }}<span class="create-modal__required">*</span></label>
                 <DateTimePicker
                   v-model="scanDate"
