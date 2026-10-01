@@ -71,7 +71,7 @@ onBeforeUnmount(() => {
         <NotificationTabs v-model="tab" :unread="store.unreadByTab" class="notif__tabs" />
 
         <div class="notif__list">
-          <NotificationItem v-for="n in visible" :key="n.id" :item="n" @open="openItem" />
+          <NotificationItem v-for="n in visible" :key="n.id" :item="n" @read="store.markRead($event.id)" @open="openItem" />
           <div v-if="!visible.length" class="notif__empty">
             <span class="notif__empty-icon"><IconBellOff :size="26" stroke-width="1.5" /></span>
             <p>No notifications here yet</p>

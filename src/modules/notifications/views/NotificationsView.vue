@@ -43,7 +43,7 @@ function openItem(n) {
     <NotificationTabs v-model="tab" :unread="store.unreadByTab" class="notifs__tabs" />
 
     <section class="notifs__card">
-      <NotificationItem v-for="n in pageItems" :key="n.id" :item="n" @open="openItem" />
+      <NotificationItem v-for="n in pageItems" :key="n.id" :item="n" @read="store.markRead($event.id)" @open="openItem" />
       <div v-if="!filtered.length" class="notifs__empty">
         <span class="notifs__empty-icon"><IconBellOff :size="30" stroke-width="1.5" /></span>
         <p>No notifications here yet</p>

@@ -1,15 +1,16 @@
 <script setup>
 import { computed } from 'vue'
-import { IconScan, IconListSearch, IconShieldCheck, IconServer, IconKey, IconTicket, IconUsers, IconBell } from '@tabler/icons-vue'
+import { IconScan, IconListSearch, IconShieldCheck, IconServer, IconKey, IconTicket, IconUsers, IconBell, IconArrowUpRight } from '@tabler/icons-vue'
 import { timeAgo } from '@/utils/helpers'
 
-// One notification row: icon, title, message, relative time and an unread dot. Clicking opens
-// the related page. There is deliberately no dismiss button (PRD 11.1: notifications are a
+// One notification row: icon, title, message, relative time and an unread dot. Clicking the row
+// marks it as read (`read`); the arrow button on the right opens the related page (`open`), the same
+// "↗" button the tables use. There is deliberately no dismiss button (PRD 11.1: notifications are a
 // persistent history log).
 const props = defineProps({
   item: { type: Object, required: true },
 })
-defineEmits(['open'])
+defineEmits(['read', 'open'])
 
 const ICONS = { 'N-SC': IconScan, 'N-AI': IconListSearch, 'N-RV': IconShieldCheck, 'N-IN': IconServer, 'N-CD': IconKey, 'N-TK': IconTicket, 'N-UM': IconUsers }
 const icon = computed(() => ICONS[props.item.code.slice(0, 4)] ?? IconBell)
@@ -18,15 +19,35 @@ const warn = computed(() => ['N-SC-02', 'N-AI-02', 'N-IN-01', 'N-IN-02', 'N-CD-0
 </script>
 
 <template>
-  <button type="button" class="n-item" :class="{ 'n-item--unread': !item.read }" @click="$emit('open', item)">
+  <div
+    class="n-item"
+    :class="{ 'n-item--unread': !item.read }"
+    role="button"
+    tabindex="0"
+    :aria-label="item.read ? item.title : `${item.title} (unread, press to mark as read)`"
+    @click="$emit('read', item)"
+    @keydown.enter.self="$emit('read', item)"
+  >
     <span class="n-item__icon" :class="{ 'n-item__icon--warn': warn }"><component :is="icon" :size="18" /></span>
     <span class="n-item__body">
       <span class="n-item__title">{{ item.title }}</span>
       <span class="n-item__msg">{{ item.message }}</span>
       <span class="n-item__time">{{ timeAgo(item.createdAt) }}</span>
     </span>
-    <span v-if="!item.read" class="n-item__dot" aria-label="Unread" />
-  </button>
+    <span class="n-item__side">
+      <span v-if="!item.read" class="n-item__dot" aria-label="Unread" />
+      <button
+        v-if="item.link"
+        type="button"
+        class="n-item__go"
+        :aria-label="`Open: ${item.title}`"
+        title="Open"
+        @click.stop="$emit('open', item)"
+      >
+        <IconArrowUpRight :size="16" />
+      </button>
+    </span>
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -44,6 +65,8 @@ const warn = computed(() => ['N-SC-02', 'N-AI-02', 'N-IN-01', 'N-IN-02', 'N-CD-0
   font-family: inherit;
   color: var(--glacia-ink);
   transition: background 0.13s;
+  box-sizing: border-box;
+  &:focus-visible { outline: 2px solid var(--glacia-red); outline-offset: -2px; }
 
   &:hover { background: var(--glacia-glass-fill-strong); }
   &:last-child { border-bottom: none; }
@@ -66,6 +89,23 @@ const warn = computed(() => ['N-SC-02', 'N-AI-02', 'N-IN-01', 'N-IN-02', 'N-CD-0
   &--unread &__title { font-weight: 700; }
   &__msg { font-size: 12.5px; line-height: 1.45; color: var(--glacia-ink-dim); overflow-wrap: anywhere; }
   &__time { font-size: 11.5px; color: var(--glacia-ink-dim); opacity: 0.8; }
-  &__dot { flex: none; width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; background: var(--glacia-red); }
+  // The unread dot is pinned to the top so the arrow sits at the same height on every row.
+  &__side { position: relative; flex: none; display: flex; align-items: center; align-self: stretch; }
+  &__dot { position: absolute; top: 2px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--glacia-red); }
+  // Same arrow button as the "view" action in the tables.
+  &__go {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: var(--glacia-radius-sm);
+    background: none;
+    color: var(--glacia-ink-dim);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.13s, color 0.13s;
+    &:hover { background: rgba(0, 0, 0, 0.05); color: var(--glacia-ink); }
+  }
 }
 </style>
