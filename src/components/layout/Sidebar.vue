@@ -1,5 +1,5 @@
 <script setup>
-import { ref, nextTick, watch, onMounted } from 'vue'
+import { ref, nextTick, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import logoIcon from '@/assets/sentrava-logo-icon.svg'
 import { navSections as sections } from '@/config/navSections'
@@ -58,13 +58,32 @@ function movePill() {
 }
 
 watch(() => route.path, () => nextTick(movePill))
-// The collapse/expand width transition (0.22s) reflows every item's
-// position — resnap once immediately and once after it settles.
-watch(() => props.collapsed, () => {
+
+// While the sidebar animates its width the pill follows it frame by frame (its own
+// left/width transition is switched off meanwhile), so it never lags behind or
+// overshoots the item it sits on. Position changes between items still slide.
+const resizing = ref(false)
+let resizeObserver = null
+let resizeTimer = null
+function onNavResize() {
+  resizing.value = true
+  movePill()
+  clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(() => { resizing.value = false }, 150)
+}
+onMounted(() => {
   nextTick(movePill)
-  setTimeout(movePill, 240)
+  if (typeof ResizeObserver !== 'undefined' && navRef.value) {
+    resizeObserver = new ResizeObserver(onNavResize)
+    resizeObserver.observe(navRef.value)
+  }
 })
-onMounted(() => nextTick(movePill))
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  clearTimeout(resizeTimer)
+})
+// Safety net: re-snap once the collapse/expand transition has settled.
+watch(() => props.collapsed, () => setTimeout(movePill, 260))
 </script>
 
 <template>
@@ -80,18 +99,21 @@ onMounted(() => nextTick(movePill))
 
     <!-- ── Nav ──────────────────────────────────────────────────── -->
     <nav ref="navRef" class="sidebar__nav">
-      <div class="sidebar__pill" :style="pillStyle" />
+      <div class="sidebar__pill" :class="{ 'sidebar__pill--resizing': resizing }" :style="pillStyle" />
 
       <div
         v-for="section in sections"
         :key="section.label"
         class="sidebar__section"
       >
-        <transition name="label-fade">
-          <p v-if="!props.collapsed" class="sidebar__section-label">{{ section.label }}</p>
-        </transition>
-        <!-- collapsed divider replaces the label -->
-        <div v-if="props.collapsed" class="sidebar__section-divider" />
+        <!-- Fixed-height slot: the label (expanded) and the divider (collapsed) are both absolutely
+             positioned inside it, so toggling never moves the items below. -->
+        <div class="sidebar__section-head">
+          <transition name="label-fade">
+            <p v-if="!props.collapsed" class="sidebar__section-label">{{ section.label }}</p>
+          </transition>
+          <div v-if="props.collapsed" class="sidebar__section-divider" />
+        </div>
 
         <router-link
           v-for="item in section.items"
@@ -197,31 +219,47 @@ $w-collapsed:  64px;
       opacity 0.15s ease;
   }
 
+  &__pill--resizing {
+    transition: top 0.28s cubic-bezier(0.3, 1.15, 0.5, 1), height 0.28s cubic-bezier(0.3, 1.15, 0.5, 1),
+      opacity 0.15s ease;
+  }
+
   &__section {
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
 
+  &__section-head {
+    position: relative;
+    height: 17px; // label (13px) + its 4px gap
+    flex-shrink: 0;
+  }
+
   &__section-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
     font-size: 10.5px;
     font-weight: 600;
     letter-spacing: 0.09em;
     text-transform: uppercase;
     color: var(--glacia-ink-dim);
     padding: 0 10px;
-    margin-bottom: 4px;
     user-select: none;
     white-space: nowrap;
     opacity: 0.7;
   }
 
-  // Same total height as a section label (17px) so the items below keep their position
-  // when the sidebar collapses.
   &__section-divider {
+    position: absolute;
+    top: 2px;
+    left: 6px;
+    right: 6px;
     height: 1px;
     background: var(--glacia-glass-border);
-    margin: 2px 6px 14px;
   }
 
   // ── Nav item ────────────────────────────────────────────────────
