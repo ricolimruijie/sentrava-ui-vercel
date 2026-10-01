@@ -186,7 +186,7 @@ $w-collapsed:  64px;
     font-weight: 800;
     letter-spacing: 0.13em;
     text-transform: uppercase;
-    color: var(--glacia-ink);
+    color: #FB0207; // same red as the logo icon (src/assets/sentrava-logo-icon.svg), in light and dark
     user-select: none;
     white-space: nowrap;
   }
