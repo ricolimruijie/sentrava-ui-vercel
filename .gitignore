@@ -20,3 +20,6 @@ Thumbs.db
 opencode.json
 .claude/settings.local.json
 .codegraph
+
+# Stray screenshots from test scripts (design references belong in docs/)
+/*.png
