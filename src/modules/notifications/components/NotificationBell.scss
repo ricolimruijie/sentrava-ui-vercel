@@ -79,10 +79,12 @@
     &:hover:not(:disabled) { background: rgba(255, 37, 41, 0.08); }
     &:disabled { color: var(--glacia-ink-dim); opacity: 0.55; cursor: default; }
   }
-  // Equal-width tabs stretched across the panel.
-  &__tabs { flex-shrink: 0; display: grid; box-sizing: border-box; padding: 8px 12px 10px; border-bottom: 1px solid var(--glacia-glass-border); }
+  // Tab bar (same pill tabs as the Company page), stretched across the panel.
+  &__tabsbar { flex-shrink: 0; padding: 8px 12px 10px; border-bottom: 1px solid var(--glacia-glass-border); }
+  // The panel is white, so the bar gets a light tint (the Company page's bar sits on a grey page).
+  &__tabsbar &__tabs { width: 100%; background: rgba(var(--tint), 0.06); border-color: rgba(var(--tint), 0.08); }
 
-  &__list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  &__list { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; }
   &__empty {
     display: flex;
     flex-direction: column;
@@ -118,6 +120,15 @@
     &:hover { background: var(--glacia-glass-fill-strong); }
   }
 }
+
+.tab-forward-enter-active,
+.tab-forward-leave-active,
+.tab-backward-enter-active,
+.tab-backward-leave-active { transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.34, 0.8, 0.6, 1); }
+.tab-forward-enter-from  { opacity: 0; transform: translateX(18px); }
+.tab-forward-leave-to    { opacity: 0; transform: translateX(-18px); }
+.tab-backward-enter-from { opacity: 0; transform: translateX(-18px); }
+.tab-backward-leave-to   { opacity: 0; transform: translateX(18px); }
 
 .notif-pop-enter-active { transition: opacity 0.15s ease, transform 0.15s ease; }
 .notif-pop-leave-active { transition: opacity 0.1s ease, transform 0.1s ease; }

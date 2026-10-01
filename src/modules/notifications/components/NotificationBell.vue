@@ -3,9 +3,9 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { IconBell, IconChecks, IconBellOff } from '@tabler/icons-vue'
 import NotificationItem from '@/modules/notifications/components/NotificationItem.vue'
-import NotificationTabs from '@/modules/notifications/components/NotificationTabs.vue'
+import PillTabs from '@/components/common/PillTabs.vue'
 import { useNotificationStore } from '@/modules/notifications/store/notifications'
-import { PANEL_LIMIT } from '@/modules/notifications/utils/catalogue'
+import { TABS, PANEL_LIMIT } from '@/modules/notifications/utils/catalogue'
 
 // The bell in the top navigation (on every page): unread badge, and a panel with the five tabs,
 // the 50 most recent notifications, "Mark all as read" and a "View all" link (PRD section 11).
@@ -14,6 +14,15 @@ const router = useRouter()
 
 const open = ref(false)
 const tab = ref('all')
+const tabs = computed(() => TABS.map((t) => ({ ...t, badge: store.unreadByTab[t.key] })))
+// Same motion as the Company tabs: the list slides in the direction you moved.
+const keys = TABS.map((t) => t.key)
+const tabTransition = ref('tab-forward')
+function selectTab(key) {
+  if (key === tab.value) return
+  tabTransition.value = keys.indexOf(key) >= keys.indexOf(tab.value) ? 'tab-forward' : 'tab-backward'
+  tab.value = key
+}
 const root = ref(null)
 
 const visible = computed(() => store.forTab(tab.value, store.recent))
@@ -68,14 +77,20 @@ onBeforeUnmount(() => {
           </button>
         </div>
 
-        <NotificationTabs v-model="tab" :unread="store.unreadByTab" class="notif__tabs" />
+        <div class="notif__tabsbar">
+          <PillTabs :model-value="tab" :tabs="tabs" equal size="sm" class="notif__tabs" @update:model-value="selectTab" />
+        </div>
 
         <div class="notif__list">
-          <NotificationItem v-for="n in visible" :key="n.id" :item="n" @read="store.markRead($event.id)" @open="openItem" />
-          <div v-if="!visible.length" class="notif__empty">
-            <span class="notif__empty-icon"><IconBellOff :size="26" stroke-width="1.5" /></span>
-            <p>No notifications here yet</p>
-          </div>
+          <Transition :name="tabTransition" mode="out-in">
+            <div :key="tab" class="notif__items">
+              <NotificationItem v-for="n in visible" :key="n.id" :item="n" @read="store.markRead($event.id)" @open="openItem" />
+              <div v-if="!visible.length" class="notif__empty">
+                <span class="notif__empty-icon"><IconBellOff :size="26" stroke-width="1.5" /></span>
+                <p>No notifications here yet</p>
+              </div>
+            </div>
+          </Transition>
         </div>
 
         <div class="notif__foot">

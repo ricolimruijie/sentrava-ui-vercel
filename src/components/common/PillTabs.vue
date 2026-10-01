@@ -8,6 +8,8 @@ const props = defineProps({
   modelValue: { type: String, required: true },
   tabs: { type: Array, required: true },
   equal: { type: Boolean, default: false },
+  // 'sm' is the tighter size used inside the bell panel.
+  size: { type: String, default: 'md' },
 })
 defineEmits(['update:modelValue'])
 
@@ -35,7 +37,7 @@ watch(() => props.tabs.map((t) => t.label).join('|'), () => nextTick(movePill))
 </script>
 
 <template>
-  <div class="pill-tabs" :class="{ 'pill-tabs--equal': equal }" role="tablist">
+  <div class="pill-tabs" :class="{ 'pill-tabs--equal': equal, 'pill-tabs--sm': size === 'sm' }" role="tablist">
     <div class="pill-tabs__pill" :class="{ 'pill-tabs__pill--ready': ready }" :style="pill"></div>
     <button
       v-for="tab in tabs"
@@ -73,6 +75,9 @@ watch(() => props.tabs.map((t) => t.label).join('|'), () => nextTick(movePill))
     grid-auto-flow: column;
     grid-auto-columns: 1fr;
   }
+
+  &--sm { padding: 4px; gap: 2px; }
+  &--sm &__item { padding: 7px 8px; font-size: 12px; }
 
   &__pill {
     position: absolute;
