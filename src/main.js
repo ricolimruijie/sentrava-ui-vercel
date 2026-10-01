@@ -64,7 +64,7 @@ app.directive('tooltip', Tooltip)
   }
 
   // Restore auth state from localStorage before the router's first navigation
-  const { useAuthStore } = await import('./store/auth')
+  const { useAuthStore } = await import('@/stores/auth')
   useAuthStore().hydrateFromStorage()
 
   app.mount('#app')

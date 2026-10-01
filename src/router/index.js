@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { h } from 'vue'
-import { useAuthStore } from '@/store/auth'
+import { useAuthStore } from '@/stores/auth'
 import AppLayout    from '@/components/layout/AppLayout.vue'
 import authRoutes   from './auth'
 import dashboardRoutes from './dashboard'
@@ -25,14 +25,14 @@ const appRoutes = [
   ...dashboardRoutes,
   {
     path: '/assets',
-    component: () => import('@/views/Assets/AssetInventoryView.vue'),
+    component: () => import('@/modules/asset-inventory/views/AssetInventoryView.vue'),
     meta: { requiresAuth: true, title: 'Asset Inventory', crumbs: [{ label: 'Manage' }] },
   },
   // Services — each shows a blank Work in Progress page
-  { path: '/assets/domains',     component: () => import('@/views/Assets/DomainView.vue'), meta: { requiresAuth: true, title: 'Domain Inspection', crumbs: [{ label: 'Services' }] } },
+  { path: '/assets/domains',     component: () => import('@/modules/domain-inspection/views/DomainView.vue'), meta: { requiresAuth: true, title: 'Domain Inspection', crumbs: [{ label: 'Services' }] } },
   {
     path: '/assets/domains/:id',
-    component: () => import('@/views/Assets/DomainDetailView.vue'),
+    component: () => import('@/modules/domain-inspection/views/DomainDetailView.vue'),
     meta: {
       requiresAuth: true,
       title: 'Domain Detail',
@@ -41,10 +41,10 @@ const appRoutes = [
       tabLabels: { findings: 'Endpoint Findings', reputation: 'Domain Reputation' },
     },
   },
-  { path: '/assets/networks',    component: () => import('@/views/Assets/NetworkView.vue'), meta: { requiresAuth: true, title: 'Network', crumbs: [{ label: 'Services' }] } },
+  { path: '/assets/networks',    component: () => import('@/modules/network/views/NetworkView.vue'), meta: { requiresAuth: true, title: 'Network', crumbs: [{ label: 'Services' }] } },
   {
     path: '/assets/networks/:id',
-    component: () => import('@/views/Assets/NetworkDetailView.vue'),
+    component: () => import('@/modules/network/views/NetworkDetailView.vue'),
     meta: {
       requiresAuth: true,
       title: 'Network Detail',
@@ -53,10 +53,10 @@ const appRoutes = [
       tabLabels: { findings: 'Endpoint Findings' },
     },
   },
-  { path: '/assets/webapps',     component: () => import('@/views/Assets/WebAppView.vue'), meta: { requiresAuth: true, title: 'Web Application', crumbs: [{ label: 'Services' }] } },
+  { path: '/assets/webapps',     component: () => import('@/modules/web-application/views/WebAppView.vue'), meta: { requiresAuth: true, title: 'Web Application', crumbs: [{ label: 'Services' }] } },
   {
     path: '/assets/webapps/:id',
-    component: () => import('@/views/Assets/WebAppDetailView.vue'),
+    component: () => import('@/modules/web-application/views/WebAppDetailView.vue'),
     meta: {
       requiresAuth: true,
       title: 'Web Application Detail',
@@ -65,12 +65,12 @@ const appRoutes = [
   },
   {
     path: '/assets/source-code',
-    component: () => import('@/views/Assets/SourceCodeView.vue'),
+    component: () => import('@/modules/source-code/views/SourceCodeView.vue'),
     meta: { requiresAuth: true, title: 'Source Code', crumbs: [{ label: 'Services' }] },
   },
   {
     path: '/assets/source-code/:id',
-    component: () => import('@/views/Assets/SourceCodeDetailView.vue'),
+    component: () => import('@/modules/source-code/views/SourceCodeDetailView.vue'),
     meta: {
       requiresAuth: true,
       title: 'Source Code Detail',
@@ -79,12 +79,12 @@ const appRoutes = [
   },
   {
     path: '/scans/history',
-    component: () => import('@/views/Scans/CiCdView.vue'),
+    component: () => import('@/modules/scans/views/CiCdView.vue'),
     meta: { requiresAuth: true, title: 'Report Log', crumbs: [{ label: 'CI/CD' }] },
   },
   {
     path: '/scans/history/:runId/vulnerabilities',
-    component: () => import('@/views/Scans/VulnerabilityOverviewView.vue'),
+    component: () => import('@/modules/scans/views/VulnerabilityOverviewView.vue'),
     meta: {
       requiresAuth: true,
       title: 'Vulnerability Overview',
@@ -96,7 +96,7 @@ const appRoutes = [
   { path: '/reports',             component: Placeholder, meta: { requiresAuth: true } },
   {
     path: '/settings',
-    component: () => import('@/views/Settings/SettingsView.vue'),
+    component: () => import('@/modules/settings/views/SettingsView.vue'),
     meta: {
       requiresAuth: true,
       title: 'Settings',
@@ -108,12 +108,12 @@ const appRoutes = [
   },
   {
     path: '/settings/api-keys',
-    component: () => import('@/views/Settings/ApiKeysView.vue'),
+    component: () => import('@/modules/settings/views/ApiKeysView.vue'),
     meta: { requiresAuth: true, title: 'API Keys', crumbs: [{ label: 'CI/CD' }] },
   },
   {
     path: '/companies',
-    component: () => import('@/views/Company/CompanyView.vue'),
+    component: () => import('@/modules/company/views/CompanyView.vue'),
     meta: {
       requiresAuth: true,
       title: 'Company',
@@ -127,7 +127,7 @@ const appRoutes = [
   },
   {
     path: '/companies/:id',
-    component: () => import('@/views/Company/CompanyMembersView.vue'),
+    component: () => import('@/modules/company/views/CompanyMembersView.vue'),
     meta: {
       requiresAuth: true,
       title: 'Company Members',
@@ -143,12 +143,12 @@ const appRoutes = [
   { path: '/credits',             component: Placeholder, meta: { requiresAuth: true } },
   {
     path: '/tickets',
-    component: () => import('@/views/Tickets/TicketListView.vue'),
+    component: () => import('@/modules/tickets/views/TicketListView.vue'),
     meta: { requiresAuth: true, title: 'Ticket', crumbs: [{ label: 'Manage' }] },
   },
   {
     path: '/tickets/:id',
-    component: () => import('@/views/Tickets/TicketDetailView.vue'),
+    component: () => import('@/modules/tickets/views/TicketDetailView.vue'),
     meta: { requiresAuth: true, title: 'Ticket Detail', crumbs: [{ label: 'Manage' }, { label: 'Ticket', to: '/tickets' }] },
   },
 ]

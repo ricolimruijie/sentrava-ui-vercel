@@ -1,7 +1,7 @@
 import { watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useCompanyStore } from '@/store/company'
-import { useAuthStore }    from '@/store/auth'
+import { useCompanyStore } from '@/stores/company'
+import { useAuthStore }    from '@/stores/auth'
 
 export function useCompanyContext() {
   const route        = useRoute()

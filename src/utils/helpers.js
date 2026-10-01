@@ -1,4 +1,4 @@
-import { SEVERITY_COLORS, STATUS_COLORS, ACTIVITY_CATEGORY_COLORS, ACTIVITY_CATEGORY_LABELS } from './constants'
+import { SEVERITY_COLORS, STATUS_COLORS, ACTIVITY_CATEGORY_COLORS, ACTIVITY_CATEGORY_LABELS } from '@/constants'
 
 export function formatNumber(n) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
@@ -67,4 +67,56 @@ export function trendClass(change) {
 
 export function sleep(ms) {
   return new Promise(r => setTimeout(r, ms))
+}
+
+// e.g. "March 5, 2026"
+export function formatDateLong(iso) {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+}
+
+// e.g. "Thu, 5 Mar 2026, 14:30"
+export function formatShortDateTime(iso) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return formatShortDate(iso)
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })
+  return `${formatShortDate(d)}, ${time}`
+}
+
+// e.g. "5 March 2026, 14:30"
+export function formatLongDateTime24(iso) {
+  const d = new Date(iso)
+  const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })
+  return `${date}, ${time}`
+}
+
+// e.g. "March 5, 2026 at 2:30 PM"
+export function formatLongDateTime12(iso) {
+  return new Date(iso).toLocaleString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
+  })
+}
+
+// e.g. "March 5 2026 2:30 PM", or "—" for an invalid date
+export function formatLongDateTimeCompact(iso) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '—'
+  const date = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).replace(',', '')
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  return `${date} ${time}`
+}
+
+// e.g. "5 Mar 2026", or "—" when empty
+export function formatDayMonthYear(iso) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+// e.g. "5 Mar · 2:30 PM", or "—" when empty
+export function formatDayMonthTime(iso) {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+    + ' · '
+    + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }

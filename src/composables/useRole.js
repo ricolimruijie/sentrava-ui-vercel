@@ -1,6 +1,6 @@
 import { computed } from 'vue'
-import { useAuthStore } from '@/store/auth'
-import { ROLES } from '@/utils/constants'
+import { useAuthStore } from '@/stores/auth'
+import { ROLES } from '@/constants'
 
 export function useRole() {
   const auth = useAuthStore()

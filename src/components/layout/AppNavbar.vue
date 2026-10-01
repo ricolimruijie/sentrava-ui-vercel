@@ -1,12 +1,12 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/store/auth'
+import { useAuthStore } from '@/stores/auth'
 import { navSections } from '@/config/navSections'
-import { get } from '@/utils/request'
+import { getCompanyList } from '@/modules/company/services/companyService'
 import { dashboardOrigin } from '@/utils/navOrigin'
 import { useFetch } from '@/composables/useFetch'
-import FilterDropdown from '@/components/filter/FilterDropdown.vue'
+import FilterDropdown from '@/components/common/FilterDropdown.vue'
 import {
   IconBell,
   IconSun,
@@ -19,7 +19,7 @@ import {
   IconChevronsRight,
   IconPlus,
 } from '@tabler/icons-vue'
-import CreateCompanyModal from '@/components/company/CreateCompanyModal.vue'
+import CreateCompanyModal from '@/modules/company/components/CreateCompanyModal.vue'
 import Avatar from 'primevue/avatar'
 import { useTheme } from '@/composables/useTheme'
 
@@ -103,7 +103,7 @@ const breadcrumbTitle = computed(() => activeTabLabel.value ?? route.meta.title)
 // ── Company-page-only navbar controls ────────────────────────────────────────
 const isCompanyPage = computed(() => route.path === '/companies')
 
-const { data: companyList } = useFetch(() => get('/company/list'))
+const { data: companyList } = useFetch(() => getCompanyList())
 const companyOptions = computed(() =>
   (companyList.value ?? [])
     .filter((c) => (c.type ?? '').toLowerCase() === 'head company')

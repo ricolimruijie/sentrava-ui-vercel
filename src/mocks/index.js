@@ -1,4 +1,4 @@
-import { registerMock } from '@/utils/request'
+import { registerMock } from '@/services/api/client'
 import { clientDashboardMock, emptyClientDashboard } from './dashboard/client'
 import { emptyData } from '@/utils/dataMode'
 import { superAdminDashboardMock } from './dashboard/superAdmin'
