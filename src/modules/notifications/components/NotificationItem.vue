@@ -28,6 +28,7 @@ const warn = computed(() => ['N-SC-02', 'N-AI-02', 'N-IN-01', 'N-IN-02', 'N-CD-0
     @click="$emit('read', item)"
     @keydown.enter.self="$emit('read', item)"
   >
+    <span v-if="!item.read" class="n-item__dot" aria-label="Unread" />
     <span class="n-item__icon" :class="{ 'n-item__icon--warn': warn }"><component :is="icon" :size="18" /></span>
     <span class="n-item__body">
       <span class="n-item__title">{{ item.title }}</span>
@@ -35,7 +36,6 @@ const warn = computed(() => ['N-SC-02', 'N-AI-02', 'N-IN-01', 'N-IN-02', 'N-CD-0
       <span class="n-item__time">{{ timeAgo(item.createdAt) }}</span>
     </span>
     <span class="n-item__side">
-      <span v-if="!item.read" class="n-item__dot" aria-label="Unread" />
       <button
         v-if="item.link"
         type="button"
@@ -65,6 +65,7 @@ const warn = computed(() => ['N-SC-02', 'N-AI-02', 'N-IN-01', 'N-IN-02', 'N-CD-0
   font-family: inherit;
   color: var(--glacia-ink);
   transition: background 0.13s;
+  position: relative;
   box-sizing: border-box;
   &:focus-visible { outline: 2px solid var(--glacia-red); outline-offset: -2px; }
 
@@ -89,9 +90,9 @@ const warn = computed(() => ['N-SC-02', 'N-AI-02', 'N-IN-01', 'N-IN-02', 'N-CD-0
   &--unread &__title { font-weight: 700; }
   &__msg { font-size: 12.5px; line-height: 1.45; color: var(--glacia-ink-dim); overflow-wrap: anywhere; }
   &__time { font-size: 11.5px; color: var(--glacia-ink-dim); opacity: 0.8; }
-  // The unread dot is pinned to the top so the arrow sits at the same height on every row.
-  &__side { position: relative; flex: none; display: flex; align-items: center; align-self: stretch; }
-  &__dot { position: absolute; top: 2px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--glacia-red); }
+  &__side { flex: none; display: flex; align-items: center; align-self: stretch; }
+  // Unread dot on the left edge of the row, level with the middle of the icon.
+  &__dot { position: absolute; left: 5px; top: 25px; width: 8px; height: 8px; border-radius: 50%; background: var(--glacia-red); }
   // Same arrow button as the "view" action in the tables.
   &__go {
     width: 30px;
