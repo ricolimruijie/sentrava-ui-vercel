@@ -2,6 +2,7 @@ import { registerMock } from '@/services/api/client'
 import { clientDashboardMock, emptyClientDashboard } from './dashboard/client'
 import { emptyData } from '@/utils/dataMode'
 import { createLockoutTracker, lockedMessage } from '@/modules/auth/utils/lockout'
+import * as notificationsMock from './notifications/notifications'
 import { apiKeysMock }             from './settings/apiKeys'
 import { cicdRunsMock }            from './scans/cicd'
 import { vulnerabilitiesMock }     from './scans/vulnerabilities'
@@ -52,6 +53,12 @@ registerMock(/^\/assets\/source-code\/\d+\/scans$/,          (url) => getSourceC
 // would otherwise also match the plain /scans/history list below.
 registerMock(/\/scans\/history\/[^/]+\/vulnerabilities/, () => (emptyData.value ? [] : vulnerabilitiesMock))
 registerMock(/\/scans\/history/, () => (emptyData.value ? [] : cicdRunsMock))
+
+// ── Notifications ────────────────────────────────────────────────────────────
+// Specific patterns first: /notifications/read-all and /notifications/:id/read would also match the list pattern.
+registerMock(/^\/notifications\/read-all$/, () => { notificationsMock.markAllRead(); return { ok: true } })
+registerMock(/^\/notifications\/[^/]+\/read$/, (url) => { notificationsMock.markRead(url.split('/')[2]); return { ok: true } })
+registerMock(/^\/notifications$/, () => (emptyData.value ? [] : notificationsMock.listForCurrentUser()))
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 // Always succeeds — the real endpoint must not reveal whether the email has an account.

@@ -88,7 +88,8 @@ src/
     company/              # company page (tabs/), members, quota + integration modals
     dashboard/            # Client/SuperAdmin dashboards + widgets (scan modal via config/scanModules.js)
     settings/             # Settings (Profile, 2FA), API keys
-    auth/                 # login, forgot password
+    auth/                 # login, forgot password, lockout + session rules (utils/)
+    notifications/        # bell + panel (components/), /notifications history page, store, catalogue (utils/)
 docs/design-references/   # design reference snippets (not part of the build)
 ```
 
@@ -111,6 +112,7 @@ styles in a sibling `Name.scss` (`<style scoped lang="scss" src="./Name.scss">`)
   - `/settings/api-keys` → API key list/create/edit/revoke
   - `/companies` → Company page, tab via `?tab=` (`overview|list|audit|probe`), breadcrumb reflects tab; `/companies/:id` → sub company members
   - `/tickets` → ticket list; `/tickets/:id` → ticket detail
+  - `/notifications` → full notification history (the bell's "View all")
 - Stubbed (`Placeholder`): `/scans/:section?`, `/vulnerabilities`, `/reports`, `/credits`.
 
 Auth flow: `LoginView` → `auth.login()` → `POST /auth/login` → stores `token`/`user`, writes `sentra_token` to localStorage, Pinia persisted as `auth`. Boot calls `hydrateFromStorage()` before first navigation. 401 interceptor clears token and redirects to `/login`. Role-specific UI is gated through `useRole()` only.
@@ -120,7 +122,7 @@ Auth flow: `LoginView` → `auth.login()` → `POST /auth/login` → stores `tok
 `src/services/api/client.js` exports `request/get/post/put/patch/del`:
 
 - **Live mode:** axios client with `Authorization: Bearer <sentra_token>`, 15s timeout, `res.data` unwrap.
-- **Static mode:** `registerMock(/pattern/, handler)` registry with ~80–260ms fake latency. Patterns cover `/dashboard/client`, `/settings/api-keys`, `/company/info|members|list|audit-log|probes`, `/scans/history`, `/scans/history/:id/vulnerabilities`, `/auth/login`, `/auth/forgot-password`. Asset sample data lives in `src/mocks/assets/`.
+- **Static mode:** `registerMock(/pattern/, handler)` registry with ~80–260ms fake latency. Patterns cover `/dashboard/client`, `/settings/api-keys`, `/company/info|members|list|audit-log|probes`, `/scans/history`, `/scans/history/:id/vulnerabilities`, `/auth/login`, `/auth/forgot-password`, `/notifications` (+ `/read-all`, `/:id/read`). Asset sample data lives in `src/mocks/assets/`.
 - `useFetch(fetchFn)` gives `{ data, loading, error, execute, refresh }` for view-level loading.
 - `constants/index.js`: `ROLES`, `ASSET_TYPES` (domain/network/webapp/source_code/url_crawl), `SCAN_ENGINES` (Greenbone/Nuclei/Semgrep/Katana), `SEVERITY` + colors, `STATUS` + colors, activity category colors/labels.
 - `helpers.js`: `formatNumber/Date/RelativeTime`, `greeting`, `severityColor/statusColor/activityColor/activityLabel`, `sleep`.
@@ -139,6 +141,14 @@ Auth flow: `LoginView` → `auth.login()` → `POST /auth/login` → stores `tok
 - PrimeVue Aura + `SentraPreset` (red primary scale), `darkModeSelector: '.dark'`, `prefix: 'p'`, `cssLayer: false`.
 - Global tokens in `design-tokens.css` (`--color-surface/bg/border/text-*`, `--color-primary*`, `--radius-card/sm`, `--shadow-card/lg`, `--text-*`); SCSS helpers in `_variables.scss` (`below($bp-lg)` etc.).
 - `AppLayout` glass style: fixed gradient blobs + sidebar/navbar/content shell, collapsible sidebar.
+
+## Notifications
+
+PRD section 11, in `src/modules/notifications/`. The bell in the navbar (on every page) shows an unread badge and opens a panel with the tabs All / Scans / Infrastructure / Tickets / System, the 50 most recent notifications, **Mark all as read** and **View all** (`/notifications`, 20 per page). Notifications can't be dismissed. Read/unread is kept per user, notifications older than 90 days are never shown, and a user only gets the ones for their role and companies (Super Admin counts as assigned to every company). The store polls every 30 seconds.
+
+- `utils/catalogue.js` holds all 19 PRD notification types (wording, tab, recipients) and the visibility rules; it is unit tested.
+- In static mode the backend is mocked in `src/mocks/notifications/` (seeded history in `localStorage`, key `sentra_mock_notifications`; delete it to reseed). A few real actions create notifications through `utils/notifyMock.js`: creating a ticket (N-TK-01), closing one (N-TK-04), deleting an API key (N-CD-03) and inviting a user (N-UM-01). In live mode the backend must create them.
+- The PRD doesn't assign re-validation notifications (N-RV-*) to a tab, so they only appear under All.
 
 ## Roles
 

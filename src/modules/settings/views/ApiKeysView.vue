@@ -1,5 +1,7 @@
 <script setup>
 import { useRole } from '@/composables/useRole'
+import { useAuthStore } from '@/stores/auth'
+import { notifyMock } from '@/utils/notifyMock'
 import { formatDateLong } from '@/utils/helpers'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { getApiKeys } from '@/modules/settings/services/apiKeysService'
@@ -193,8 +195,11 @@ function closeRevokeModal() {
 function confirmRevoke() {
   if (!revokingItem.value || !revokeAcknowledged.value || revokeState.value !== 'idle') return
   revokeState.value = 'loading'
+  const keyName = revokingItem.value.name
   setTimeout(() => {
     data.value = (data.value ?? []).filter((k) => k.id !== revokingItem.value.id)
+    // N-CD-03: tell Super Admin and the company's admins (the real backend does this itself).
+    notifyMock('N-CD-03', { vars: { key: keyName }, companyId: useAuthStore().user?.companies?.[0]?.id ?? 'c1', link: '/settings/api-keys' })
     tableRef.value?.pagination.goTo(tableRef.value.pagination.page.value) // re-clamp in case the last page just emptied out
     revokeState.value = 'saved'
     setTimeout(closeRevokeModal, 700)

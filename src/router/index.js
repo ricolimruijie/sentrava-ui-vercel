@@ -154,6 +154,11 @@ const appRoutes = [
   },
   { path: '/credits',             component: Placeholder, meta: { requiresAuth: true } },
   {
+    path: '/notifications',
+    component: () => import('@/modules/notifications/views/NotificationsView.vue'),
+    meta: { requiresAuth: true, title: 'Notifications', crumbs: [] },
+  },
+  {
     path: '/tickets',
     component: () => import('@/modules/tickets/views/TicketListView.vue'),
     meta: { requiresAuth: true, title: 'Ticket', crumbs: [{ label: 'Manage' }] },

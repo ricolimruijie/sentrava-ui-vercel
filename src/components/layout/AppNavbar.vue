@@ -3,13 +3,13 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useRole } from '@/composables/useRole'
+import NotificationBell from '@/modules/notifications/components/NotificationBell.vue'
 import { navSections } from '@/config/navSections'
 import { getCompanyList } from '@/modules/company/services/companyService'
 import { dashboardOrigin } from '@/utils/navOrigin'
 import { useFetch } from '@/composables/useFetch'
 import FilterDropdown from '@/components/common/FilterDropdown.vue'
 import {
-  IconBell,
   IconSun,
   IconMoon,
   IconChevronDown,
@@ -215,10 +215,7 @@ function openCreateCompany() {
         </span>
       </button>
 
-      <button class="navbar__icon-btn navbar__icon-btn--notif" aria-label="Notifications">
-        <IconBell :size="18" />
-        <span class="notif-dot" />
-      </button>
+      <NotificationBell />
 
       <div class="navbar__divider" />
 

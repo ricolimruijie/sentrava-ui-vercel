@@ -1,4 +1,5 @@
 <script setup>
+import { notifyMock } from '@/utils/notifyMock'
 import { useRole } from '@/composables/useRole'
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import QuotaInfoModal from '@/modules/company/components/QuotaInfoModal.vue'
@@ -464,6 +465,13 @@ function submitInviteUser() {
       email: inviteEmail.value.trim(),
       role: inviteRole.value,
       companyLocation: inviteLocation.value,
+    })
+    // N-UM-01: tell the company's admins about the invitation (the real backend does this itself).
+    const roleLabel = inviteRoleOptions.find((o) => o.value === inviteRole.value)?.label ?? inviteRole.value
+    notifyMock('N-UM-01', {
+      vars: { user: inviteEmail.value.trim(), company: company.value?.name ?? 'the company', role: roleLabel },
+      companyId: company.value?.id ?? 'c1',
+      link: '/companies',
     })
     inviteState.value = 'saved'
     setTimeout(closeInviteModal, 700)

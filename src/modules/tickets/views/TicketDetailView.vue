@@ -5,6 +5,7 @@ import { formatShortDate } from '@/utils/helpers'
 import { useTicketStore } from '@/modules/tickets/store/tickets'
 import { useRole } from '@/composables/useRole'
 import { useAuthStore } from '@/stores/auth'
+import { notifyMock, demoUserId } from '@/utils/notifyMock'
 import { sampleTicketOwners, canViewTicket } from '@/modules/tickets/utils/visibility'
 import { IconUser, IconPhoto, IconFile, IconSend2, IconArrowLeft, IconX, IconTicket, IconCheck } from '@tabler/icons-vue'
 
@@ -209,6 +210,11 @@ function sendReply() {
 
 function closeTicket() {
   ticket.value.isClosed = true
+  // N-TK-04: tell the ticket's creator it was closed (the real backend does this itself).
+  const id = String(ticketId.value)
+  demoUserId(ticket.value.submitter).then((creator) => {
+    if (creator) notifyMock('N-TK-04', { vars: { ticket: id }, userIds: [creator], link: `/tickets/${id}` })
+  })
   messages.value.push({ id: `s-${Date.now()}`, kind: 'system', text: 'Ticket <b>Closed</b> by user', time: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) })
 }
 

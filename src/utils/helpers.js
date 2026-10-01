@@ -125,3 +125,17 @@ export function formatDayMonthTime(iso) {
 export function severityLabel(sev) {
   return sev ? sev.charAt(0).toUpperCase() + sev.slice(1) : ''
 }
+
+// "Just now", "2 min ago", "3 hours ago", "2 days ago", then a plain date after a week.
+export function timeAgo(iso, now = Date.now()) {
+  const diff = now - new Date(iso).getTime()
+  const mins = Math.floor(diff / 60_000)
+  const hours = Math.floor(diff / 3_600_000)
+  const days = Math.floor(diff / 86_400_000)
+  const plural = (n, unit) => `${n} ${unit}${n === 1 ? '' : 's'} ago`
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins} min ago`
+  if (hours < 24) return plural(hours, 'hour')
+  if (days < 7) return plural(days, 'day')
+  return formatDate(iso)
+}

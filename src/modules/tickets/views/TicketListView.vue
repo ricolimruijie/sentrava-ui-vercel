@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useTicketStore } from '@/modules/tickets/store/tickets'
 import CreateTicketModal from '@/modules/tickets/components/CreateTicketModal.vue'
 import { emptyData } from '@/utils/dataMode'
+import { notifyMock } from '@/utils/notifyMock'
 import { formatShortDate } from '@/utils/helpers'
 import { sampleTicketOwners, canViewTicket } from '@/modules/tickets/utils/visibility'
 import { IconArrowUpRight, IconPlus, IconTicket } from '@tabler/icons-vue'
@@ -55,6 +56,12 @@ function createTicket({ name, category, description }) {
     status: 'open',
     submitter: auth.user?.name ?? auth.user?.username ?? 'You',
     company: auth.user?.companies?.[0]?.name ?? '—',
+  })
+  // N-TK-01: tell Super Admin about the new ticket (the real backend does this itself).
+  notifyMock('N-TK-01', {
+    vars: { ticket: ticketId, company: auth.user?.companies?.[0]?.name ?? '—', category },
+    companyId: auth.user?.companies?.[0]?.id,
+    link: `/tickets/${ticketId}`,
   })
   issueFilter.value = null
   search.value = ''
