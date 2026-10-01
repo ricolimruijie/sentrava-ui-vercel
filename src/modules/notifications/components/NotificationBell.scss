@@ -41,7 +41,7 @@
     position: absolute;
     top: calc(100% + 8px);
     right: -48px;
-    width: 460px;
+    width: 500px;
     max-width: calc(100vw - 24px);
     max-height: min(620px, calc(100vh - 90px));
     display: flex;
@@ -79,7 +79,8 @@
     &:hover:not(:disabled) { background: rgba(255, 37, 41, 0.08); }
     &:disabled { color: var(--glacia-ink-dim); opacity: 0.55; cursor: default; }
   }
-  &__tabs { flex-shrink: 0; padding: 0 8px 10px; border-bottom: 1px solid var(--glacia-glass-border); }
+  // Equal-width tabs stretched across the panel.
+  &__tabs { flex-shrink: 0; display: grid; box-sizing: border-box; padding: 8px 12px 10px; border-bottom: 1px solid var(--glacia-glass-border); }
 
   &__list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
   &__empty {

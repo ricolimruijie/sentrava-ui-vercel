@@ -66,6 +66,7 @@ function openItem(n) {
   min-height: 420px;
 
   &__tabs, &__pager { flex-shrink: 0; }
+  &__tabs { align-self: flex-start; } // as wide as the equal-width tabs, not the whole page
   &__head { flex-shrink: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   &__title { margin: 0; font-family: 'Manrope', 'Inter', sans-serif; font-size: 24px; font-weight: 800; color: var(--glacia-ink); }
   &__sub { margin: 4px 0 0; font-size: 13px; color: var(--glacia-ink-dim); }

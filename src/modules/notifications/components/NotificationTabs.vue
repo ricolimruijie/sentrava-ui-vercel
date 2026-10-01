@@ -28,33 +28,40 @@ defineEmits(['update:modelValue'])
 </template>
 
 <style scoped lang="scss">
+// Every tab is as wide as the widest one ("Infrastructure"): equal 1fr columns. By default the row
+// is only as wide as its tabs; give it a width (the bell panel does) and the equal columns stretch.
 .n-tabs {
-  display: flex;
-  gap: 2px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr); // truly equal: a long label can't widen its own column
+  gap: 4px;
 
   &__tab {
-    flex: none;
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
     height: 30px;
-    padding: 0 8px;
+    padding: 0 3px;
     border: none;
     border-radius: var(--glacia-radius-pill);
     background: transparent;
     color: var(--glacia-ink-dim);
     font-family: inherit;
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 600;
+    white-space: nowrap;
     cursor: pointer;
     transition: background 0.13s, color 0.13s;
     &:hover { background: var(--glacia-glass-fill-strong); color: var(--glacia-ink); }
     &--active, &--active:hover { background: var(--glacia-red); color: #fff; }
   }
+
+  // Unread count: a small badge on the tab's corner, so it never changes a tab's width.
   &__count {
+    position: absolute;
+    top: -5px;
+    right: -2px;
     min-width: 17px;
     height: 17px;
     padding: 0 5px;
@@ -62,10 +69,13 @@ defineEmits(['update:modelValue'])
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: rgba(var(--tint), 0.1);
-    font-size: 10.5px;
+    background: var(--glacia-red);
+    color: #fff;
+    font-size: 10px;
     font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 0 0 2px var(--surface);
   }
-  &__tab--active &__count { background: rgba(255, 255, 255, 0.28); }
+  &__tab--active &__count { background: #fff; color: var(--glacia-red); box-shadow: 0 0 0 2px var(--glacia-red); }
 }
 </style>
