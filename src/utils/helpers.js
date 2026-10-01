@@ -120,3 +120,8 @@ export function formatDayMonthTime(iso) {
     + ' · '
     + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
+
+// "critical" -> "Critical"; matches the severity pill labels.
+export function severityLabel(sev) {
+  return sev ? sev.charAt(0).toUpperCase() + sev.slice(1) : ''
+}

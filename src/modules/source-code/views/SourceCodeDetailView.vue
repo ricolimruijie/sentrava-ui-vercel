@@ -1,4 +1,5 @@
 <script setup>
+import FindingsReportModal from '@/components/common/FindingsReportModal.vue'
 import { useRole } from '@/composables/useRole'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -6,7 +7,7 @@ import DataTable from '@/components/common/DataTable.vue'
 import FilterDropdown from '@/components/common/FilterDropdown.vue'
 import SearchInput from '@/components/common/SearchInput.vue'
 import VulnerabilityDetailModal from '@/components/common/VulnerabilityDetailModal.vue'
-import { formatShortDate } from '@/utils/helpers'
+import { formatShortDate, severityLabel } from '@/utils/helpers'
 import { getSourceCodeRepos, getSourceCodeScans, getSourceCodeVulns, preloadSourceCodeDetail } from '@/modules/source-code/services/sourceCodeService'
 import {
   IconDotsVertical, IconArrowUpRight, IconCheck, IconInfoCircle,
@@ -491,74 +492,22 @@ function revalidateFinding(id) {
   if (row) row.validation = 'Queue'
 }
 
-// ── Download Report filter modal (multi-select, horizontal) ──────────────
+// ── Download Report modal (shared FindingsReportModal; this builds the file) ──
 const showReportModal = ref(false)
-const repSev = ref([])
-const repCycle = ref([])
+function openReportModal() { showReportModal.value = true }
 
-function toggleRepSev(v) {
-  repSev.value = repSev.value.includes(v)
-    ? repSev.value.filter((x) => x !== v)
-    : [...repSev.value, v]
-}
-function toggleRepCycle(v) {
-  repCycle.value = repCycle.value.includes(v)
-    ? repCycle.value.filter((x) => x !== v)
-    : [...repCycle.value, v]
-}
-function selectAllRepSev() {
-  repSev.value = severityOptions.map((o) => o.value)
-}
-function selectAllRepCycle() {
-  repCycle.value = [...cycleTabs]
-}
-
-// Each option's own count (across all findings, not the current filter) and
-// a mini bar sized relative to the busiest option in its own column.
-const repSevCounts = computed(() =>
-  Object.fromEntries(severityOptions.map((o) => [o.value, vulns.value.filter((v) => v.severity === o.value).length])),
-)
-const repCycleCounts = computed(() =>
-  Object.fromEntries(cycleTabs.map((t) => [t, vulns.value.filter((v) => v.cycle === t).length])),
-)
-const repSevMax = computed(() => Math.max(1, ...Object.values(repSevCounts.value)))
-const repCycleMax = computed(() => Math.max(1, ...Object.values(repCycleCounts.value)))
-const repRows = computed(() => {
-  // A failed scan produced no findings.
-  if (scans.value[selectedScan.value]?.status === 'Failed') return []
-  return vulns.value
-    .filter((v) =>
-      repSev.value.includes(v.severity) &&
-      repCycle.value.includes(v.cycle),
-    )
-    .sort((a, b) => (severityRank[a.severity] ?? 99) - (severityRank[b.severity] ?? 99))
-})
-function openReportModal() {
-  repSev.value = []
-  repCycle.value = []
-  reportDownloadState.value = 'idle'
-  showReportModal.value = true
-}
-const reportDownloadState = ref('idle') // 'idle' | 'loading'
-
-function submitReportDownload() {
-  if (!repRows.value.length || reportDownloadState.value !== 'idle') return
-  reportDownloadState.value = 'loading'
-  setTimeout(() => {
-    const rows = [['No', 'Vulnerability name', 'Component', 'Code Line', 'Last modified', 'Severity', 'Modified by']]
-    repRows.value.forEach((v, i) => {
-      rows.push([i + 1, `"${v.name.replace(/"/g, '""')}"`, v.component, v.line, formatShortDate(v.lastModified), severityPill[v.severity]?.label ?? v.severity, v.modifiedBy])
-    })
-    const blob = new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `scan-report-${repo.value.repo}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
-    showReportModal.value = false
-    reportDownloadState.value = 'idle'
-  }, 600)
+function downloadReport({ rows: findings }) {
+  const rows = [['No', 'Vulnerability name', 'Component', 'Code Line', 'Last modified', 'Severity', 'Modified by']]
+  findings.forEach((v, i) => {
+    rows.push([i + 1, `"${v.name.replace(/"/g, '""')}"`, v.component, v.line, formatShortDate(v.lastModified), severityLabel(v.severity), v.modifiedBy])
+  })
+  const blob = new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `scan-report-${repo.value.repo}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 </script>
 
@@ -856,108 +805,13 @@ function submitReportDownload() {
 
     <VulnerabilityDetailModal v-model="showDetailModal" :item="selectedFinding" summary-strip hide-cycle-history :auto-upload="findingAutoUpload" :upload-only="findingAutoUpload" />
 
-    <Teleport to="body">
-      <Transition name="modal-fade">
-        <div v-if="showReportModal" class="modal-backdrop" @mousedown.self="showReportModal = false">
-          <div class="rep-modal">
-            <div class="rep-modal__head">
-              <div>
-                <h2 class="rep-modal__title">Download Report</h2>
-                <p class="rep-modal__desc">Choose which findings to include in the PDF export.</p>
-              </div>
-              <button type="button" class="rep-modal__close" aria-label="Close" @click="showReportModal = false">
-                <IconX :size="18" />
-              </button>
-            </div>
-
-            <div class="rep-modal__grid">
-              <div class="rep-modal__col">
-                <div class="rep-modal__col-head">
-                  <p class="rep-modal__label">Severity</p>
-                  <button type="button" class="rep-modal__selectall" @click="selectAllRepSev">Select all</button>
-                </div>
-                <div class="rep-modal__opts">
-                  <label v-for="o in severityOptions" :key="o.value" class="rep-check">
-                    <input
-                      type="checkbox"
-                      class="rep-check__input"
-                      :checked="repSev.includes(o.value)"
-                      @change="toggleRepSev(o.value)"
-                    />
-                    <span class="rep-check__box" aria-hidden="true"><IconCheck :size="12" class="rep-check__icon" /></span>
-                    <span
-                      class="rep-radio__tag"
-                      :style="{ background: severityPill[o.value].bg, color: severityPill[o.value].color }"
-                    >{{ o.label }}</span>
-                    <span class="rep-check__bar">
-                      <span
-                        class="rep-check__bar-fill"
-                        :class="{ 'rep-check__bar-fill--on': repSev.includes(o.value) }"
-                        :style="{ width: (repSevCounts[o.value] / repSevMax * 100) + '%' }"
-                      />
-                    </span>
-                    <span class="rep-check__count">{{ repSevCounts[o.value] }}</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="rep-modal__divider" aria-hidden="true" />
-
-              <div class="rep-modal__col">
-                <div class="rep-modal__col-head">
-                  <p class="rep-modal__label">Vulnerability status</p>
-                  <button type="button" class="rep-modal__selectall" @click="selectAllRepCycle">Select all</button>
-                </div>
-                <div class="rep-modal__opts">
-                  <label v-for="tab in cycleTabs" :key="tab" class="rep-check">
-                    <input
-                      type="checkbox"
-                      class="rep-check__input"
-                      :checked="repCycle.includes(tab)"
-                      @change="toggleRepCycle(tab)"
-                    />
-                    <span class="rep-check__box" aria-hidden="true"><IconCheck :size="12" class="rep-check__icon" /></span>
-                    <span class="rep-check__text">{{ tab }}</span>
-                    <span class="rep-check__bar">
-                      <span
-                        class="rep-check__bar-fill"
-                        :class="{ 'rep-check__bar-fill--on': repCycle.includes(tab) }"
-                        :style="{ width: (repCycleCounts[tab] / repCycleMax * 100) + '%' }"
-                      />
-                    </span>
-                    <span class="rep-check__count">{{ repCycleCounts[tab] }}</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div class="rep-modal__footer">
-              <p class="rep-modal__count"><b>{{ repRows.length }}</b> of {{ vulns.length }} vulnerabilities selected</p>
-              <div class="rep-modal__progress">
-                <span
-                  class="rep-modal__progress-fill"
-                  :style="{ width: (vulns.length ? repRows.length / vulns.length * 100 : 0) + '%' }"
-                />
-              </div>
-
-              <div class="rep-modal__actions">
-                <button type="button" class="rep-btn rep-btn--cancel" @click="showReportModal = false">Cancel</button>
-                <button
-                  type="button"
-                  class="rep-btn rep-btn--download"
-                  :class="{ 'rep-btn--busy': reportDownloadState === 'loading' }"
-                  :disabled="!repRows.length || reportDownloadState !== 'idle'"
-                  @click="submitReportDownload"
-                >
-                  <span v-if="reportDownloadState === 'loading'" class="rep-btn__spinner" />
-                  <span v-else>Download</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <FindingsReportModal
+      v-model="showReportModal"
+      :findings="vulns"
+      :cycles="cycleTabs"
+      :no-findings="scans[selectedScan]?.status === 'Failed'"
+      @download="downloadReport"
+    />
 
     <Teleport to="body">
       <Transition name="target-panel-fade">
@@ -2320,336 +2174,6 @@ function submitReportDownload() {
   .target-modal__severity-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-}
-
-// ── Download Report filter modal ─────────────────────────────────────────
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 300;
-  padding: 20px;
-}
-
-.modal-backdrop--above {
-  z-index: 500;
-}
-
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.15s ease;
-}
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-
-.rep-modal {
-  width: 100%;
-  max-width: 640px;
-  background: var(--surface);
-  border-radius: 20px;
-  box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
-  padding: 28px 28px 0;
-  overflow: hidden;
-  animation: rep-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes rep-modal-bounce {
-  0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
-  60%  { opacity: 1; transform: scale(1.01) translateY(0); }
-  100% { transform: scale(1); }
-}
-
-.rep-modal__head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 20px;
-}
-
-.rep-modal__title {
-  font-family: 'Manrope', 'Inter', sans-serif;
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--glacia-ink);
-  margin: 0;
-}
-
-.rep-modal__desc {
-  margin: 6px 0 0;
-  font-size: 14px;
-  color: var(--glacia-ink-dim);
-}
-
-.rep-modal__close {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(var(--tint), 0.06);
-  color: var(--glacia-ink-dim);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  &:hover {
-    background: rgba(var(--tint), 0.1);
-    color: var(--glacia-ink);
-  }
-}
-
-.rep-modal__grid {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 24px;
-  padding: 20px 0;
-  border-top: 1px solid var(--hairline);
-}
-
-.rep-modal__divider {
-  width: 1px;
-  background: var(--surface-3);
-}
-
-.rep-modal__col-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-
-.rep-modal__label {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--glacia-ink);
-  margin: 0;
-}
-
-.rep-modal__selectall {
-  border: none;
-  background: none;
-  padding: 0;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--glacia-red);
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-.rep-modal__opts {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.rep-check {
-  display: grid;
-  grid-template-columns: 22px minmax(64px, auto) 1fr 20px;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 4px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.13s;
-
-  &:hover {
-    background: rgba(var(--tint), 0.04);
-  }
-
-  &__input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  &__box {
-    flex-shrink: 0;
-    width: 22px;
-    height: 22px;
-    border-radius: 8px;
-    border: 2px solid var(--hairline-strong);
-    background: var(--surface);
-    box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: border-color 0.13s, background 0.13s;
-  }
-
-  &__icon {
-    color: #fff;
-    opacity: 0;
-    transition: opacity 0.13s;
-  }
-
-  &__input:checked + &__box {
-    border-color: var(--glacia-red);
-    background: var(--glacia-red);
-  }
-
-  &__input:checked + &__box &__icon {
-    opacity: 1;
-  }
-
-  &__input:focus-visible + &__box {
-    outline: 2px solid var(--glacia-red);
-    outline-offset: 2px;
-  }
-
-  &__text {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--glacia-ink);
-  }
-
-  &__bar {
-    height: 6px;
-    border-radius: 999px;
-    background: var(--surface-3);
-    overflow: hidden;
-  }
-
-  &__bar-fill {
-    display: block;
-    height: 100%;
-    border-radius: 999px;
-    background: var(--hairline-strong);
-    transition: background 0.13s;
-
-    &--on {
-      background: var(--glacia-red);
-    }
-  }
-
-  &__count {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--glacia-ink-dim);
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
-}
-
-.rep-radio__tag {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 3px 12px;
-  border-radius: 999px;
-  white-space: nowrap;
-  justify-self: start;
-}
-
-.rep-modal__footer {
-  margin: 0 -28px;
-  padding: 18px 28px 24px;
-  background: var(--surface-3);
-  border-top: 1px solid var(--hairline);
-}
-
-.rep-modal__count {
-  margin: 0 0 10px;
-  font-size: 14px;
-  color: var(--glacia-ink-dim);
-
-  b {
-    color: var(--glacia-ink);
-    font-weight: 800;
-  }
-}
-
-.rep-modal__progress {
-  height: 6px;
-  border-radius: 999px;
-  background: var(--surface-3);
-  overflow: hidden;
-}
-
-.rep-modal__progress-fill {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--glacia-red);
-  transition: width 0.2s ease;
-}
-
-.rep-modal__actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.rep-btn {
-  flex: 1;
-  height: 52px;
-  border-radius: 999px;
-  border: none;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: 'Manrope', 'Inter', sans-serif;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-
-  &--cancel {
-    background: var(--surface);
-    color: var(--glacia-ink);
-    border: 1px solid var(--hairline);
-
-    &:hover {
-      background: rgba(var(--tint), 0.04);
-    }
-  }
-
-  &--download {
-    background: #ff2e3a;
-    color: #fff;
-    box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
-
-    &:hover:not(:disabled) {
-      background: #e6212c;
-    }
-
-    &:disabled {
-      background: var(--surface-3);
-      color: #9ca3af;
-      box-shadow: none;
-      cursor: default;
-    }
-
-    // Mid-download still reads as "red", not "disabled" — the :disabled
-    // attribute here only blocks a second click while it's in flight.
-    &.rep-btn--busy:disabled {
-      background: #ff2e3a;
-      color: #fff;
-      box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
-    }
-  }
-
-  &__spinner {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 2px solid rgba(var(--glass-rgb), 0.4);
-    border-top-color: #fff;
-    animation: rep-btn-spin 0.7s linear infinite;
-  }
-}
-
-@keyframes rep-btn-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
 }
 
 // ── Delete timeline modal (same hold-to-delete as Delete repository) ──────
