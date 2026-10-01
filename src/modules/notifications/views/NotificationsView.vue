@@ -40,7 +40,7 @@ function openItem(n) {
       </button>
     </header>
 
-    <NotificationTabs v-model="tab" :unread="store.unreadByTab" />
+    <NotificationTabs v-model="tab" :unread="store.unreadByTab" class="notifs__tabs" />
 
     <section class="notifs__card">
       <NotificationItem v-for="n in pageItems" :key="n.id" :item="n" @open="openItem" />
@@ -50,7 +50,7 @@ function openItem(n) {
       </div>
     </section>
 
-    <TablePagination v-if="pagination.totalPages.value > 1" :pagination="pagination" />
+    <TablePagination v-if="pagination.totalPages.value > 1" :pagination="pagination" class="notifs__pager" />
   </div>
 </template>
 
@@ -59,9 +59,14 @@ function openItem(n) {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 880px;
+  // Fills the whole content area: full width, and as tall as the screen so the header, tabs and
+  // pagination stay put while the list scrolls inside its card.
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
 
-  &__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  &__tabs, &__pager { flex-shrink: 0; }
+  &__head { flex-shrink: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   &__title { margin: 0; font-family: 'Manrope', 'Inter', sans-serif; font-size: 24px; font-weight: 800; color: var(--glacia-ink); }
   &__sub { margin: 4px 0 0; font-size: 13px; color: var(--glacia-ink-dim); }
   &__markall {
@@ -82,11 +87,14 @@ function openItem(n) {
     &:disabled { opacity: 0.5; cursor: default; }
   }
   &__card {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     background: var(--surface);
     border: 1px solid var(--glacia-glass-border);
     border-radius: 16px;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
   }
   &__empty {
     display: flex;
