@@ -3,6 +3,9 @@ import { formatLongDateTimeCompact } from '@/utils/helpers'
 import { ref, computed, watch } from 'vue'
 import { IconX, IconEye, IconEyeOff, IconRefresh, IconPencil, IconBroadcast, IconBroadcastOff } from '@tabler/icons-vue'
 import ProbeBoxEditCredentialModal from '@/modules/company/components/ProbeBoxEditCredentialModal.vue'
+import { useRole } from '@/composables/useRole'
+
+const { can } = useRole()
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -91,7 +94,7 @@ function onCredentialSaved(patch) {
 
             <div class="pb-creds__head">
               <h3 class="pb-creds__title">Credentials</h3>
-              <button type="button" class="pb-edit" @click="editOpen = true">
+              <button v-if="can('manage_company')" type="button" class="pb-edit" @click="editOpen = true">
                 <IconPencil :size="16" /> Edit
               </button>
             </div>
