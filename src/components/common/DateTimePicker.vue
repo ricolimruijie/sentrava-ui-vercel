@@ -7,7 +7,6 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
 } from '@tabler/icons-vue'
-import { formatDate } from '@/utils/helpers'
 
 // Date + time picker card — implements the `references/Date Time Picker
 // 46d.dc.html` design in SentraVA tokens: calendar with a sliding glass

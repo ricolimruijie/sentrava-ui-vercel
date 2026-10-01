@@ -126,10 +126,7 @@ const timeline = useScanTimeline({
   trackDuration: true,
 })
 const {
-  scans, selectedScan, scanTypeLabel, recurrenceLabel, tlRef, updateTimelineHint,
-  rescan, pendingRescanType, pendingRescanIndex, rescanLoading, scanInProgress, retryLoadingIndex, retryDoneIndex,
-  stopLoading, timelineStopped, hasActiveScan, stopScanning, openRescanConfirm, openStopConfirm, cancelRescan,
-  rbState, rbConfirming, confirmRescan,
+  scans, selectedScan, scanTypeLabel, recurrenceLabel, updateTimelineHint,
 } = timeline
 onMounted(() => {
   updateTimelineHint()

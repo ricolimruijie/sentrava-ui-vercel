@@ -8,7 +8,7 @@ import FilterDropdown from '@/components/common/FilterDropdown.vue'
 import SearchInput from '@/components/common/SearchInput.vue'
 import DateTimePicker from '@/components/common/DateTimePicker.vue'
 import GlassField from '@/components/common/GlassField.vue'
-import { IconDotsVertical, IconCirclePlus, IconScan, IconArrowUpRight, IconArrowRight, IconTrash, IconX, IconChevronDown, IconCheck, IconPlus, IconTag, IconFolder, IconCode } from '@tabler/icons-vue'
+import { IconDotsVertical, IconCirclePlus, IconScan, IconArrowUpRight, IconArrowRight, IconTrash, IconX, IconCheck, IconPlus, IconTag, IconFolder, IconCode } from '@tabler/icons-vue'
 import { getSourceCodeRepos, preloadSourceCodeList } from '@/modules/source-code/services/sourceCodeService'
 
 // Load this page's data before it renders (the page is shown inside <Suspense>).

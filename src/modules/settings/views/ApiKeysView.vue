@@ -108,7 +108,7 @@ function triggerCopy() {
         document.execCommand('copy')
         ta.remove()
       }
-    } catch {}
+    } catch { /* ignore: not available / not critical */ }
     await new Promise((r) => setTimeout(r, 600))
     clearTimeout(safety)
     copyState.value = 'copied'

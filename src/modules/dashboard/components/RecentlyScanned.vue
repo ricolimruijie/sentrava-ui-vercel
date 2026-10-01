@@ -1,12 +1,10 @@
 <script setup>
-import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { pushFromDashboard } from '@/utils/navOrigin'
 import SeverityBadge from '@/components/common/SeverityBadge.vue'
 import SkeletonCard  from '@/components/common/SkeletonCard.vue'
 import EmptyState    from '@/components/common/EmptyState.vue'
 import { formatRelativeTime } from '@/utils/helpers'
-import { ASSET_TYPES, SCAN_ENGINES } from '@/constants'
 import { IconGlobe, IconNetwork, IconWorldWww, IconCode, IconScanEye } from '@tabler/icons-vue'
 
 const props = defineProps({

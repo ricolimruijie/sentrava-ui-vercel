@@ -15,6 +15,7 @@ report log and API keys, tickets, company management, and settings.
 - **UI:** PrimeVue 4 (Aura preset, custom `SentraPreset` brand red `#FF2529`), PrimeIcons, Tabler Icons (`@tabler/icons-vue`), Chart.js + vue-chartjs
 - **HTTP:** axios (`src/services/api/client.js`)
 - **Build:** Vite 6, SCSS (`sass`, modern-compiler), `@` → `./src`
+- **Quality:** ESLint 10 + eslint-plugin-vue (`eslint.config.js`), Vitest 5
 - **Fonts:** Inter + Manrope (Google Fonts, `index.html`)
 - **Theme:** light/dark, toggled via `useTheme` (`sentra_theme` in localStorage, `.dark` class on `<html>`)
 
@@ -26,6 +27,8 @@ npm run dev        # static/mock mode (VITE_IS_STATIC=true from .env)
 npm run dev:api    # live API mode (VITE_IS_STATIC=false)
 npm run build      # production build → dist/
 npm run preview    # preview production build
+npm run lint       # ESLint (also enforces: modules must not import each other)
+npm test           # Vitest unit tests (src/**/*.test.js, next to the code they test)
 ```
 
 ### Env (`.env`, see `.env.example`)

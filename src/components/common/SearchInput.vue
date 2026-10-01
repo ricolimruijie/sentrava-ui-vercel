@@ -43,7 +43,7 @@ function onGlobalKeydown(e) {
 </script>
 
 <template>
-  <div class="search" :class="{ 'is-open': open }" :style="{ '--search-w': width }" @keydown.window="onGlobalKeydown">
+  <div class="search" :class="{ 'is-open': open }" :style="{ '--search-w': width }" @keydown="onGlobalKeydown">
     <button type="button" class="search__icon" aria-label="Search" :aria-expanded="open" @click="onIconClick">
       <IconSearch :size="16" />
     </button>

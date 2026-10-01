@@ -47,7 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
       const persisted = JSON.parse(localStorage.getItem('auth') ?? 'null')
       if (persisted?.token) token.value = persisted.token
       if (persisted?.user)  user.value  = persisted.user
-    } catch {}
+    } catch { /* ignore: not available / not critical */ }
     // Fallback: bare token written by login()
     if (!token.value) {
       const bare = localStorage.getItem('sentra_token')

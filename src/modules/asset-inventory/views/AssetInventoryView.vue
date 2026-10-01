@@ -695,9 +695,6 @@ const ports37ByIp = {
     { port: '443', protocol: 'HTTPS', service: 'nginx', technology: 'nginx 1.25' },
     { port: '80', protocol: 'HTTP', service: 'nginx', technology: 'nginx 1.25' },
   ],
-  '103.150.24.12': [
-    { port: '443', protocol: 'HTTPS', service: 'nginx', technology: 'nginx 1.25' },
-  ],
   '103.150.24.13': [
     { port: '3000', protocol: 'HTTP', service: 'node', technology: 'Node 20' },
   ],

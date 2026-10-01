@@ -81,10 +81,8 @@ const timeline = useScanTimeline({
   trackDuration: false,
 })
 const {
-  scans, selectedScan, scanTypeLabel, recurrenceLabel, tlRef, updateTimelineHint,
-  rescan, pendingRescanType, pendingRescanIndex, rescanLoading, scanInProgress, retryLoadingIndex, retryDoneIndex,
-  stopLoading, timelineStopped, hasActiveScan, stopScanning, openRescanConfirm, openStopConfirm, cancelRescan,
-  rbState, rbConfirming, confirmRescan,
+  scans, selectedScan, scanTypeLabel, recurrenceLabel, updateTimelineHint, pendingRescanType,
+  pendingRescanIndex, scanInProgress, retryLoadingIndex, retryDoneIndex, timelineStopped,
 } = timeline
 // The scan timeline's action button depends on the target's scan type:
 // manual/singular = user-triggered one-off scans (Re-scan button); continuous

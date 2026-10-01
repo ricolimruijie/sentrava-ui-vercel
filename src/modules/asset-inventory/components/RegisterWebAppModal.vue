@@ -52,18 +52,6 @@ function submitRegisterWebapp() {
   }, 500)
 }
 
-// ── Register Network modal (RegisterNetworkModal) ──
-const showRegisterNetworkModal = ref(false)
-function onNetworkRegistered(row) {
-  networks.value.unshift({ id: networks.value.length + 1, ...row })
-}
-
-// ── Register Domain modal (RegisterDomainModal) ──
-const showRegisterModal = ref(false)
-function onDomainRegistered(row) {
-  assets.value.unshift({ id: assets.value.length + 1, ...row })
-}
-
 // Start every open with a clean form.
 watch(() => props.modelValue, (open) => {
   if (!open) return
