@@ -110,7 +110,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       :items="filteredData"
       :loading="loading"
       hide-pagination
-      empty-text="No integrations found."
+      empty-text="No integrations found." :empty-icon="IconPlugConnected"
     >
       <template #cell-status="{ row }">
         <span class="status-pill" :style="{ background: s(row.status).bg, color: s(row.status).color }">
@@ -226,7 +226,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   position: fixed;
   width: max-content;
   min-width: 176px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;

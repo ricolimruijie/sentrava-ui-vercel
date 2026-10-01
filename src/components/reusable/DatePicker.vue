@@ -191,11 +191,11 @@ function movePill() {
     height: 44px;
     padding: 0 12px 0 16px;
     border-radius: var(--glacia-radius-sm, 12px);
-    border: 1px solid #AEBEC4;
-    background: var(--glacia-glass-fill, rgba(255, 255, 255, 0.6));
+    border: 1px solid var(--hairline-strong);
+    background: var(--glacia-glass-fill, rgba(var(--glass-rgb), 0.6));
     backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
     -webkit-backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
-    box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(255, 255, 255, 0.95)), 0 10px 24px -14px rgba(16, 24, 32, 0.2);
+    box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(var(--glass-rgb), 0.95)), 0 10px 24px -14px rgba(16, 24, 32, 0.2);
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -222,7 +222,7 @@ function movePill() {
     padding: 8px;
     border-radius: 16px;
     border: 0.5px solid var(--glacia-glass-border);
-    background: #fff;
+    background: var(--surface);
     max-height: 260px;
     overflow-y: auto;
   }

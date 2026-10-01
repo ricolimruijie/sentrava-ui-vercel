@@ -293,7 +293,7 @@ function onKey(e) {
   flex-direction: column;
   gap: 5px;
   font-family: 'Manrope', 'Inter', sans-serif;
-  color: var(--glacia-ink, #101820);
+  color: var(--glacia-ink, var(--glacia-ink));
 }
 
 .gf__label {
@@ -319,11 +319,11 @@ function onKey(e) {
   padding: 0 16px;
   box-sizing: border-box;
   border-radius: var(--glacia-radius-sm, 12px);
-  border: 1px solid var(--gf-border, #AEBEC4);
-  background: var(--glacia-glass-fill, rgba(255, 255, 255, 0.6));
+  border: 1px solid var(--gf-border, var(--hairline-strong));
+  background: var(--glacia-glass-fill, rgba(var(--glass-rgb), 0.6));
   backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
   -webkit-backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
-  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(255, 255, 255, 0.95)), 0 10px 24px -14px rgba(16, 24, 32, 0.2);
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(var(--glass-rgb), 0.95)), 0 10px 24px -14px rgba(16, 24, 32, 0.2);
   font: inherit;
   color: inherit;
   text-align: left;
@@ -344,11 +344,11 @@ function onKey(e) {
 }
 .is-active .gf__box {
   border-color: #2563EB;
-  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(255, 255, 255, 0.95));
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(var(--glass-rgb), 0.95));
 }
 .is-error .gf__box {
   border-color: var(--color-critical, #dc2626);
-  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(255, 255, 255, 0.95));
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(var(--glass-rgb), 0.95));
 }
 .is-shake .gf__box {
   animation: gf-shake 380ms ease both;
@@ -364,7 +364,7 @@ function onKey(e) {
   background: transparent;
   font: inherit;
   font-size: 14px;
-  color: var(--glacia-ink, #101820);
+  color: var(--glacia-ink, var(--glacia-ink));
 }
 .gf__input--area {
   height: 88px;
@@ -401,7 +401,7 @@ function onKey(e) {
   white-space: nowrap;
 }
 .gf__value.has-value {
-  color: var(--glacia-ink, #101820);
+  color: var(--glacia-ink, var(--glacia-ink));
   animation: gf-row 240ms var(--gf-ease) both;
 }
 
@@ -429,7 +429,7 @@ function onKey(e) {
   bottom: 0;
   left: 0;
   width: 45%;
-  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  background: linear-gradient(100deg, transparent, rgba(var(--glass-rgb), 0.75), transparent);
   transform: translateX(-120%);
 }
 .gf__sheen.run::before {
@@ -467,9 +467,9 @@ function onKey(e) {
   z-index: 1000;
   padding: 6px;
   border-radius: var(--glacia-radius-md, 20px);
-  border: 1px solid var(--glacia-glass-border, rgba(255, 255, 255, 0.75));
-  background: #fff;
-  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(255, 255, 255, 0.95)), 0 12px 32px -8px rgba(16, 24, 32, 0.2);
+  border: 1px solid var(--glacia-glass-border, rgba(var(--glass-rgb), 0.75));
+  background: var(--surface);
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(var(--glass-rgb), 0.95)), 0 12px 32px -8px rgba(16, 24, 32, 0.2);
   transform-origin: 50% 0;
   animation: gf-pop 280ms var(--gf-ease) both;
 }
@@ -483,7 +483,7 @@ function onKey(e) {
   overflow-y: auto;
   scrollbar-width: thin;
   &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-thumb { background: rgba(16, 24, 32, 0.18); border-radius: 999px; }
+  &::-webkit-scrollbar-thumb { background: rgba(var(--tint), 0.18); border-radius: 999px; }
   &::-webkit-scrollbar-track { background: transparent; }
 }
 .gf__ind {
@@ -493,7 +493,7 @@ function onKey(e) {
   top: 0;
   height: 42px;
   border-radius: 10px;
-  background: rgba(16, 24, 32, 0.05);
+  background: rgba(var(--tint), 0.05);
   transition: transform 260ms var(--gf-ease);
 }
 .gf__opt {
@@ -522,7 +522,7 @@ function onKey(e) {
   border-radius: 5px;
   // The menu is teleported to <body>, outside .gf, so --gf-border isn't defined here.
   border: 1.5px solid #8A9BA3;
-  background: #fff;
+  background: var(--surface);
   color: #fff;
   display: inline-flex;
   align-items: center;

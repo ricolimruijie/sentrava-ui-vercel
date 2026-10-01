@@ -12,15 +12,25 @@ export const useAuthStore = defineStore('auth', () => {
   const role            = computed(() => user.value?.role ?? null)
   const isSuperAdmin    = computed(() => role.value === ROLES.SUPER_ADMIN)
   const companies       = computed(() => user.value?.companies ?? [])
+  const twoFAEnabled    = computed(() => !!user.value?.twoFAEnabled)
 
   // Demo accounts flagged `dataMode: 'empty'` see every page without data.
   watch(user, (u) => { emptyData.value = u?.dataMode === 'empty' }, { immediate: true })
 
-  async function login(email, password) {
-    const res = await post('/auth/login', { email, password })
+  // `dataMode: 'empty'` (demo only) signs in with every page shown without data, for any role.
+  async function login(email, password, { dataMode } = {}) {
+    const res = await post('/auth/login', { email, password, dataMode })
     token.value = res.token
     user.value  = res.user
     localStorage.setItem('sentra_token', res.token)
+  }
+
+  // Settings page actions (mock mode keeps them on the persisted user only).
+  function updateProfile(patch) {
+    user.value = { ...user.value, ...patch }
+  }
+  function setTwoFactor(enabled) {
+    user.value = { ...user.value, twoFAEnabled: enabled }
   }
 
   function logout() {
@@ -45,7 +55,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { user, token, isAuthenticated, role, isSuperAdmin, companies, login, logout, hydrateFromStorage }
+  return { user, token, isAuthenticated, role, isSuperAdmin, companies, twoFAEnabled, login, updateProfile, setTwoFactor, logout, hydrateFromStorage }
 }, {
   persist: {
     pick: ['user', 'token'],

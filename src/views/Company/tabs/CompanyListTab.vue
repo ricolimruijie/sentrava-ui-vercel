@@ -8,7 +8,7 @@ import TablePagination from '@/components/table/TablePagination.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import DeleteCompanyModal from '@/components/company/DeleteCompanyModal.vue'
-import { IconDotsVertical, IconArrowUpRight, IconTrash } from '@tabler/icons-vue'
+import { IconDotsVertical, IconArrowUpRight, IconTrash, IconBuilding } from '@tabler/icons-vue'
 
 const { data, loading } = useFetch(() => get('/company/list'))
 
@@ -128,7 +128,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       :items="filteredData"
       :loading="loading"
       hide-pagination
-      empty-text="No companies found."
+      empty-text="No companies found." :empty-icon="IconBuilding"
     >
       <template #cell-type="{ row }">
         {{ displayType(row.type) }}
@@ -225,7 +225,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   position: fixed;
   width: max-content;
   min-width: 176px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;

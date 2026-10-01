@@ -5,7 +5,7 @@ import { useFetch } from '@/composables/useFetch'
 import DataTable from '@/components/table/DataTable.vue'
 import GlassField from '@/components/reusable/GlassField.vue'
 import {
-  IconCirclePlus, IconDotsVertical, IconPencil, IconKeyOff, IconX, IconCopy, IconCheck, IconAlertTriangle,
+  IconCirclePlus, IconDotsVertical, IconPencil, IconKeyOff, IconX, IconCopy, IconCheck, IconAlertTriangle, IconKey,
 } from '@tabler/icons-vue'
 
 const { data, loading } = useFetch(() => get('/settings/api-keys'))
@@ -230,7 +230,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       :columns="columns"
       :items="data ?? []"
       :loading="loading"
-      empty-text="No API keys yet."
+      empty-text="No API keys yet." :empty-icon="IconKey"
     >
       <template #cell-created="{ row }">{{ fmt(row.created) }}</template>
       <template #cell-lastUsed="{ row }">{{ fmt(row.lastUsed) }}</template>
@@ -503,7 +503,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 .action-menu {
   position: fixed;
   width: 176px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;
@@ -574,7 +574,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 .create-modal {
   width: 100%;
   max-width: 480px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px;
@@ -616,10 +616,10 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     }
 
     &--circle {
-      background: rgba(15, 23, 42, 0.06);
+      background: rgba(var(--tint), 0.06);
 
       &:hover {
-        background: rgba(15, 23, 42, 0.1);
+        background: rgba(var(--tint), 0.1);
       }
     }
   }
@@ -636,7 +636,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     padding: 0 18px;
     border-radius: 14px;
     border: 1px solid var(--glacia-glass-border);
-    background: #fff;
+    background: var(--surface);
     color: var(--glacia-ink);
     font-size: 15px;
     font-family: 'Manrope', 'Inter', sans-serif;
@@ -763,7 +763,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     border: 1px solid var(--glacia-glass-border);
 
     &:hover {
-      background: rgba(15, 23, 42, 0.08);
+      background: rgba(var(--tint), 0.08);
     }
   }
 }
@@ -798,7 +798,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(var(--glass-rgb), 0.4);
   border-top-color: #fff;
   animation: copy-btn-spin 0.7s linear infinite;
 }
@@ -840,7 +840,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   padding: 16px 18px;
   border-radius: 18px;
   border: 1.5px solid var(--glacia-red);
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
   user-select: none;
 }
@@ -852,7 +852,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   margin: 0;
   border-radius: 6px;
   border: 2px solid var(--glacia-red);
-  background: #fff;
+  background: var(--surface);
   flex-shrink: 0;
   cursor: pointer;
   position: relative;

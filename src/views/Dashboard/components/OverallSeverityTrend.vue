@@ -250,8 +250,8 @@ const chartOptions = {
   width: 224px;
   padding: 14px 16px 12px;
   border-radius: 16px;
-  background: #fff;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: var(--surface);
+  border: 1px solid rgba(var(--tint), 0.08);
   box-shadow: 0 16px 36px -10px rgba(16, 24, 32, 0.28), 0 2px 6px rgba(16, 24, 32, 0.06);
   pointer-events: none;
   opacity: 0;
@@ -310,7 +310,7 @@ const chartOptions = {
     gap: 6px;
     margin: 8px 0 10px;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    border-bottom: 1px solid rgba(var(--tint), 0.08);
 
     strong {
       font-family: 'Manrope', 'Inter', sans-serif;
@@ -356,7 +356,7 @@ const chartOptions = {
     grid-column: 1 / -1;
     height: 4px;
     border-radius: 999px;
-    background: rgba(15, 23, 42, 0.06);
+    background: rgba(var(--tint), 0.06);
     overflow: hidden;
 
     span {

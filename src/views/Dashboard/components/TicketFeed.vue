@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { IconChevronRight } from '@tabler/icons-vue'
+import { IconChevronRight, IconTicket } from '@tabler/icons-vue'
 import { pushFromDashboard } from '@/utils/navOrigin'
 import { formatShortDate } from '@/utils/helpers'
 
@@ -34,7 +34,12 @@ function goTicket(item) {
     <div class="tickets__body">
       <p class="tickets__caption">Latest support and security tickets raised by your team, grouped by category.</p>
 
-      <div class="tickets__wrap">
+      <div v-if="!loading && !visibleItems.length" class="tickets__empty">
+        <span class="tickets__empty-icon"><IconTicket :size="30" stroke-width="1.6" /></span>
+        <span class="tickets__empty-text">No tickets</span>
+      </div>
+
+      <div v-else class="tickets__wrap">
         <table class="ttable">
           <thead>
             <tr>
@@ -47,7 +52,6 @@ function goTicket(item) {
           </thead>
           <tbody>
             <tr v-if="loading"><td colspan="4" class="ttable__empty">Loading…</td></tr>
-            <tr v-else-if="!visibleItems.length"><td colspan="4" class="ttable__empty">No tickets.</td></tr>
             <tr v-for="item in visibleItems" :key="item.id">
               <td class="ttable__date">{{ formatShortDate(item.date) }}</td>
               <td class="ttable__name">{{ item.name }}</td>
@@ -114,7 +118,38 @@ function goTicket(item) {
   }
 
   &__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     padding: 0 22px 22px;
+  }
+
+  &__empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  &__empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px dashed rgba(var(--tint), 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__empty-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--glacia-ink);
   }
 
   &__caption {

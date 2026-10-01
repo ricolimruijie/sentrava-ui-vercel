@@ -96,9 +96,9 @@ onUnmounted(() => {
   width: 100%;
   padding: 10px 18px;
   box-sizing: border-box;
-  border: 1px solid #D3DEE2;
+  border: 1px solid var(--hairline);
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
   text-align: left;
   font: inherit;
@@ -107,7 +107,7 @@ onUnmounted(() => {
 }
 .dd:not(.has-value) .dd__trigger:hover {
   background: rgba(255, 37, 41, 0.06);
-  border-color: #AEBEC4;
+  border-color: var(--hairline-strong);
 }
 .dd.has-value .dd__trigger {
   padding-top: 6px;
@@ -153,7 +153,7 @@ onUnmounted(() => {
   transition: color 0.15s ease;
 }
 .dd.has-value .dd__value {
-  color: #101820;
+  color: var(--glacia-ink);
 }
 
 .dd__chev {
@@ -171,7 +171,7 @@ onUnmounted(() => {
   color: #849599;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, color 0.15s ease;
 }
-.dd__chev:hover .dd__chev-icon { color: #47565E; }
+.dd__chev:hover .dd__chev-icon { color: var(--ink-2); }
 .dd__chev-down {
   transform: rotate(0) scale(1);
   opacity: 1;
@@ -193,10 +193,10 @@ onUnmounted(() => {
   z-index: 200;
   display: none;
   padding: 6px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 14px;
   box-shadow: 0 16px 36px -10px rgba(16, 24, 32, 0.24);
-  border: 1px solid #EAF0F2;
+  border: 1px solid var(--hairline);
   box-sizing: border-box;
 }
 .dd.is-open .dd__menu { display: block; }
@@ -214,7 +214,7 @@ onUnmounted(() => {
   cursor: pointer;
   font: inherit;
   font-size: 0.82rem;
-  color: #101820;
+  color: var(--glacia-ink);
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;

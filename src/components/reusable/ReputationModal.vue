@@ -185,7 +185,7 @@ watch(() => props.modelValue, (v) => {
   width: 100%;
   max-width: 640px;
   max-height: 80vh;
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   display: flex;
@@ -225,7 +225,7 @@ watch(() => props.modelValue, (v) => {
     height: 36px;
     border-radius: 50%;
     border: 1px solid var(--glacia-glass-border);
-    background: #fff;
+    background: var(--surface);
     color: var(--glacia-ink);
     cursor: pointer;
     display: inline-flex;
@@ -234,7 +234,7 @@ watch(() => props.modelValue, (v) => {
     flex-shrink: 0;
     transition: background 0.13s;
 
-    &:hover { background: rgba(15, 23, 42, 0.05); }
+    &:hover { background: rgba(var(--tint), 0.05); }
   }
 
   &__body {
@@ -256,7 +256,7 @@ watch(() => props.modelValue, (v) => {
 
   // Reputation score card — sits apart from the engine stat tiles below it.
   &__info {
-    background: #f8fafb;
+    background: var(--surface-3);
     border-radius: 18px;
     padding: 18px 22px;
     min-width: 0;
@@ -311,7 +311,7 @@ watch(() => props.modelValue, (v) => {
   justify-content: center;
   text-align: center;
   gap: 2px;
-  background: #f8fafb;
+  background: var(--surface-3);
   border-radius: 14px;
   padding: 14px 12px;
 
@@ -365,7 +365,7 @@ watch(() => props.modelValue, (v) => {
   gap: 2px;
   border: 1px solid var(--glacia-glass-border);
   border-radius: 999px;
-  background: #f8fafb;
+  background: var(--surface-3);
 
   &__item {
     border: none;
@@ -380,7 +380,7 @@ watch(() => props.modelValue, (v) => {
     transition: background 0.13s, color 0.13s, box-shadow 0.13s;
 
     &--active {
-      background: #fff;
+      background: var(--surface);
       color: var(--glacia-ink);
       box-shadow: 0 1px 3px rgba(16, 24, 32, 0.15);
     }
@@ -408,7 +408,7 @@ watch(() => props.modelValue, (v) => {
 
   &::-webkit-scrollbar { width: 5px; }
   &::-webkit-scrollbar-thumb {
-    background: rgba(15, 23, 42, 0.15);
+    background: rgba(var(--tint), 0.15);
     border-radius: 999px;
   }
   &::-webkit-scrollbar-track { background: transparent; }
@@ -431,7 +431,7 @@ watch(() => props.modelValue, (v) => {
   &:last-child { border-bottom: none; }
 
   &--failed { background: #fbeaea; }
-  &--open:not(&--failed) { background: #f8fafb; }
+  &--open:not(&--failed) { background: var(--surface-3); }
 
   &__head {
     display: flex;
@@ -495,7 +495,7 @@ watch(() => props.modelValue, (v) => {
 }
 
 .rep-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
   border-radius: 20px;
   padding: 14px 16px;

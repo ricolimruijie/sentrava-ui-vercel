@@ -1,6 +1,7 @@
 <script setup>
 import { get } from '@/utils/request'
 import { useFetch } from '@/composables/useFetch'
+import { useAuthStore } from '@/store/auth'
 
 import DashboardHeader        from './components/DashboardHeader.vue'
 import AssetRegisteredTracker from './components/AssetRegisteredTracker.vue'
@@ -12,6 +13,7 @@ import TicketFeed             from './components/TicketFeed.vue'
 import VulnerabilityCycleTracker from './components/VulnerabilityCycleTracker.vue'
 import OverallSeverityTrend      from './components/OverallSeverityTrend.vue'
 
+const auth = useAuthStore()
 const { data, loading } = useFetch(() => get('/dashboard/client'))
 </script>
 
@@ -24,7 +26,7 @@ const { data, loading } = useFetch(() => get('/dashboard/client'))
 
     <!-- Row 1: Account (left) | Integration Connection (center) | Asset Tracker (right, wide) -->
     <div class="row row--top">
-      <AccountOverview        :data="data?.accountOverview ?? {}" :loading="loading" />
+      <AccountOverview        :data="{ ...(data?.accountOverview ?? {}), ...(auth.user ? { twoFAEnabled: auth.twoFAEnabled } : {}) }" :loading="loading" />
       <IntegrationConnection
         :probe-box="data?.probeBoxHealth ?? {}"
         :tools="data?.scannerTools ?? []"

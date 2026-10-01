@@ -426,7 +426,7 @@ onUnmounted(() => {
   max-height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--surface);
   border-radius: 24px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   animation: aq-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -437,7 +437,7 @@ onUnmounted(() => {
     justify-content: space-between;
     gap: 16px;
     padding: 22px 24px 16px;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    border-bottom: 1px solid rgba(var(--tint), 0.08);
     flex-shrink: 0;
   }
 
@@ -459,8 +459,8 @@ onUnmounted(() => {
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    border: 1px solid rgba(15, 23, 42, 0.12);
-    background: #fff;
+    border: 1px solid rgba(var(--tint), 0.12);
+    background: var(--surface);
     color: var(--glacia-ink);
     cursor: pointer;
     display: inline-flex;
@@ -469,7 +469,7 @@ onUnmounted(() => {
     flex-shrink: 0;
     transition: background 0.13s;
 
-    &:hover { background: rgba(15, 23, 42, 0.05); }
+    &:hover { background: rgba(var(--tint), 0.05); }
   }
 
   &__body {
@@ -481,7 +481,7 @@ onUnmounted(() => {
     display: flex;
     gap: 12px;
     padding: 14px 24px 18px;
-    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    border-top: 1px solid rgba(var(--tint), 0.08);
     flex-shrink: 0;
   }
 }
@@ -510,8 +510,8 @@ onUnmounted(() => {
   padding: 11px 10px;
   text-align: left;
   border-radius: 16px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  background: #fff;
+  border: 1px solid rgba(var(--tint), 0.14);
+  background: var(--surface);
   cursor: pointer;
   min-width: 0;
   transition: border-color 0.13s, background 0.13s, box-shadow 0.13s;
@@ -538,7 +538,7 @@ onUnmounted(() => {
 
   &--on {
     border-color: #2f5d8f;
-    background: #f3f7fc;
+    background: var(--blue-soft);
     box-shadow: 0 0 0 1px #2f5d8f inset;
   }
 }
@@ -548,7 +548,7 @@ onUnmounted(() => {
   margin-top: 12px;
   padding: 14px 16px;
   border-radius: 18px;
-  background: #f5f8fb;
+  background: var(--surface-2);
 
   &__row {
     display: flex;
@@ -580,7 +580,7 @@ onUnmounted(() => {
     gap: 5px;
     padding: 4px 12px;
     border-radius: 999px;
-    background: #e7eef7;
+    background: var(--blue-soft);
     color: #24456d;
     font-size: 13px;
     font-weight: 600;
@@ -592,7 +592,7 @@ onUnmounted(() => {
     height: 8px;
     margin: 12px 0;
     border-radius: 999px;
-    background: #d5dde4;
+    background: var(--hairline-strong);
     overflow: hidden;
 
     i {
@@ -609,7 +609,7 @@ onUnmounted(() => {
     align-items: center;
     gap: 8px;
     padding-top: 10px;
-    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    border-top: 1px solid rgba(var(--tint), 0.08);
     font-size: 14px;
     color: var(--glacia-ink-dim);
 
@@ -631,8 +631,8 @@ onUnmounted(() => {
   display: inline-flex;
   padding: 4px;
   border-radius: 999px;
-  background: #f3f5f8;
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: var(--surface-3);
+  border: 1px solid rgba(var(--tint), 0.06);
 
   &__opt {
     display: inline-flex;
@@ -652,7 +652,7 @@ onUnmounted(() => {
     small { font-size: 13px; font-weight: 500; color: inherit; opacity: 0.85; }
 
     &--on {
-      background: #fff;
+      background: var(--surface);
       color: var(--glacia-ink);
       box-shadow: 0 2px 8px rgba(16, 24, 32, 0.12);
     }
@@ -674,15 +674,15 @@ onUnmounted(() => {
   height: 52px;
   padding: 0 6px;
   border-radius: 18px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  background: #fff;
+  border: 1px solid rgba(var(--tint), 0.14);
+  background: var(--surface);
 
   &__btn {
     width: 40px;
     height: 40px;
     border: 0;
     border-radius: 50%;
-    background: #f1f4f7;
+    background: var(--surface-3);
     color: var(--glacia-ink);
     cursor: pointer;
     display: inline-flex;
@@ -691,7 +691,7 @@ onUnmounted(() => {
     flex-shrink: 0;
     transition: background 0.13s;
 
-    &:hover:not(:disabled) { background: #e5eaf0; }
+    &:hover:not(:disabled) { background: var(--hairline-strong); }
     &:disabled { color: rgba(15, 23, 42, 0.3); cursor: not-allowed; }
   }
 
@@ -719,8 +719,8 @@ onUnmounted(() => {
   gap: 10px;
   padding: 0 16px;
   border-radius: 18px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  background: #fff;
+  border: 1px solid rgba(var(--tint), 0.14);
+  background: var(--surface);
   font-family: inherit;
   font-size: 15px;
   color: var(--glacia-ink);
@@ -732,7 +732,7 @@ onUnmounted(() => {
   &:hover { border-color: rgba(47, 93, 143, 0.5); }
   &--open { border-color: #2f5d8f; box-shadow: 0 0 0 3px rgba(47, 93, 143, 0.12); }
   &__ph { color: var(--glacia-ink-dim); }
-  &:disabled { background: #f5f7fa; cursor: not-allowed; &:hover { border-color: rgba(15, 23, 42, 0.14); } }
+  &:disabled { background: var(--surface-3); cursor: not-allowed; &:hover { border-color: rgba(var(--tint), 0.14); } }
 }
 
 // ── Month picker — same panel design as the reusable DatePicker: an in-flow
@@ -761,7 +761,7 @@ onUnmounted(() => {
     padding: 14px 14px 12px;
     border-radius: 16px;
     border: 0.5px solid var(--glacia-glass-border);
-    background: #fff;
+    background: var(--surface);
   }
 }
 
@@ -833,7 +833,7 @@ onUnmounted(() => {
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 
-  &:hover:not(:disabled):not(.aq-month--selected) { background: rgba(15, 23, 42, 0.05); }
+  &:hover:not(:disabled):not(.aq-month--selected) { background: rgba(var(--tint), 0.05); }
 
   &--in { background: var(--aq-range); }
 
@@ -862,8 +862,8 @@ onUnmounted(() => {
   gap: 10px;
   padding: 0 14px;
   border-radius: 18px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
-  background: #fff;
+  border: 1px solid rgba(var(--tint), 0.14);
+  background: var(--surface);
   font-family: inherit;
   font-size: 14px;
   color: var(--glacia-ink);
@@ -877,7 +877,7 @@ onUnmounted(() => {
     width: 38px;
     height: 22px;
     border-radius: 999px;
-    background: #cfd6de;
+    background: var(--hairline-strong);
     flex-shrink: 0;
     transition: background 0.18s;
 
@@ -888,7 +888,7 @@ onUnmounted(() => {
       width: 16px;
       height: 16px;
       border-radius: 50%;
-      background: #fff;
+      background: var(--surface);
       box-shadow: 0 1px 3px rgba(16, 24, 32, 0.25);
       transition: transform 0.18s cubic-bezier(0.3, 1.3, 0.5, 1);
     }
@@ -898,7 +898,7 @@ onUnmounted(() => {
 
   &--on {
     border-color: #2f5d8f;
-    background: #f3f7fc;
+    background: var(--blue-soft);
 
     .aq-until__track { background: #2f5d8f; }
     .aq-until__track i { transform: translateX(16px); }
@@ -920,11 +920,11 @@ onUnmounted(() => {
   transition: background 0.15s, opacity 0.15s, box-shadow 0.15s;
 
   &--cancel {
-    background: #fff;
-    border: 1px solid rgba(15, 23, 42, 0.14);
+    background: var(--surface);
+    border: 1px solid rgba(var(--tint), 0.14);
     color: var(--glacia-ink);
 
-    &:hover { background: rgba(15, 23, 42, 0.04); }
+    &:hover { background: rgba(var(--tint), 0.04); }
   }
 
   &--save {
@@ -943,7 +943,7 @@ onUnmounted(() => {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    border: 2.5px solid rgba(255, 255, 255, 0.45);
+    border: 2.5px solid rgba(var(--glass-rgb), 0.45);
     border-top-color: #fff;
     animation: aq-spin 0.7s linear infinite;
   }

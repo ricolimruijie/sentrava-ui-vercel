@@ -90,7 +90,7 @@ function catLabel(c) { return CATEGORY_LABEL[c] ?? c }
 
   &::-webkit-scrollbar        { height: 4px; }
   &::-webkit-scrollbar-track  { background: transparent; }
-  &::-webkit-scrollbar-thumb  { background: #E2E8F0; border-radius: 2px; }
+  &::-webkit-scrollbar-thumb  { background: var(--surface-3); border-radius: 2px; }
 }
 
 .tl-track {
@@ -111,7 +111,7 @@ function catLabel(c) { return CATEGORY_LABEL[c] ?? c }
 .tl-line {
   width: 36px;
   height: 1px;
-  background: #E2E8F0;
+  background: var(--surface-3);
   margin-top: 11px;
   flex-shrink: 0;
 }
@@ -137,15 +137,15 @@ function catLabel(c) { return CATEGORY_LABEL[c] ?? c }
   flex-direction: column;
   gap: 5px;
   width: 190px;
-  background: #F8FAFC;
-  border: 1px solid #F1F5F9;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
   border-radius: 10px;
   padding: 10px 12px;
   margin-left: 10px;
   transition: border-color .15s, box-shadow .15s;
 
   &:hover {
-    border-color: #CBD5E1;
+    border-color: var(--hairline-strong);
     box-shadow: 0 2px 8px rgba(0,0,0,.06);
   }
 
@@ -162,7 +162,7 @@ function catLabel(c) { return CATEGORY_LABEL[c] ?? c }
   &__msg {
     font-size: 11px;
     font-weight: 600;
-    color: #0F172A;
+    color: var(--glacia-ink);
     line-height: 1.4;
     overflow: hidden;
     display: -webkit-box;

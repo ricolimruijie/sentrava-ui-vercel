@@ -418,7 +418,7 @@ function closeAttachmentModal() {
 }
 
 .main-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
   border-radius: 20px;
   overflow: hidden;
@@ -432,7 +432,7 @@ function closeAttachmentModal() {
 .main-head {
   padding: 20px 22px 16px;
   border-bottom: 1px solid var(--glacia-glass-border);
-  background: #fff;
+  background: var(--surface);
 
   &__id {
     font-size: 12px;
@@ -586,7 +586,7 @@ function closeAttachmentModal() {
   gap: 10px;
   padding: 14px 16px;
   border-top: 1px solid var(--glacia-glass-border);
-  background: #fff;
+  background: var(--surface);
 
   &__icon {
     width: 32px;
@@ -608,7 +608,7 @@ function closeAttachmentModal() {
     padding: 0 16px;
     border-radius: 999px;
     border: none;
-    background: #f1f5f9;
+    background: var(--surface-3);
     outline: none;
     font-size: 13px;
   }
@@ -629,7 +629,7 @@ function closeAttachmentModal() {
 }
 
 .info-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
   border-radius: 20px;
   padding: 20px;
@@ -696,7 +696,7 @@ function closeAttachmentModal() {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--glacia-glass-border);
-  background: #f8fafc;
+  background: var(--surface-2);
   color: var(--glacia-ink);
   font-size: 13px;
   font-weight: 500;
@@ -718,7 +718,7 @@ function closeAttachmentModal() {
   position: relative;
   max-width: 90vw;
   max-height: 88vh;
-  background: #fff;
+  background: var(--surface);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 24px 48px -12px rgba(16,24,32,0.35);
@@ -755,7 +755,7 @@ function closeAttachmentModal() {
   padding: 14px;
   border-radius: 12px;
   border: 1px dashed var(--glacia-glass-border);
-  background: #f8fafc;
+  background: var(--surface-2);
   text-align: left;
 
   &__title {
@@ -776,7 +776,7 @@ function closeAttachmentModal() {
   border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--glacia-glass-border);
-  background: #f8fafc;
+  background: var(--surface-2);
   aspect-ratio: 3/4;
 
   &__thumb {
@@ -840,7 +840,7 @@ function closeAttachmentModal() {
   position: relative;
   width: 100%;
   max-width: 460px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16,24,32,0.35);
   padding: 28px;
@@ -919,7 +919,7 @@ function closeAttachmentModal() {
     width: 15px;
     height: 15px;
     border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.4);
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
     border-top-color: #fff;
     animation: modal-btn-spin 0.7s linear infinite;
   }

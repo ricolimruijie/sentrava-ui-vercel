@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { IconChevronRight } from '@tabler/icons-vue'
+import { IconChevronRight, IconShieldSearch } from '@tabler/icons-vue'
 import VulnerabilityDetailModal from '@/components/vulnerabilities/VulnerabilityDetailModal.vue'
 
 const props = defineProps({
@@ -55,7 +55,12 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
     <div class="vuln__body">
       <p class="vuln__caption">Critical security weaknesses identified across your assets, prioritized by severity.</p>
 
-      <div class="vuln__wrap">
+      <div v-if="!loading && !filteredItems.length" class="vuln__empty">
+        <span class="vuln__empty-icon"><IconShieldSearch :size="30" stroke-width="1.6" /></span>
+        <span class="vuln__empty-text">No vulnerabilities found</span>
+      </div>
+
+      <div v-else class="vuln__wrap">
         <table class="vtable">
           <thead>
             <tr>
@@ -69,7 +74,6 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
           </thead>
           <tbody>
             <tr v-if="loading"><td colspan="6" class="vtable__empty">Loading…</td></tr>
-            <tr v-else-if="!filteredItems.length"><td colspan="6" class="vtable__empty">No vulnerabilities found.</td></tr>
             <tr v-for="item in filteredItems" :key="item.id" class="vtable__row">
               <td class="vtable__name">{{ item.name }}</td>
               <td class="vtable__asset">{{ item.affectedAsset }}</td>
@@ -138,6 +142,34 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
     flex: 1;
     min-height: 0;
     background: none;
+  }
+
+  &__empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  &__empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px dashed rgba(var(--tint), 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__empty-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--glacia-ink);
   }
 }
 

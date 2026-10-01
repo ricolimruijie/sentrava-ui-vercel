@@ -9,7 +9,7 @@ import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import MemberActionModals from '@/components/company/MemberActionModals.vue'
 import CompanyHeader from '@/components/company/CompanyHeader.vue'
-import { IconDotsVertical, IconPencil, IconUserMinus } from '@tabler/icons-vue'
+import { IconDotsVertical, IconPencil, IconUserMinus, IconUsers } from '@tabler/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -165,7 +165,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       :items="filteredMembers"
       :loading="loading"
       hide-pagination
-      empty-text="No members found."
+      empty-text="No members found." :empty-icon="IconUsers"
     >
       <template #cell-name="{ row }">
         <div class="member-cell">
@@ -242,7 +242,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  background: rgba(15, 23, 42, 0.06);
+  background: rgba(var(--tint), 0.06);
   color: var(--glacia-ink-dim);
 
   &--named {
@@ -306,7 +306,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 .action-menu {
   position: fixed;
   width: 176px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;

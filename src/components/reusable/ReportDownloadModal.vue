@@ -162,7 +162,7 @@ function submit() {
 .rep-modal {
   width: 100%;
   max-width: 640px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px 28px 0;
@@ -203,7 +203,7 @@ function submit() {
   height: 34px;
   border-radius: 50%;
   border: none;
-  background: rgba(15, 23, 42, 0.06);
+  background: rgba(var(--tint), 0.06);
   color: var(--glacia-ink-dim);
   cursor: pointer;
   display: inline-flex;
@@ -212,7 +212,7 @@ function submit() {
   flex-shrink: 0;
 
   &:hover {
-    background: rgba(15, 23, 42, 0.1);
+    background: rgba(var(--tint), 0.1);
     color: var(--glacia-ink);
   }
 }
@@ -222,12 +222,12 @@ function submit() {
   grid-template-columns: 1fr auto 1fr;
   gap: 24px;
   padding: 20px 0;
-  border-top: 1px solid #eef1f4;
+  border-top: 1px solid var(--hairline);
 }
 
 .rep-modal__divider {
   width: 1px;
-  background: #eef1f4;
+  background: var(--surface-3);
 }
 
 .rep-modal__col-head {
@@ -275,7 +275,7 @@ function submit() {
   transition: background 0.13s;
 
   &:hover {
-    background: rgba(15, 23, 42, 0.04);
+    background: rgba(var(--tint), 0.04);
   }
 
   &__input {
@@ -289,8 +289,8 @@ function submit() {
     width: 22px;
     height: 22px;
     border-radius: 8px;
-    border: 2px solid #cbd5e1;
-    background: #fff;
+    border: 2px solid var(--hairline-strong);
+    background: var(--surface);
     box-sizing: border-box;
     display: inline-flex;
     align-items: center;
@@ -327,7 +327,7 @@ function submit() {
   &__bar {
     height: 6px;
     border-radius: 999px;
-    background: #eef1f4;
+    background: var(--surface-3);
     overflow: hidden;
   }
 
@@ -335,7 +335,7 @@ function submit() {
     display: block;
     height: 100%;
     border-radius: 999px;
-    background: #cbd5e1;
+    background: var(--hairline-strong);
     transition: background 0.13s;
 
     &--on {
@@ -364,8 +364,8 @@ function submit() {
 .rep-modal__footer {
   margin: 0 -28px;
   padding: 18px 28px 24px;
-  background: #f8f9fb;
-  border-top: 1px solid #eef1f4;
+  background: var(--surface-3);
+  border-top: 1px solid var(--hairline);
 }
 
 .rep-modal__count {
@@ -382,7 +382,7 @@ function submit() {
 .rep-modal__progress {
   height: 6px;
   border-radius: 999px;
-  background: #e2e8f0;
+  background: var(--surface-3);
   overflow: hidden;
 }
 
@@ -415,12 +415,12 @@ function submit() {
   gap: 8px;
 
   &--cancel {
-    background: #fff;
+    background: var(--surface);
     color: var(--glacia-ink);
-    border: 1px solid #d3dee2;
+    border: 1px solid var(--hairline);
 
     &:hover {
-      background: rgba(15, 23, 42, 0.04);
+      background: rgba(var(--tint), 0.04);
     }
   }
 
@@ -434,7 +434,7 @@ function submit() {
     }
 
     &:disabled {
-      background: #e5e7eb;
+      background: var(--surface-3);
       color: #9ca3af;
       box-shadow: none;
       cursor: default;
@@ -453,7 +453,7 @@ function submit() {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
     border-top-color: #fff;
     animation: rep-btn-spin 0.7s linear infinite;
   }

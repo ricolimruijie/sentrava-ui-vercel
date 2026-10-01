@@ -1111,7 +1111,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   padding: 0 18px;
   border-radius: var(--glacia-radius-pill);
   border: 1px solid var(--glacia-glass-border);
-  background: #fff;
+  background: var(--surface);
   color: var(--glacia-ink);
   font-size: 13px;
   font-weight: 600;
@@ -1191,7 +1191,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   top: 0;
   height: 160px; // 3 × 48px items + 2 × 8px padding
   border-radius: 20px;
-  background: #fff;
+  background: var(--surface);
 }
 
 .lm-list {
@@ -1205,7 +1205,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   flex-direction: column;
   // Solid backing identical to the flyout — the goo shape alone can't be
   // trusted to cover the list in every browser's filter region.
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
 }
 
@@ -1250,7 +1250,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   transition: background 160ms ease;
 
   &:hover {
-    background: rgba(15, 23, 42, 0.05);
+    background: rgba(var(--tint), 0.05);
   }
 
   span:nth-child(2) {
@@ -1287,7 +1287,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   gap: 2px;
   min-width: 220px;
   padding: 8px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
   border-radius: 14px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
@@ -1345,7 +1345,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
 .create-modal {
   width: 100%;
   max-width: 480px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px;
@@ -1398,7 +1398,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     padding: 0 18px;
     border-radius: 14px;
     border: 1px solid var(--glacia-glass-border);
-    background: #fff;
+    background: var(--surface);
     color: var(--glacia-ink);
     font-size: 15px;
     font-family: 'Manrope', 'Inter', sans-serif;
@@ -1417,7 +1417,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     }
 
     &--readonly {
-      background: #f8fafc;
+      background: var(--surface-2);
       color: var(--glacia-ink-dim);
       cursor: default;
 
@@ -1501,7 +1501,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     width: 15px;
     height: 15px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
     border-top-color: #fff;
     animation: modal-btn-spin 0.7s linear infinite;
   }
@@ -1587,7 +1587,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   padding: 18px;
   border-radius: 16px;
   border: 0.5px solid var(--glacia-glass-border);
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
 
   &--spaced {
@@ -1632,7 +1632,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   height: 26px;
   border-radius: 999px;
   border: none;
-  background: rgba(15, 23, 42, 0.12);
+  background: rgba(var(--tint), 0.12);
   cursor: pointer;
   transition: background 0.18s ease;
 
@@ -1647,7 +1647,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--surface);
     box-shadow: 0 1px 3px rgba(16, 24, 32, 0.25);
     transition: transform 0.18s ease;
 
@@ -1663,7 +1663,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   max-width: 980px;
   min-height: 640px;
   max-height: calc(100vh - 40px);
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   overflow: hidden;
@@ -1682,15 +1682,15 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     width: 340px;
     flex-shrink: 0;
     padding: 28px 26px;
-    background: linear-gradient(160deg, #f4f8ff 0%, #e9f1fd 55%, #eef3fb 100%);
-    border-right: 1px solid rgba(15, 23, 42, 0.06);
+    background: linear-gradient(160deg, var(--blue-soft) 0%, var(--blue-soft) 55%, var(--blue-soft) 100%);
+    border-right: 1px solid rgba(var(--tint), 0.06);
     display: flex;
     flex-direction: column;
 
     @media (max-width: 760px) {
       width: 100%;
       border-right: none;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+      border-bottom: 1px solid rgba(var(--tint), 0.06);
     }
   }
 
@@ -1699,7 +1699,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     font-size: 28px;
     font-weight: 800;
     letter-spacing: -0.02em;
-    color: #0f172a;
+    color: var(--glacia-ink);
     margin: 0;
   }
 
@@ -1722,7 +1722,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: #eef4ff;
+    background: var(--blue-soft);
     color: #1e3a5f;
     font-weight: 800;
     font-size: 17px;
@@ -1741,13 +1741,13 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     font-size: 16px;
     font-weight: 800;
     line-height: 1.3;
-    color: #0f172a;
+    color: var(--glacia-ink);
   }
 }
 
 .sa-divider {
   height: 1px;
-  background: rgba(15, 23, 42, 0.1);
+  background: rgba(var(--tint), 0.1);
   margin: 18px 0;
 }
 
@@ -1758,8 +1758,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
 }
 
 .sa-date-pill {
-  background: #fff;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: var(--surface);
+  border: 1px solid rgba(var(--tint), 0.1);
   border-radius: 14px;
   padding: 10px 12px;
   text-align: left;
@@ -1778,14 +1778,14 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   &__label {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--ink-2);
     white-space: nowrap;
   }
 
   &__value {
     font-size: 14px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--glacia-ink);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1815,7 +1815,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     display: inline-block;
     font-size: 16px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--glacia-ink);
     animation: sa-fade 0.3s ease;
   }
 
@@ -1828,9 +1828,9 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 1px solid rgba(15, 23, 42, 0.1);
-    background: #fff;
-    color: #0f172a;
+    border: 1px solid rgba(var(--tint), 0.1);
+    background: var(--surface);
+    color: var(--glacia-ink);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -1838,7 +1838,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     transition: background 0.13s;
 
     &:hover {
-      background: #f1f5f9;
+      background: var(--surface-3);
     }
   }
 
@@ -1881,7 +1881,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   &__weekday {
     font-size: 12px;
     font-weight: 700;
-    color: #475569;
+    color: var(--ink-2);
     height: 28px;
     line-height: 28px;
     margin-bottom: 2px;
@@ -1979,7 +1979,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     margin: 0;
     font-size: 19px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--glacia-ink);
   }
 }
 
@@ -2002,9 +2002,9 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: #f8fafc;
-  color: #0f172a;
+  border: 1px solid rgba(var(--tint), 0.06);
+  background: var(--surface-2);
+  color: var(--glacia-ink);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -2012,7 +2012,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   flex-shrink: 0;
 
   &:hover {
-    background: #eef2f7;
+    background: var(--surface-3);
   }
 }
 
@@ -2033,8 +2033,8 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   gap: 12px;
   padding: 14px;
   border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: #f8fafc;
+  border: 1px solid rgba(var(--tint), 0.06);
+  background: var(--surface-2);
 
   &__icon {
     width: 38px;
@@ -2063,7 +2063,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     font-size: 20px;
     font-weight: 800;
     line-height: 1.1;
-    color: #0f172a;
+    color: var(--glacia-ink);
   }
 }
 
@@ -2072,7 +2072,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   padding: 18px 20px;
   border-radius: 16px;
   border: 1px solid #c9dcf5;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 12px 28px -18px rgba(59, 110, 190, 0.45);
   display: flex;
   align-items: center;
@@ -2082,7 +2082,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   &__title {
     font-size: 16px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--glacia-ink);
   }
 
   &__desc {
@@ -2099,7 +2099,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   height: 30px;
   border-radius: 999px;
   border: none;
-  background: rgba(15, 23, 42, 0.12);
+  background: rgba(var(--tint), 0.12);
   cursor: pointer;
   transition: background 0.18s ease;
 
@@ -2114,7 +2114,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--surface);
     box-shadow: 0 1px 3px rgba(16, 24, 32, 0.25);
     transition: transform 0.18s ease;
 
@@ -2146,7 +2146,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   gap: 8px;
 
   &--cancel {
-    background: #fef2f2;
+    background: var(--red-soft);
     color: #dc2626;
 
     &:hover {
@@ -2155,7 +2155,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   }
 
   &--save-idle {
-    background: #f8fafc;
+    background: var(--surface-2);
     color: #64748b;
     cursor: default;
   }
@@ -2176,7 +2176,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
 }
 
 .modal-btn__spinner--dark {
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(var(--glass-rgb), 0.4);
   border-top-color: #fff;
 }
 
@@ -2238,7 +2238,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   padding: 16px 18px;
   border-radius: 18px;
   border: 1.5px solid var(--glacia-red);
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
   user-select: none;
 }
@@ -2250,7 +2250,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   margin: 0;
   border-radius: 6px;
   border: 2px solid var(--glacia-red);
-  background: #fff;
+  background: var(--surface);
   flex-shrink: 0;
   cursor: pointer;
   position: relative;
@@ -2275,7 +2275,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid var(--glacia-glass-border);
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
 
   &__header {
@@ -2309,7 +2309,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #f1f5f9;
+    background: var(--surface-3);
     border: 3px solid #fff;
     box-shadow: 0 4px 12px rgba(16, 24, 32, 0.12);
     color: var(--glacia-ink-dim);
@@ -2388,7 +2388,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
     margin-top: 8px;
     padding: 10px 14px;
     border-radius: 12px;
-    background: #e8f5e9;
+    background: var(--green-soft);
   }
 
   &__2fa-label {

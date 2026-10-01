@@ -442,7 +442,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   max-width: 540px;
   max-height: 88vh;
   overflow-y: auto;
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px;
@@ -513,7 +513,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     padding: 0 18px;
     border-radius: 14px;
     border: 0.5px solid var(--glacia-glass-border);
-    background: #fff;
+    background: var(--surface);
     color: var(--glacia-ink);
     font-size: 15px;
     font-family: 'Manrope', 'Inter', sans-serif;
@@ -646,7 +646,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     padding: 0 18px;
     border-radius: 14px;
     border: 0.5px solid var(--glacia-glass-border);
-    background: #fff;
+    background: var(--surface);
     box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
     box-sizing: border-box;
     display: flex;
@@ -687,7 +687,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     padding: 8px;
     border-radius: 16px;
     border: 0.5px solid var(--glacia-glass-border);
-    background: #fff;
+    background: var(--surface);
     max-height: 260px;
     overflow-y: auto;
   }
@@ -747,7 +747,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   padding: 18px;
   border-radius: 16px;
   border: 0.5px solid var(--glacia-glass-border);
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
 
   &__row {
@@ -783,7 +783,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   height: 26px;
   border-radius: 999px;
   border: none;
-  background: rgba(15, 23, 42, 0.12);
+  background: rgba(var(--tint), 0.12);
   cursor: pointer;
   transition: background 0.18s ease;
 
@@ -798,7 +798,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--surface);
     box-shadow: 0 1px 3px rgba(16, 24, 32, 0.25);
     transition: transform 0.18s ease;
 
@@ -873,7 +873,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     width: 15px;
     height: 15px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
     border-top-color: #fff;
     animation: modal-btn-spin 0.7s linear infinite;
   }

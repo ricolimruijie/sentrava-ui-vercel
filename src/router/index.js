@@ -94,7 +94,18 @@ const appRoutes = [
   { path: '/scans/:section?',     component: Placeholder, meta: { requiresAuth: true } },
   { path: '/vulnerabilities',     component: Placeholder, meta: { requiresAuth: true } },
   { path: '/reports',             component: Placeholder, meta: { requiresAuth: true } },
-  { path: '/settings',            component: Placeholder, meta: { requiresAuth: true } },
+  {
+    path: '/settings',
+    component: () => import('@/views/Settings/SettingsView.vue'),
+    meta: {
+      requiresAuth: true,
+      title: 'Settings',
+      crumbs: [],
+      // The active section lives in ?section= so the breadcrumb shows it.
+      tabQuery: 'section',
+      tabLabels: { profile: 'Profile', 'two-factor': 'Two-factor authentication' },
+    },
+  },
   {
     path: '/settings/api-keys',
     component: () => import('@/views/Settings/ApiKeysView.vue'),

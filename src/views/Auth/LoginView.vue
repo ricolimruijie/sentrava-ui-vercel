@@ -3,6 +3,7 @@ import { ref, reactive, computed, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import GlassField from '@/components/reusable/GlassField.vue'
+import AuthLayout from './AuthLayout.vue'
 
 // Login page — design and behavior from references/LoginPage.vue (animated
 // coral visual, floating-label-free inputs with focus/error rings, shake on
@@ -22,6 +23,7 @@ const showPassword = ref(false)
 const focused = ref(null)
 const errors = reactive({ email: '', password: '', form: '' })
 const busy = ref(false)
+const noData = ref(false) // demo: sign in with every page empty (works with any role)
 const done = ref(false)
 const shakeKey = ref(0)
 let timer
@@ -43,7 +45,7 @@ async function onSubmit() {
   if (!validate()) { shakeKey.value++; return }
   busy.value = true
   try {
-    await auth.login(email.value.trim(), password.value)
+    await auth.login(email.value.trim(), password.value, { dataMode: noData.value ? 'empty' : undefined })
     busy.value = false
     done.value = true
     // Let the "Logged in" state show before leaving the page.
@@ -56,8 +58,8 @@ async function onSubmit() {
 }
 
 function forgotPassword() {
-  // stub — wire up to a real password-reset flow when it exists
-  console.info('Forgot password')
+  // Carry over whatever email was typed so the next page starts filled in.
+  router.push({ name: 'forgot-password', query: email.value.trim() ? { email: email.value.trim() } : {} })
 }
 
 // Demo role shortcuts (static mode only)
@@ -66,8 +68,6 @@ const demoAccounts = [
   { label: 'Super Admin', email: 'superadmin@sentra.io', password: 'demo' },
   { label: 'Admin',       email: 'admin@acme.com',       password: 'demo' },
   { label: 'Member',      email: 'member@acme.com',      password: 'demo' },
-  // Not a role: super admin look with every page empty, to review no-data states.
-  { label: 'Empty State', email: 'empty@sentra.io',      password: 'demo' },
 ]
 function useDemo(account) {
   email.value = account.email
@@ -79,24 +79,7 @@ onBeforeUnmount(() => clearTimeout(timer))
 </script>
 
 <template>
-  <div class="login" :class="{ 'login--split': isSplit, 'login--centered': !isSplit, 'login--still': !motion }">
-    <div class="visual" aria-hidden="true">
-      <div class="visual__base"></div>
-      <span class="blob blob--1"></span>
-      <span class="blob blob--2"></span>
-      <span class="blob blob--3"></span>
-      <span class="blob blob--4"></span>
-      <span class="blob blob--5"></span>
-      <div class="visual__shade"></div>
-
-      <div v-if="isSplit" class="visual__content">
-        <span class="brand-pill">SENTRAVA</span>
-        <h2 class="visual__headline">Your Trusted Partner in Cybersecurity &amp; Asset Protection</h2>
-      </div>
-    </div>
-
-    <div class="form-wrap">
-      <div class="stack">
+  <AuthLayout :layout="layout" :motion="motion">
       <div class="card">
         <header class="head rise" style="--d: 80ms">
           <span v-if="!isSplit" class="brand">SENTRAVA</span>
@@ -141,6 +124,14 @@ onBeforeUnmount(() => clearTimeout(timer))
             >{{ showPassword ? 'visibility' : 'visibility_off' }}</button>
           </div>
 
+          <span v-if="errors.form" class="error" role="alert"><span class="icon icon--sm">error</span>{{ errors.form }}</span>
+
+          <button type="submit" class="submit" :class="{ 'is-done': done }" :disabled="busy || done || !turnstileVerified">
+            <span v-if="busy" class="icon spin">progress_activity</span>
+            <span v-else-if="done" class="icon">check</span>
+            {{ btnLabel }}
+          </button>
+
           <!-- Replace with the real Cloudflare Turnstile widget -->
           <div class="turnstile">
             <slot name="turnstile">
@@ -149,14 +140,6 @@ onBeforeUnmount(() => clearTimeout(timer))
               <span class="turnstile__brand"><b>CLOUDFLARE</b><small>Privacy · Help</small></span>
             </slot>
           </div>
-
-          <span v-if="errors.form" class="error" role="alert"><span class="icon icon--sm">error</span>{{ errors.form }}</span>
-
-          <button type="submit" class="submit" :class="{ 'is-done': done }" :disabled="busy || done || !turnstileVerified">
-            <span v-if="busy" class="icon spin">progress_activity</span>
-            <span v-else-if="done" class="icon">check</span>
-            {{ btnLabel }}
-          </button>
         </form>
 
         <p class="terms rise" style="--d: 240ms">
@@ -165,137 +148,20 @@ onBeforeUnmount(() => clearTimeout(timer))
       </div>
       <div v-if="IS_STATIC" class="card card--demo rise" style="--d: 320ms">
         <div class="demo__label"><span>Quick demo</span></div>
+        <button
+          type="button" role="switch" :aria-checked="noData" class="demo__switch" :class="{ 'is-on': noData }"
+          @click="noData = !noData"
+        >
+          <span class="demo__track"><i /></span>
+          <span class="demo__switch-text">Show every page with no data</span>
+        </button>
         <div class="demo__row">
           <button v-for="acc in demoAccounts" :key="acc.email" type="button" class="demo__btn" @click="useDemo(acc)">
             {{ acc.label }}
           </button>
         </div>
       </div>
-      </div>
-    </div>
-  </div>
+  </AuthLayout>
 </template>
 
-<style scoped>
-/* Fonts: Plus Jakarta Sans + IBM Plex Mono + Material Symbols Outlined (load globally) */
-.login {
-  --coral-500: #FF2E3A; --coral-600: #E31724; --coral-700: #B7101C; --coral-800: #8A0C15; --coral-900: #5C070E;
-  --ice-100: #F0F8FF; --ice-500: #63A5DE; --ice-700: #2B6AA1;
-  --gray-50: #F7FAFB; --gray-100: #EAF0F2; --gray-200: #D3DEE2; --gray-400: #849599;
-  --text-1: #101820; --text-2: #47565E; --text-3: #6C7A80;
-  --critical: #C41E2A; --critical-tint: #FDE9EA; --success: #1FCB8B;
-  --ease: cubic-bezier(.2, .8, .2, 1);
-
-  position: relative;
-  min-height: 100vh;
-  box-sizing: border-box;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  background: #fff;
-  color: var(--text-1);
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-.login--split { padding: 16px; }
-
-/* Visual */
-.visual { position: relative; overflow: hidden; isolation: isolate; }
-.login--split .visual { flex: 1 1 560px; min-height: 340px; border-radius: 16px; }
-.login--centered .visual { position: absolute; inset: 0; }
-.visual__base { position: absolute; inset: 0; background: radial-gradient(120% 90% at 20% 10%, var(--coral-500), var(--coral-700) 45%, var(--coral-900) 100%); }
-.visual__shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(40,0,6,0) 45%, rgba(40,0,6,.55) 100%); }
-
-.blob { position: absolute; aspect-ratio: 1; }
-.blob--1 { left: -12%; top: -14%; width: 58%; background: linear-gradient(150deg, #FF5A3C, var(--coral-600)); box-shadow: 0 50px 90px -20px rgba(60,0,8,.55); animation: morphA 22s ease-in-out infinite; }
-.blob--2 { right: -18%; top: -10%; width: 62%; background: linear-gradient(200deg, var(--coral-700), var(--coral-800)); box-shadow: 0 50px 90px -20px rgba(60,0,8,.55); animation: morphB 26s ease-in-out infinite; }
-.blob--3 { left: 26%; top: 22%; width: 52%; background: linear-gradient(160deg, var(--coral-600), var(--coral-700)); box-shadow: 0 60px 100px -20px rgba(50,0,6,.6); animation: morphC 20s ease-in-out infinite; }
-.blob--4 { right: -14%; bottom: -18%; width: 56%; background: linear-gradient(330deg, #FF4A2E, var(--coral-500)); box-shadow: 0 -40px 90px -20px rgba(60,0,8,.5); animation: morphB 24s ease-in-out -8s infinite; }
-.blob--5 { left: -16%; bottom: -24%; width: 60%; background: linear-gradient(30deg, #3E070B, var(--coral-900)); box-shadow: 0 -40px 90px -20px rgba(30,0,4,.6); animation: morphA 28s ease-in-out -12s infinite; }
-.login--still .blob { animation-play-state: paused; }
-
-.visual__content { position: relative; height: 100%; min-height: inherit; box-sizing: border-box; padding: 40px 44px; display: flex; flex-direction: column; justify-content: space-between; gap: 40px; color: #fff; }
-.brand-pill { align-self: flex-start; display: inline-flex; align-items: center; height: 40px; padding: 0 18px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); box-shadow: inset 0 1px 0 rgba(255,255,255,.35); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); font-size: 16px; font-weight: 800; letter-spacing: 1px; }
-.visual__headline { margin: 0; max-width: 560px; font-size: clamp(32px, 3.6vw, 52px); line-height: 1.05; font-weight: 800; letter-spacing: -1.2px; text-wrap: balance; animation: rise 700ms var(--ease) 200ms both; }
-
-/* Form */
-.form-wrap { display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 40px 24px; }
-.login--split .form-wrap { flex: 1 1 440px; }
-.login--centered .form-wrap { position: relative; flex: 1; min-height: 100vh; padding: 40px 20px; }
-
-.stack { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.card { width: 100%; display: flex; flex-direction: column; }
-.login--split .card { max-width: 420px; gap: 30px; }
-.login--centered .card { max-width: 440px; box-sizing: border-box; gap: 24px; padding: 32px 36px; border-radius: 16px; background: rgba(255,255,255,.86); border: 1px solid rgba(255,255,255,.6); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 40px 80px -30px rgba(40,0,6,.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); }
-
-.head { display: flex; flex-direction: column; gap: 8px; }
-.brand { margin-bottom: 4px; font-size: 13px; font-weight: 800; letter-spacing: 1.6px; color: var(--coral-600); }
-/* Same type style as the "Scan timeline" section titles: Inter, bold, all caps, wide tracking. */
-.title { margin: 0; font-family: 'Inter', sans-serif; font-size: 20px; line-height: 1.3; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
-.subtitle { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-2); }
-.hl { font-weight: 700; color: var(--coral-700); }
-.hl--dark { color: var(--text-1); }
-
-.form { display: flex; flex-direction: column; gap: 18px; }
-
-/* Fields are the app's own GlassField; these wrappers only add the shake, the
-   Forgot Password link (right of the label) and the show/hide eye. */
-.fld { position: relative; }
-.fld--shake { animation: shake 300ms ease; }
-.fld__forgot { position: absolute; top: 1px; right: 0; font-size: 12.5px; }
-.eye { position: absolute; right: 8px; top: 29px; width: 36px; height: 36px; border-radius: 999px; border: 0; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: 'Material Symbols Outlined'; font-size: 20px; color: var(--text-3); }
-.eye:hover { background: var(--gray-50); color: var(--text-1); }
-.error { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--critical); }
-
-
-
-
-.icon { flex: none; font-family: 'Material Symbols Outlined'; font-size: 20px; line-height: 1; }
-.icon--sm { font-size: 15px; }
-
-.turnstile { display: flex; align-items: center; gap: 12px; min-height: 62px; padding: 0 14px; border-radius: 16px; background: var(--gray-50); border: 1px solid var(--gray-100); }
-.turnstile__check { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--success); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Material Symbols Outlined'; font-size: 18px; }
-.turnstile__text { flex: 1; font-size: 13.5px; font-weight: 600; }
-.turnstile__brand { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.turnstile__brand b { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: var(--text-2); }
-.turnstile__brand small { font-size: 10.5px; color: var(--text-3); }
-
-.submit { height: 50px; margin-top: 2px; border-radius: 999px; border: 0; background: var(--coral-600); color: #fff; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 14px 28px -14px rgba(204,20,32,.7); transition: background 160ms ease; }
-.submit:hover:not(:disabled) { background: var(--coral-700); }
-.submit:disabled { cursor: default; }
-.submit.is-done { background: var(--success); }
-.spin { animation: spin 900ms linear infinite; }
-
-.terms { margin: 0; font-size: 12px; line-height: 1.6; color: var(--text-3); text-align: center; text-wrap: pretty; }
-.link { color: var(--coral-700); font-weight: 700; text-decoration: none; }
-.link:hover { color: var(--coral-800); text-decoration: underline; }
-.terms .link { font-weight: inherit; }
-
-.rise { animation: rise 600ms var(--ease) var(--d, 0ms) both; }
-
-/* Quick demo shortcuts (static mode only) */
-/* Quick demo sits in its own card under the login card (same glass style, narrower padding). */
-.card--demo { max-width: 440px; box-sizing: border-box; gap: 12px; padding: 18px 24px 20px; border-radius: 16px; background: rgba(255,255,255,.86); border: 1px solid rgba(255,255,255,.6); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 40px 80px -30px rgba(40,0,6,.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); }
-.login--split .card--demo { max-width: 420px; }
-.demo__label { display: flex; align-items: center; gap: 12px; font-size: 11.5px; color: var(--text-3); }
-.demo__label::before, .demo__label::after { content: ''; flex: 1; height: 1px; background: var(--gray-200); }
-.demo__row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.demo__btn { height: 34px; border-radius: 999px; border: 1px solid var(--gray-200); background: #fff; font: inherit; font-size: 12px; font-weight: 700; color: var(--text-2); cursor: pointer; transition: border-color 160ms ease, color 160ms ease, background 160ms ease; }
-.demo__btn:hover { border-color: var(--coral-600); color: var(--coral-700); background: var(--critical-tint); }
-
-@keyframes morphA { 0%,100% { border-radius: 58% 42% 63% 37% / 45% 55% 45% 55%; transform: translate(0,0) rotate(0) } 50% { border-radius: 40% 60% 38% 62% / 60% 38% 62% 40%; transform: translate(4%,6%) rotate(18deg) } }
-@keyframes morphB { 0%,100% { border-radius: 42% 58% 35% 65% / 58% 40% 60% 42%; transform: translate(0,0) rotate(0) } 50% { border-radius: 63% 37% 56% 44% / 40% 62% 38% 60%; transform: translate(-5%,-4%) rotate(-22deg) } }
-@keyframes morphC { 0%,100% { border-radius: 50% 50% 40% 60% / 40% 60% 50% 50%; transform: translate(0,0) scale(1) } 50% { border-radius: 36% 64% 60% 40% / 62% 36% 64% 38%; transform: translate(3%,-6%) scale(1.06) } }
-@keyframes rise { from { opacity: 0; transform: translateY(12px) } }
-@keyframes spin { to { transform: rotate(360deg) } }
-@keyframes shake { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-5px) } 75% { transform: translateX(5px) } }
-
-/* Narrow phones: slimmer card padding and a smaller heading so it still stays on one line. */
-@media (max-width: 480px) {
-  .login--centered .card, .card--demo { padding-left: 22px; padding-right: 22px; }
-  .title { font-size: 15.5px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .blob, .rise, .visual__headline, .fld--shake { animation: none; }
-}
-</style>
+<style scoped src="./auth.css"></style>

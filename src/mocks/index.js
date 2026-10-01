@@ -31,16 +31,17 @@ registerMock(/\/scans\/history\/[^/]+\/vulnerabilities/, () => (emptyData.value 
 registerMock(/\/scans\/history/, () => (emptyData.value ? [] : cicdRunsMock))
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
+// Always succeeds — the real endpoint must not reveal whether the email has an account.
+registerMock(/\/auth\/forgot-password/, () => ({ ok: true }))
 registerMock(/\/auth\/login/, (_, cfg) => {
-  const { email } = cfg.data ?? {}
+  const { email, dataMode } = cfg.data ?? {}
   const roleMappings = {
-    'superadmin@sentra.io': { id: 'u0', name: 'Root Admin',   role: 'super_admin', email: 'superadmin@sentra.io', companies: [] },
-    'admin@acme.com':       { id: 'u1', name: 'Alex Johnson', role: 'admin',       email: 'admin@acme.com',       companies: [{ id: 'c1', name: 'Acme Corporation' }] },
-    // Not a role: a super admin whose every page is shown without data (see utils/dataMode.js).
-    'empty@sentra.io':      { id: 'u9', name: 'Empty State',  role: 'super_admin', email: 'empty@sentra.io',      companies: [], dataMode: 'empty' },
-    'member@acme.com':      { id: 'u3', name: 'James Park',   role: 'member',      email: 'member@acme.com',      companies: [{ id: 'c1', name: 'Acme Corporation' }] },
+    'superadmin@sentra.io': { id: 'u0', name: 'Root Admin',   role: 'super_admin', email: 'superadmin@sentra.io', companies: [], twoFAEnabled: true },
+    'admin@acme.com':       { id: 'u1', name: 'Alex Johnson', role: 'admin',       email: 'admin@acme.com',       companies: [{ id: 'c1', name: 'Acme Corporation' }], twoFAEnabled: true },
+    'member@acme.com':      { id: 'u3', name: 'James Park',   role: 'member',      email: 'member@acme.com',      companies: [{ id: 'c1', name: 'Acme Corporation' }], twoFAEnabled: true },
   }
   const user = roleMappings[email]
   if (!user) return Promise.reject({ message: 'Invalid credentials' })
-  return { token: 'mock-jwt-token', user }
+  // Any role can be signed in "with no data" (see utils/dataMode.js) to review empty states.
+  return { token: 'mock-jwt-token', user: dataMode === 'empty' ? { ...user, dataMode: 'empty' } : user }
 })

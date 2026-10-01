@@ -177,7 +177,7 @@ function onCredentialSaved(patch) {
   max-height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--surface);
   border-radius: 24px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   overflow: hidden;
@@ -189,7 +189,7 @@ function onCredentialSaved(patch) {
     justify-content: space-between;
     gap: 16px;
     padding: 22px 28px;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+    border-bottom: 1px solid rgba(var(--tint), 0.1);
     flex-shrink: 0;
   }
 
@@ -205,8 +205,8 @@ function onCredentialSaved(patch) {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 1px solid rgba(15, 23, 42, 0.12);
-    background: #fff;
+    border: 1px solid rgba(var(--tint), 0.12);
+    background: var(--surface);
     color: var(--glacia-ink);
     cursor: pointer;
     display: inline-flex;
@@ -215,7 +215,7 @@ function onCredentialSaved(patch) {
     flex-shrink: 0;
     transition: background 0.13s;
 
-    &:hover { background: rgba(15, 23, 42, 0.05); }
+    &:hover { background: rgba(var(--tint), 0.05); }
   }
 
   &__body {
@@ -258,14 +258,14 @@ function onCredentialSaved(patch) {
   padding: 16px 18px;
   border-radius: 20px;
 
-  &--online { background: #e8f7ef; .pb-status__title, .pb-status__icon { color: #2f7d57; } }
+  &--online { background: var(--green-soft); .pb-status__title, .pb-status__icon { color: #2f7d57; } }
   &--offline { background: #fdecec; .pb-status__title, .pb-status__icon { color: #b42323; } }
 
   &__icon {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--surface);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -297,7 +297,7 @@ function onCredentialSaved(patch) {
     padding: 0 14px;
     border: none;
     border-radius: 999px;
-    background: #fff;
+    background: var(--surface);
     color: var(--glacia-ink);
     font-family: 'Manrope', 'Inter', sans-serif;
     font-size: 13px;
@@ -314,7 +314,7 @@ function onCredentialSaved(patch) {
 .pb-spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(15, 23, 42, 0.2);
+  border: 2px solid rgba(var(--tint), 0.2);
   border-top-color: var(--glacia-ink);
   border-radius: 50%;
   animation: pb-spin 0.7s linear infinite;
@@ -324,7 +324,7 @@ function onCredentialSaved(patch) {
 
 .pb-divider {
   border: none;
-  border-top: 1px solid rgba(15, 23, 42, 0.12);
+  border-top: 1px solid rgba(var(--tint), 0.12);
   margin: 6px 0 0;
 }
 
@@ -352,9 +352,9 @@ function onCredentialSaved(patch) {
   gap: 6px;
   height: 34px;
   padding: 0 14px;
-  border: 1px solid rgba(15, 23, 42, 0.16);
+  border: 1px solid rgba(var(--tint), 0.16);
   border-radius: 999px;
-  background: #fff;
+  background: var(--surface);
   color: var(--glacia-ink);
   font-family: 'Manrope', 'Inter', sans-serif;
   font-size: 13px;
@@ -377,7 +377,7 @@ function onCredentialSaved(patch) {
   padding: 0 16px;
   border-radius: 14px;
   border: 1px solid var(--glacia-glass-border);
-  background: #fff;
+  background: var(--surface);
   color: var(--glacia-ink);
   font-size: 14px;
   font-family: 'Manrope', 'Inter', sans-serif;
@@ -387,7 +387,7 @@ function onCredentialSaved(patch) {
   transition: border-color 0.13s, box-shadow 0.13s;
 
   &--readonly {
-    background: #f8fafc;
+    background: var(--surface-2);
     color: var(--glacia-ink-dim);
     cursor: default;
 

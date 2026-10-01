@@ -5,4 +5,10 @@ export default [
     component: () => import('@/views/Auth/LoginView.vue'),
     meta: { public: true },
   },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('@/views/Auth/ForgotPasswordView.vue'),
+    meta: { public: true },
+  },
 ]

@@ -9,6 +9,8 @@ import { useFetch } from '@/composables/useFetch'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import {
   IconBell,
+  IconSun,
+  IconMoon,
   IconChevronDown,
   IconChevronRight,
   IconSettings,
@@ -19,6 +21,9 @@ import {
 } from '@tabler/icons-vue'
 import CreateCompanyModal from '@/components/company/CreateCompanyModal.vue'
 import Avatar from 'primevue/avatar'
+import { useTheme } from '@/composables/useTheme'
+
+const { isDark, toggle: toggleTheme } = useTheme()
 
 defineProps({
   collapsed: { type: Boolean, default: false },
@@ -63,6 +68,12 @@ function handleClickOutside(e) {
 
 onMounted(()  => document.addEventListener('mousedown', handleClickOutside))
 onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
+
+// Profile and Settings both open the Settings page (Profile jumps to its Profile section).
+function openSettings(section) {
+  showMenu.value = false
+  router.push({ path: '/settings', query: section ? { section } : {} })
+}
 
 function logout() {
   showMenu.value = false
@@ -185,6 +196,21 @@ function openCreateCompany() {
 
       <div class="navbar__divider" />
 
+      <button
+        type="button"
+        class="navbar__icon-btn navbar__icon-btn--theme"
+        :class="{ 'is-dark': isDark }"
+        :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+        :aria-pressed="isDark"
+        :title="isDark ? 'Light mode' : 'Dark mode'"
+        @click="toggleTheme"
+      >
+        <span class="theme-swap">
+          <IconSun :size="18" class="theme-swap__sun" />
+          <IconMoon :size="18" class="theme-swap__moon" />
+        </span>
+      </button>
+
       <button class="navbar__icon-btn navbar__icon-btn--notif" aria-label="Notifications">
         <IconBell :size="18" />
         <span class="notif-dot" />
@@ -230,12 +256,12 @@ function openCreateCompany() {
 
             <!-- Actions -->
             <div class="user-menu__grid">
-              <button class="user-menu__card" @click="showMenu = false">
+              <button class="user-menu__card" @click="openSettings('profile')">
                 <IconUserCircle :size="20" />
                 <span>Profile</span>
               </button>
 
-              <button class="user-menu__card" @click="showMenu = false">
+              <button class="user-menu__card" @click="openSettings()">
                 <IconSettings :size="20" />
                 <span>Settings</span>
               </button>
@@ -298,6 +324,23 @@ function openCreateCompany() {
     transition: background 0.13s, color 0.13s;
 
     &:hover { background: var(--glacia-glass-fill-strong); color: var(--glacia-ink); }
+
+    // Sun/moon icons swap with a turn + fade.
+    &--theme .theme-swap {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+    &--theme .theme-swap > svg {
+      position: absolute;
+      inset: 0;
+      transition: transform 0.4s cubic-bezier(0.3, 1.4, 0.5, 1), opacity 0.25s ease;
+    }
+    &--theme .theme-swap__sun { opacity: 1; transform: rotate(0) scale(1); color: #f59e0b; }
+    &--theme .theme-swap__moon { opacity: 0; transform: rotate(-90deg) scale(0.4); }
+    &--theme.is-dark .theme-swap__sun { opacity: 0; transform: rotate(90deg) scale(0.4); }
+    &--theme.is-dark .theme-swap__moon { opacity: 1; transform: rotate(0) scale(1); color: #a5b4fc; }
 
     &--notif .notif-dot {
       position: absolute;
@@ -453,7 +496,7 @@ function openCreateCompany() {
     top: calc(100% + 8px);
     left: 0;
     width: 210px;
-    background: #fff;
+    background: var(--surface);
     border-radius: 12px;
     box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
     overflow: hidden;
@@ -508,7 +551,7 @@ function openCreateCompany() {
   top: calc(100% + 8px);
   right: 0;
   width: 240px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 16px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;

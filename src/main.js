@@ -9,6 +9,7 @@ import Tooltip from 'primevue/tooltip'
 
 import router from './router'
 import App from './App.vue'
+import { initTheme } from '@/composables/useTheme'
 import '@/styles/design-tokens.css'
 import '@/styles/main.scss'
 import 'primeicons/primeicons.css'
@@ -31,6 +32,8 @@ const SentraPreset = definePreset(Aura, {
     },
   },
 })
+
+initTheme()
 
 // ── Pinia ─────────────────────────────────────────────────────────────────────
 const pinia = createPinia()

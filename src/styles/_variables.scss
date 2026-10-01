@@ -10,7 +10,7 @@ $bg-surface: #FFFFFF;
 $text-dark: #171717;
 $text-secondary: #6B7280;
 $text-muted: #9CA3AF;
-$border-color: #E5E7EB;
+$border-color: var(--hairline);
 
 // Sidebar
 $sidebar-width: 260px;

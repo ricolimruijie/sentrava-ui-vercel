@@ -539,7 +539,7 @@ onMounted(() => {
       :columns="columns"
       :items="filtered"
       :loading="false"
-      empty-text="No applications found."
+      empty-text="No applications found." :empty-icon="IconBrowser"
     >
       <template #cell-tags="{ row }">
         <div class="cell-tags">
@@ -1087,7 +1087,7 @@ onMounted(() => {
 
 .status-pill {
   display: inline-flex; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap;
-  &--notstarted { background: #ECEEF0; color: #5C6470; }
+  &--notstarted { background: var(--surface-3); color: var(--ink-3); }
   &--completed { background: #dcfce7; color: #16a34a; }
   &--scanning { background: #fef3c7; color: #F79009; }
   &--queue { background: #e0f2fe; color: #0c4a6e; }
@@ -1106,7 +1106,7 @@ onMounted(() => {
 }
 
 .tag-popover {
-  position: fixed; width: 280px; background: #fff; border-radius: 16px;
+  position: fixed; width: 280px; background: var(--surface); border-radius: 16px;
   box-shadow: 0 16px 40px -8px rgba(16,24,32,0.28); border: 1px solid var(--glacia-glass-border);
   padding: 14px; z-index: 400; display: flex; flex-direction: column; gap: 10px;
 
@@ -1198,7 +1198,7 @@ onMounted(() => {
     gap: 12px;
     padding: 14px;
     border-radius: 16px;
-    background: #F4F6F8;
+    background: var(--surface-3);
   }
 
   &__icon {
@@ -1207,8 +1207,8 @@ onMounted(() => {
     width: 46px;
     height: 46px;
     border-radius: 12px;
-    background: #fff;
-    border: 1px solid rgba(16, 24, 32, 0.08);
+    background: var(--surface);
+    border: 1px solid rgba(var(--tint), 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1320,7 +1320,7 @@ onMounted(() => {
 
 .action-menu {
   position: fixed; z-index: 400; min-width: 176px; padding: 6px;
-  background: #fff; border: 1px solid var(--glacia-glass-border); border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--glacia-glass-border); border-radius: 12px;
   box-shadow: 0 16px 40px -8px rgba(16,24,32,0.28);
 
   &__item {
@@ -1339,7 +1339,7 @@ onMounted(() => {
 .modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
 
 .create-modal {
-  width: 100%; max-width: 460px; background: #fff; border-radius: 20px;
+  width: 100%; max-width: 460px; background: var(--surface); border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16,24,32,0.35); padding: 28px;
   max-height: calc(100vh - 40px);
   display: flex; flex-direction: column;
@@ -1352,7 +1352,7 @@ onMounted(() => {
   &__required { color: var(--glacia-red); margin-left: 2px; }
   &__input {
     width: 100%; height: 48px; padding: 0 16px; border-radius: 14px; border: 1px solid var(--glacia-glass-border);
-    background: #fff; color: var(--glacia-ink); font-size: 14px; font-family: 'Manrope', 'Inter', sans-serif;
+    background: var(--surface); color: var(--glacia-ink); font-size: 14px; font-family: 'Manrope', 'Inter', sans-serif;
     outline: none; box-sizing: border-box; box-shadow: 0 1px 3px rgba(16,24,32,0.08);
     &::placeholder { color: var(--glacia-ink-dim); }
     &:focus { border-color: #2563EB; box-shadow: 0 2px 6px rgba(16,24,32,0.12); }
@@ -1403,7 +1403,7 @@ onMounted(() => {
 
   &__url {
     margin-top: 10px;
-    background: #fff;
+    background: var(--surface);
     border: 1px solid #dbe7fd;
     border-radius: 999px;
     padding: 8px 14px;
@@ -1426,8 +1426,8 @@ onMounted(() => {
   }
 
   &__card {
-    background: #fff;
-    border: 1px solid #AEBEC4;
+    background: var(--surface);
+    border: 1px solid var(--hairline-strong);
     border-radius: 14px;
     padding: 12px 14px;
     display: flex;
@@ -1522,8 +1522,8 @@ onMounted(() => {
 .basic-auth-card {
   padding: 16px 18px;
   border-radius: 16px;
-  border: 1px solid #AEBEC4;
-  background: #fff;
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface);
   box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
 
   &__row {
@@ -1555,7 +1555,7 @@ onMounted(() => {
   height: 26px;
   border-radius: 999px;
   border: none;
-  background: rgba(15, 23, 42, 0.12);
+  background: rgba(var(--tint), 0.12);
   cursor: pointer;
   transition: background 0.18s ease;
 
@@ -1570,7 +1570,7 @@ onMounted(() => {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--surface);
     box-shadow: 0 1px 3px rgba(16, 24, 32, 0.25);
     transition: transform 0.18s ease;
 
@@ -1610,7 +1610,7 @@ onMounted(() => {
 
   &__remove {
     width: 34px; height: 34px; margin-top: 5px; flex-shrink: 0;
-    border-radius: 50%; border: 1px solid var(--glacia-glass-border); background: #fff;
+    border-radius: 50%; border: 1px solid var(--glacia-glass-border); background: var(--surface);
     color: var(--glacia-ink-dim); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
     &:hover { border-color: var(--glacia-sev-critical); color: var(--glacia-sev-critical); }
   }
@@ -1619,7 +1619,7 @@ onMounted(() => {
 .schedule-add {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   width: 100%; padding: 10px; border-radius: 12px;
-  border: 1px dashed var(--glacia-glass-border); background: #fff;
+  border: 1px dashed var(--glacia-glass-border); background: var(--surface);
   font-size: 13px; font-weight: 600; font-family: 'Manrope', 'Inter', sans-serif;
   color: var(--glacia-ink-dim); cursor: pointer;
   &:hover { border-color: var(--glacia-red); color: var(--glacia-red); }
@@ -1629,14 +1629,14 @@ onMounted(() => {
   position: relative;
   &__trigger {
     width: 100%; height: 54px; padding: 0 18px; border-radius: 14px; border: 1px solid var(--glacia-glass-border);
-    background: #fff; color: var(--glacia-ink); font-size: 15px; font-family: 'Manrope', 'Inter', sans-serif;
+    background: var(--surface); color: var(--glacia-ink); font-size: 15px; font-family: 'Manrope', 'Inter', sans-serif;
     display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer;
     box-shadow: 0 1px 3px rgba(16,24,32,0.08); box-sizing: border-box;
     &:hover { border-color: var(--glacia-ink-dim); }
   }
   &__trigger-text--placeholder { color: var(--glacia-ink-dim); }
   &__chevron { flex-shrink: 0; color: var(--glacia-ink-dim); transition: transform 0.2s ease; &--open { transform: rotate(180deg); } }
-  &__inline-menu { margin-top: 10px; padding: 8px; border-radius: 16px; border: 1px solid var(--glacia-glass-border); background: #fff; max-height: 260px; overflow-y: auto; }
+  &__inline-menu { margin-top: 10px; padding: 8px; border-radius: 16px; border: 1px solid var(--glacia-glass-border); background: var(--surface); max-height: 260px; overflow-y: auto; }
   &__inline-item {
     display: flex; align-items: center; width: 100%; padding: 14px 16px; border-radius: 10px; border: none;
     background: transparent; color: var(--glacia-ink); font-size: 15px; font-weight: 500; text-align: left; cursor: pointer;
@@ -1657,11 +1657,11 @@ onMounted(() => {
   font-family: 'Manrope', 'Inter', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
   &--create { background: var(--glacia-glass-fill-strong); color: var(--glacia-ink-dim); border: 1px solid var(--glacia-glass-border); &:disabled { cursor: default; } }
   &--cancel { background: rgba(220,38,38,0.06); color: var(--glacia-sev-critical); &:hover { background: rgba(220,38,38,0.12); } }
-  &--neutral { background: var(--glacia-glass-fill-strong); color: var(--glacia-ink); border: 1px solid var(--glacia-glass-border); &:hover { background: rgba(15,23,42,0.08); } }
+  &--neutral { background: var(--glacia-glass-fill-strong); color: var(--glacia-ink); border: 1px solid var(--glacia-glass-border); &:hover { background: rgba(var(--tint), 0.08); } }
   &--save { background: linear-gradient(135deg, #e53925, #b91c1c); color: #fff; box-shadow: 0 8px 20px -6px rgba(229,57,37,0.4); &:disabled { opacity: 0.5; cursor: default; } }
   &--saved { background: #16a34a; box-shadow: 0 8px 20px -6px rgba(22,163,74,0.4); }
   &:disabled { cursor: default; }
-  &__spinner { width: 15px; height: 15px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; animation: modal-btn-spin 0.7s linear infinite; }
+  &__spinner { width: 15px; height: 15px; border-radius: 50%; border: 2px solid rgba(var(--glass-rgb), 0.4); border-top-color: #fff; animation: modal-btn-spin 0.7s linear infinite; }
   &__check { animation: modal-btn-pop 0.4s ease; }
 }
 @keyframes modal-btn-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -1672,7 +1672,7 @@ onMounted(() => {
   width: min(460px, calc(100% - 40px));
   box-sizing: border-box;
   border-radius: 16px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
   box-shadow: 0 40px 80px -30px rgba(16, 24, 32, 0.5);
   overflow: hidden;
@@ -1758,7 +1758,7 @@ onMounted(() => {
   border: 0;
   padding: 0;
   border-radius: 999px;
-  background: #eef1f4;
+  background: var(--surface-3);
   color: var(--glacia-ink-dim);
   cursor: pointer;
   display: flex;
@@ -1766,7 +1766,7 @@ onMounted(() => {
   justify-content: center;
   transition: background 160ms ease;
 
-  &:hover { background: #e2e8f0; }
+  &:hover { background: var(--surface-3); }
 }
 
 .del-body {
@@ -1787,8 +1787,8 @@ onMounted(() => {
   gap: 12px;
   padding: 14px 16px;
   border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
   transition: background 260ms ease, border-color 260ms ease;
 
   &--on { border-color: var(--glacia-sev-critical); background: rgba(220, 38, 38, 0.06); }
@@ -1810,8 +1810,8 @@ onMounted(() => {
   height: 22px;
   box-sizing: border-box;
   border-radius: 7px;
-  border: 1.5px solid #cbd5e1;
-  background: #fff;
+  border: 1.5px solid var(--hairline-strong);
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1851,19 +1851,19 @@ onMounted(() => {
   cursor: pointer;
 
   &--cancel {
-    border: 1px solid #e2e8f0;
-    background: #fff;
+    border: 1px solid var(--hairline);
+    background: var(--surface);
     color: var(--glacia-ink);
     transition: background 160ms ease;
 
-    &:hover { background: #f1f5f9; }
+    &:hover { background: var(--surface-3); }
   }
 
   &--delete {
     position: relative;
     overflow: hidden;
     border: 0;
-    background: #eef1f4;
+    background: var(--surface-3);
     color: #94a3b8;
     cursor: not-allowed;
     user-select: none;
@@ -1919,7 +1919,7 @@ onMounted(() => {
   height: 16px;
   box-sizing: border-box;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.35);
+  border: 2px solid rgba(var(--glass-rgb), 0.35);
   border-top-color: #fff;
   animation: del-spin 700ms linear infinite;
 }

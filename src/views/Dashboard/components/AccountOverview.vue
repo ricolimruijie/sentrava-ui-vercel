@@ -83,8 +83,8 @@ defineProps({
       inset: 0;
       z-index: -1;
       background-image:
-        linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+        linear-gradient(rgba(var(--glass-rgb), 0.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(var(--glass-rgb), 0.18) 1px, transparent 1px);
       background-size: 22px 22px;
       background-position: -1px -1px;
       -webkit-mask-image: linear-gradient(200deg, #000 0%, rgba(0, 0, 0, 0.15) 75%, transparent 100%);
@@ -156,7 +156,7 @@ defineProps({
     align-self: stretch;
     height: 0;
     margin: 8px 0;
-    border-top: 1px dashed rgba(15, 23, 42, 0.16);
+    border-top: 1px dashed rgba(var(--tint), 0.16);
   }
 
   &__fields {

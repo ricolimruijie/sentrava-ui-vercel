@@ -293,7 +293,7 @@ export const clientDashboardMock = {
   ],
 }
 
-// ── Empty State demo account ─────────────────────────────────────────────────
+// ── "No data" demo mode (see utils/dataMode.js) ─────────────────────────────
 // Same shape as the real dashboard payload with every figure at zero and every
 // list empty, so each widget's no-data content can be reviewed.
 const ZERO_SEVERITY = Array(12).fill(0)

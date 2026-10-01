@@ -70,9 +70,9 @@ function onGlobalKeydown(e) {
   max-width: 100%;
   box-sizing: border-box;
   padding: 8px;
-  border: 1px solid var(--glacia-glass-border, #D3DEE2);
+  border: 1px solid var(--glacia-glass-border, var(--hairline));
   border-radius: 999px;
-  background: var(--glacia-glass-fill-strong, #F7FAFB);
+  background: var(--glacia-glass-fill-strong, var(--surface-2));
   overflow: hidden;
   flex-shrink: 0;
   transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -96,7 +96,7 @@ function onGlobalKeydown(e) {
   color: var(--glacia-ink-dim, #6C7A80);
   transition: color 0.15s ease;
 
-  &:hover { color: var(--glacia-ink, #101820); }
+  &:hover { color: var(--glacia-ink, var(--glacia-ink)); }
 }
 
 .search__input {
@@ -107,7 +107,7 @@ function onGlobalKeydown(e) {
   background: transparent;
   font-family: 'Manrope', 'Inter', sans-serif;
   font-size: 13px;
-  color: var(--glacia-ink, #101820);
+  color: var(--glacia-ink, var(--glacia-ink));
   opacity: 0;
   transition: opacity 0.15s ease;
 

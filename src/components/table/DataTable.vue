@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { usePagination } from '@/composables/usePagination'
 import TablePagination from '@/components/table/TablePagination.vue'
+import { IconInbox } from '@tabler/icons-vue'
 
 const props = defineProps({
   // [{ key, label, width?, align?: 'left'|'center'|'right', mono?, truncate?, bold?, dim?, compact?, padLeft?, padRight? }]
@@ -11,6 +12,8 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   pageSize: { type: Number, default: 10 },
   emptyText: { type: String, default: 'No data.' },
+  // Icon shown above the empty text (a tabler icon component); defaults to an inbox.
+  emptyIcon: { type: [Object, Function], default: null },
   rowKey: { type: [String, Function], default: 'id' },
   // Optional row class: (row, index) => string | object — e.g. highlight rows.
   rowClass: { type: Function, default: null },
@@ -88,7 +91,14 @@ defineExpose({ pagination })
         </thead>
         <tbody>
           <tr v-if="loading"><td :colspan="columns.length" class="vtable__empty">Loading…</td></tr>
-          <tr v-else-if="!pagedItems.length"><td :colspan="columns.length" class="vtable__empty">{{ emptyText }}</td></tr>
+          <tr v-else-if="!pagedItems.length">
+            <td :colspan="columns.length" class="vtable__empty">
+              <div class="vtable__empty-state">
+                <span class="vtable__empty-icon"><component :is="emptyIcon || IconInbox" :size="30" stroke-width="1.6" /></span>
+                <span class="vtable__empty-text">{{ emptyText }}</span>
+              </div>
+            </td>
+          </tr>
             <tr v-for="(row, i) in pagedItems" :key="keyFor(row, i)" class="vtable__row" :class="rowClass ? rowClass(row, pagination.offset.value + i) : null">
             <td
               v-for="col in columns"
@@ -141,7 +151,7 @@ defineExpose({ pagination })
   thead tr {
     position: sticky;
     top: 0;
-    background: rgba(15, 23, 42, 0.05);
+    background: rgba(var(--tint), 0.05);
     z-index: 1;
   }
 
@@ -174,6 +184,33 @@ defineExpose({ pagination })
     text-align: center;
     padding: 28px !important;
     color: var(--glacia-ink-dim);
+  }
+
+  // Same empty state as the dashboard cards: icon in a dashed circle + a line of text.
+  &__empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 220px;
+  }
+
+  &__empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px dashed rgba(var(--tint), 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__empty-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--glacia-ink);
   }
 
   &__cell {

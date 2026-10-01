@@ -351,11 +351,11 @@ function cancel() {
     height: 44px;
     padding: 0 12px 0 16px;
     border-radius: var(--glacia-radius-sm, 12px);
-    border: 1px solid #AEBEC4;
-    background: var(--glacia-glass-fill, rgba(255, 255, 255, 0.6));
+    border: 1px solid var(--hairline-strong);
+    background: var(--glacia-glass-fill, rgba(var(--glass-rgb), 0.6));
     backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
     -webkit-backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
-    box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(255, 255, 255, 0.95)), 0 10px 24px -14px rgba(16, 24, 32, 0.2);
+    box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(var(--glass-rgb), 0.95)), 0 10px 24px -14px rgba(16, 24, 32, 0.2);
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -400,7 +400,7 @@ function cancel() {
 
 // ── Card ───────────────────────────────────────────────────────────────────
 .dt-card {
-  background: #fff;
+  background: var(--surface);
   border-radius: 16px;
   border: 0.5px solid var(--glacia-glass-border);
   box-shadow: 0 20px 44px -14px rgba(16, 24, 32, 0.28);
@@ -448,7 +448,7 @@ function cancel() {
   border: 1px solid #e8eef2;
   border-radius: 16px;
   padding: 14px 16px 16px;
-  background: #fbfcfd;
+  background: var(--surface-3);
 }
 
 .dt-nav {
@@ -476,7 +476,7 @@ function cancel() {
     transition: background 0.15s ease;
 
     &:hover {
-      background: rgba(15, 23, 42, 0.05);
+      background: rgba(var(--tint), 0.05);
     }
   }
 
@@ -589,7 +589,7 @@ function cancel() {
 
 .dt-divider {
   height: 1px;
-  background: #f1f5f9;
+  background: var(--surface-3);
 }
 
 // ── Time slider ────────────────────────────────────────────────────────────
@@ -600,7 +600,7 @@ function cancel() {
   border: 1px solid #e8eef2;
   border-radius: 16px;
   padding: 12px 16px 14px;
-  background: #fbfcfd;
+  background: var(--surface-3);
 }
 
 .dt-track {
@@ -618,7 +618,7 @@ function cancel() {
     top: 15px;
     height: 6px;
     border-radius: 999px;
-    background: #f1f5f9;
+    background: var(--surface-3);
     overflow: hidden;
   }
 
@@ -642,7 +642,7 @@ function cancel() {
     span {
       width: 1px;
       height: 5px;
-      background: #e2e8f0;
+      background: var(--surface-3);
     }
   }
 }

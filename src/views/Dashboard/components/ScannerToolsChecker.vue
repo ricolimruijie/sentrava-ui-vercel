@@ -81,8 +81,8 @@ function fmtDate(iso) {
 }
 
 .sc-card {
-  background: #F8FAFC;
-  border: 1px solid #F1F5F9;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
   border-radius: 10px;
   padding: 12px;
   display: flex;
@@ -141,7 +141,7 @@ function fmtDate(iso) {
   &__name {
     font-size: 11px;
     font-weight: 600;
-    color: #0F172A;
+    color: var(--glacia-ink);
     line-height: 1.3;
   }
 

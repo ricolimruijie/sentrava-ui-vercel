@@ -173,7 +173,7 @@ const hi = computed(() => greeting())
   top: calc(100% + 8px);
   right: 0;
   width: 200px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 14px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;

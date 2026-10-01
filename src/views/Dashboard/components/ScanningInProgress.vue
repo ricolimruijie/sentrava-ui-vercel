@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { IconRadar } from '@tabler/icons-vue'
 
 const props = defineProps({
   items:   { type: Array,   default: () => [] },
@@ -30,7 +31,10 @@ const runningItems = computed(() => props.items.filter((i) => i.status === 'runn
       <p class="scanning__caption">Finished scans disappear from this list automatically.</p>
 
       <div v-if="loading" class="scanning__empty">Loading…</div>
-      <div v-else-if="!runningItems.length" class="scanning__empty">No active scans.</div>
+      <div v-else-if="!runningItems.length" class="scanning__empty">
+        <span class="scanning__empty-icon"><IconRadar :size="30" stroke-width="1.6" /></span>
+        <span class="scanning__empty-text">No active scans</span>
+      </div>
 
       <TransitionGroup v-else name="srow" tag="div" class="scanning__list">
         <div v-for="item in runningItems" :key="item.id" class="srow">
@@ -98,10 +102,33 @@ const runningItems = computed(() => props.items.filter((i) => i.status === 'runn
   }
 
   &__empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     padding: 20px;
     text-align: center;
     font-size: 12px;
     color: var(--glacia-ink-dim);
+  }
+
+  &__empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px dashed rgba(var(--tint), 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__empty-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--glacia-ink);
   }
 }
 
@@ -145,7 +172,7 @@ const runningItems = computed(() => props.items.filter((i) => i.status === 'runn
     width: 100%;
     height: 5px;
     border-radius: var(--glacia-radius-pill);
-    background: rgba(15, 23, 42, 0.08);
+    background: rgba(var(--tint), 0.08);
     overflow: hidden;
   }
 

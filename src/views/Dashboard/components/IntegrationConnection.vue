@@ -246,7 +246,7 @@ function onLeave(el, done) {
     }
 
     &::-webkit-scrollbar-thumb {
-      background: rgba(15, 23, 42, 0.15);
+      background: rgba(var(--tint), 0.15);
       border-radius: var(--glacia-radius-pill);
     }
 
@@ -352,7 +352,7 @@ function onLeave(el, done) {
   border: none;
   border-radius: var(--glacia-radius-sm);
   padding: 7px 16px;
-  background: rgba(15, 23, 42, 0.06);
+  background: rgba(var(--tint), 0.06);
   color: var(--glacia-ink);
   font-family: 'Manrope', 'Inter', sans-serif;
   font-weight: 600;

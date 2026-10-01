@@ -11,7 +11,7 @@ import {
   IconDotsVertical, IconArrowUpRight, IconCheck, IconInfoCircle,
   IconDownload, IconRefresh, IconChevronDown, IconChevronRight, IconMinus, IconTag, IconFlag, IconUpload,
   IconX, IconGitBranch, IconLock, IconTrash, IconCode, IconCalendar, IconBuilding, IconClock,
-  IconAlertCircle,
+  IconAlertCircle, IconShieldSearch,
 } from '@tabler/icons-vue'
 
 const route = useRoute()
@@ -767,7 +767,7 @@ function submitReportDownload() {
         :columns="columns"
         :items="filtered"
         :row-class="rowClass"
-        empty-text="No vulnerabilities in this status."
+        empty-text="No vulnerabilities in this status." :empty-icon="IconShieldSearch"
       >
         <template #pagination-info>{{ checked.length }} of {{ filtered.length }} rows selected</template>
         <template #header-check>
@@ -1126,9 +1126,9 @@ function submitReportDownload() {
   height: 28px;
   padding: 0 9px;
   border-radius: 8px;
-  background: #ECEEF0;
+  background: var(--surface-3);
   border: 1px solid #d8dee4;
-  color: #5C6470;
+  color: var(--ink-3);
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
@@ -1150,7 +1150,7 @@ function submitReportDownload() {
 }
 
 .side-card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
   border-radius: 16px;
   box-shadow: inset 0 1px 0 var(--glacia-glass-highlight), 0 4px 24px rgba(0, 0, 0, 0.07), 0 1px 6px rgba(0, 0, 0, 0.04);
@@ -1188,7 +1188,7 @@ function submitReportDownload() {
       right: 0;
       bottom: 0;
       height: 44px;
-      background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 78%);
+      background: linear-gradient(to bottom, rgba(var(--glass-rgb), 0), var(--surface) 78%);
       pointer-events: none;
     }
   }
@@ -1231,20 +1231,20 @@ function submitReportDownload() {
     transition: background 0.15s ease;
 
     &:hover:not(&--active) {
-      background: rgba(15, 23, 42, 0.04);
+      background: rgba(var(--tint), 0.04);
     }
 
     &--active {
-      background: #F1F5F9;
+      background: var(--surface-3);
       box-shadow: 0 4px 16px -4px rgba(16, 24, 32, 0.12);
     }
 
     &--disabled {
       cursor: default;
-      background: rgba(15, 23, 42, 0.05);
+      background: rgba(var(--tint), 0.05);
 
       &:hover {
-        background: rgba(15, 23, 42, 0.05);
+        background: rgba(var(--tint), 0.05);
       }
     }
   }
@@ -1459,7 +1459,7 @@ function submitReportDownload() {
   height: 12px;
   box-sizing: border-box;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.35);
+  border: 2px solid rgba(var(--glass-rgb), 0.35);
   border-top-color: #fff;
   animation: rb-spin 700ms linear infinite;
   opacity: 0;
@@ -1474,7 +1474,7 @@ function submitReportDownload() {
   top: 2px;
   width: 24px;
   height: 24px;
-  background: #fff;
+  background: var(--surface);
   color: #5b6470;
   box-shadow: 0 1px 3px rgba(16, 24, 32, 0.12);
   opacity: 0;
@@ -1528,7 +1528,7 @@ function submitReportDownload() {
     transition: background 0.15s ease;
 
     &--active {
-      background: #F1F5F9;
+      background: var(--surface-3);
       color: var(--glacia-ink);
     }
   }
@@ -1540,7 +1540,7 @@ function submitReportDownload() {
     height: 22px;
     padding: 0;
     border-radius: 50%;
-    background: rgba(15, 23, 42, 0.06);
+    background: rgba(var(--tint), 0.06);
     color: var(--glacia-ink-dim);
     display: inline-flex;
     align-items: center;
@@ -1573,7 +1573,7 @@ function submitReportDownload() {
     border: 1px solid var(--glacia-glass-border);
 
     &:hover {
-      background: rgba(15, 23, 42, 0.06);
+      background: rgba(var(--tint), 0.06);
       color: var(--glacia-ink);
     }
   }
@@ -1595,13 +1595,13 @@ function submitReportDownload() {
   }
 
   &--scanning {
-    background: #ECEEF0;
-    color: #5C6470;
+    background: var(--surface-3);
+    color: var(--ink-3);
     box-shadow: none;
     cursor: default;
 
     &:hover {
-      background: #ECEEF0;
+      background: var(--surface-3);
       box-shadow: none;
     }
   }
@@ -1610,7 +1610,7 @@ function submitReportDownload() {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
     border-top-color: #fff;
     animation: btn-register-spin 0.7s linear infinite;
     flex-shrink: 0;
@@ -1770,7 +1770,7 @@ function submitReportDownload() {
     z-index: 200;
     min-width: 190px;
     padding: 6px;
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--glacia-glass-border);
     border-radius: 12px;
     box-shadow: 0 16px 40px -8px rgba(16, 24, 32, 0.28);
@@ -1800,15 +1800,15 @@ function submitReportDownload() {
 // ── Table (reusable DataTable + local cells) ─────────────────────────────────
 // Checked-row tint lives in the child table — reach it with :deep.
 :deep(.scan-row--checked td) {
-  background: #FFF5F5;
+  background: var(--red-soft);
 }
 
 .check {
   width: 18px;
   height: 18px;
   border-radius: 5px;
-  border: 1.5px solid #cbd5e1;
-  background: #fff;
+  border: 1.5px solid var(--hairline-strong);
+  background: var(--surface);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1856,7 +1856,7 @@ function submitReportDownload() {
   z-index: 400;
   min-width: 176px;
   padding: 6px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
   border-radius: 12px;
   box-shadow: 0 16px 40px -8px rgba(16, 24, 32, 0.28);
@@ -1907,7 +1907,7 @@ function submitReportDownload() {
     gap: 2px;
     min-width: 176px;
     padding: 6px;
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--glacia-glass-border);
     border-radius: 12px;
     box-shadow: 0 16px 40px -8px rgba(16, 24, 32, 0.28);
@@ -2000,7 +2000,7 @@ function submitReportDownload() {
   width: 400px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 40px);
-  background: #fff;
+  background: var(--surface);
   border-radius: 14px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   display: flex;
@@ -2111,7 +2111,7 @@ function submitReportDownload() {
     height: 16px;
     padding: 0 5px;
     border-radius: 999px;
-    background: rgba(15, 23, 42, 0.06);
+    background: rgba(var(--tint), 0.06);
     color: var(--glacia-ink-dim);
     font-size: 9.5px;
     font-weight: 700;
@@ -2130,7 +2130,7 @@ function submitReportDownload() {
 
   &__divider {
     height: 1px;
-    background: rgba(16, 24, 32, 0.1);
+    background: rgba(var(--tint), 0.1);
     margin: 0 16px;
     flex-shrink: 0;
   }
@@ -2166,7 +2166,7 @@ function submitReportDownload() {
     padding: 0 13px;
     border-radius: var(--glacia-radius-pill);
     border: 1px solid var(--glacia-sev-critical);
-    background: #fff;
+    background: var(--surface);
     color: var(--glacia-sev-critical);
     font-size: 11.5px;
     font-weight: 700;
@@ -2187,8 +2187,8 @@ function submitReportDownload() {
   height: 22px;
   padding: 0 8px;
   border-radius: var(--glacia-radius-pill);
-  border: 1px solid rgba(16, 24, 32, 0.12);
-  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(var(--tint), 0.12);
+  background: rgba(var(--tint), 0.04);
   color: var(--glacia-ink);
   font-size: 10.5px;
   font-weight: 600;
@@ -2204,7 +2204,7 @@ function submitReportDownload() {
   flex-direction: column;
   gap: 8px;
   padding: 8px;
-  background: #F6F8FA;
+  background: var(--surface-3);
   border-radius: 16px;
 }
 
@@ -2213,14 +2213,14 @@ function submitReportDownload() {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid rgba(16, 24, 32, 0.08);
+  border: 1px solid rgba(var(--tint), 0.08);
   border-radius: 11px;
-  background: #fff;
+  background: var(--surface);
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 
   &:hover {
     transform: translateY(-1px);
-    border-color: rgba(16, 24, 32, 0.16);
+    border-color: rgba(var(--tint), 0.16);
     box-shadow: 0 6px 16px -8px rgba(16, 24, 32, 0.18);
   }
 
@@ -2229,7 +2229,7 @@ function submitReportDownload() {
     width: 32px;
     height: 32px;
     border-radius: 9px;
-    background: #EAF1FC;
+    background: var(--blue-soft);
     color: #3B5B8C;
     display: inline-flex;
     align-items: center;
@@ -2271,8 +2271,8 @@ function submitReportDownload() {
   height: 26px;
   padding: 0 10px;
   border-radius: var(--glacia-radius-pill);
-  border: 1px solid rgba(16, 24, 32, 0.12);
-  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(var(--tint), 0.12);
+  background: rgba(var(--tint), 0.04);
   color: var(--glacia-ink);
   font-family: ui-monospace, 'SF Mono', Menlo, monospace;
   font-size: 11px;
@@ -2344,7 +2344,7 @@ function submitReportDownload() {
 .rep-modal {
   width: 100%;
   max-width: 640px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px 28px 0;
@@ -2385,7 +2385,7 @@ function submitReportDownload() {
   height: 34px;
   border-radius: 50%;
   border: none;
-  background: rgba(15, 23, 42, 0.06);
+  background: rgba(var(--tint), 0.06);
   color: var(--glacia-ink-dim);
   cursor: pointer;
   display: inline-flex;
@@ -2394,7 +2394,7 @@ function submitReportDownload() {
   flex-shrink: 0;
 
   &:hover {
-    background: rgba(15, 23, 42, 0.1);
+    background: rgba(var(--tint), 0.1);
     color: var(--glacia-ink);
   }
 }
@@ -2404,12 +2404,12 @@ function submitReportDownload() {
   grid-template-columns: 1fr auto 1fr;
   gap: 24px;
   padding: 20px 0;
-  border-top: 1px solid #eef1f4;
+  border-top: 1px solid var(--hairline);
 }
 
 .rep-modal__divider {
   width: 1px;
-  background: #eef1f4;
+  background: var(--surface-3);
 }
 
 .rep-modal__col-head {
@@ -2457,7 +2457,7 @@ function submitReportDownload() {
   transition: background 0.13s;
 
   &:hover {
-    background: rgba(15, 23, 42, 0.04);
+    background: rgba(var(--tint), 0.04);
   }
 
   &__input {
@@ -2471,8 +2471,8 @@ function submitReportDownload() {
     width: 22px;
     height: 22px;
     border-radius: 8px;
-    border: 2px solid #cbd5e1;
-    background: #fff;
+    border: 2px solid var(--hairline-strong);
+    background: var(--surface);
     box-sizing: border-box;
     display: inline-flex;
     align-items: center;
@@ -2509,7 +2509,7 @@ function submitReportDownload() {
   &__bar {
     height: 6px;
     border-radius: 999px;
-    background: #eef1f4;
+    background: var(--surface-3);
     overflow: hidden;
   }
 
@@ -2517,7 +2517,7 @@ function submitReportDownload() {
     display: block;
     height: 100%;
     border-radius: 999px;
-    background: #cbd5e1;
+    background: var(--hairline-strong);
     transition: background 0.13s;
 
     &--on {
@@ -2546,8 +2546,8 @@ function submitReportDownload() {
 .rep-modal__footer {
   margin: 0 -28px;
   padding: 18px 28px 24px;
-  background: #f8f9fb;
-  border-top: 1px solid #eef1f4;
+  background: var(--surface-3);
+  border-top: 1px solid var(--hairline);
 }
 
 .rep-modal__count {
@@ -2564,7 +2564,7 @@ function submitReportDownload() {
 .rep-modal__progress {
   height: 6px;
   border-radius: 999px;
-  background: #e2e8f0;
+  background: var(--surface-3);
   overflow: hidden;
 }
 
@@ -2597,12 +2597,12 @@ function submitReportDownload() {
   gap: 8px;
 
   &--cancel {
-    background: #fff;
+    background: var(--surface);
     color: var(--glacia-ink);
-    border: 1px solid #d3dee2;
+    border: 1px solid var(--hairline);
 
     &:hover {
-      background: rgba(15, 23, 42, 0.04);
+      background: rgba(var(--tint), 0.04);
     }
   }
 
@@ -2616,7 +2616,7 @@ function submitReportDownload() {
     }
 
     &:disabled {
-      background: #e5e7eb;
+      background: var(--surface-3);
       color: #9ca3af;
       box-shadow: none;
       cursor: default;
@@ -2635,7 +2635,7 @@ function submitReportDownload() {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
     border-top-color: #fff;
     animation: rep-btn-spin 0.7s linear infinite;
   }
@@ -2651,7 +2651,7 @@ function submitReportDownload() {
   width: min(460px, calc(100% - 40px));
   box-sizing: border-box;
   border-radius: 16px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
   box-shadow: 0 40px 80px -30px rgba(16, 24, 32, 0.5);
   overflow: hidden;
@@ -2754,7 +2754,7 @@ function submitReportDownload() {
   border: 0;
   padding: 0;
   border-radius: 999px;
-  background: #eef1f4;
+  background: var(--surface-3);
   color: var(--glacia-ink-dim);
   cursor: pointer;
   display: flex;
@@ -2763,7 +2763,7 @@ function submitReportDownload() {
   transition: background 160ms ease;
 
   &:hover {
-    background: #e2e8f0;
+    background: var(--surface-3);
   }
 }
 
@@ -2788,8 +2788,8 @@ function submitReportDownload() {
   gap: 12px;
   padding: 14px 16px;
   border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
   transition: background 260ms ease, border-color 260ms ease;
 
   &--on {
@@ -2816,8 +2816,8 @@ function submitReportDownload() {
   height: 22px;
   box-sizing: border-box;
   border-radius: 7px;
-  border: 1.5px solid #cbd5e1;
-  background: #fff;
+  border: 1.5px solid var(--hairline-strong);
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2857,13 +2857,13 @@ function submitReportDownload() {
   cursor: pointer;
 
   &--cancel {
-    border: 1px solid #e2e8f0;
-    background: #fff;
+    border: 1px solid var(--hairline);
+    background: var(--surface);
     color: var(--glacia-ink);
     transition: background 160ms ease;
 
     &:hover {
-      background: #f1f5f9;
+      background: var(--surface-3);
     }
   }
 
@@ -2871,7 +2871,7 @@ function submitReportDownload() {
     position: relative;
     overflow: hidden;
     border: 0;
-    background: #eef1f4;
+    background: var(--surface-3);
     color: #94a3b8;
     cursor: not-allowed;
     user-select: none;
@@ -2929,7 +2929,7 @@ function submitReportDownload() {
   height: 16px;
   box-sizing: border-box;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.35);
+  border: 2px solid rgba(var(--glass-rgb), 0.35);
   border-top-color: #fff;
   animation: del-spin 700ms linear infinite;
 }

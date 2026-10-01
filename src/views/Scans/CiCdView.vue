@@ -7,7 +7,7 @@ import { useFetch } from '@/composables/useFetch'
 import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import GlassField from '@/components/reusable/GlassField.vue'
-import { IconDotsVertical, IconArrowUpRight, IconTrash, IconX, IconCheck, IconTag } from '@tabler/icons-vue'
+import { IconDotsVertical, IconArrowUpRight, IconTrash, IconX, IconCheck, IconTag, IconLogs } from '@tabler/icons-vue'
 
 const router = useRouter()
 const { data, loading } = useFetch(() => get('/scans/history'))
@@ -210,7 +210,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       :columns="columns"
       :items="filteredData"
       :loading="loading"
-      empty-text="No pipeline runs yet."
+      empty-text="No pipeline runs yet." :empty-icon="IconLogs"
     >
       <template #cell-dateTime="{ row }">{{ fmt(row.dateTime) }}</template>
       <template #cell-scanId="{ row }">{{ row.id }}</template>
@@ -401,7 +401,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 .action-menu {
   position: fixed;
   width: 176px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;
@@ -452,7 +452,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 .tag-modal {
   width: 100%;
   max-width: 460px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 24px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px;
@@ -602,7 +602,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 .delete-modal {
   width: 100%;
   max-width: 520px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 24px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 32px;
@@ -669,7 +669,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   padding: 16px 18px;
   border-radius: 18px;
   border: 1.5px solid var(--glacia-red);
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
   user-select: none;
 
@@ -687,7 +687,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   margin: 0;
   border-radius: 6px;
   border: 2px solid var(--glacia-red);
-  background: #fff;
+  background: var(--surface);
   flex-shrink: 0;
   cursor: pointer;
   position: relative;
@@ -762,7 +762,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     width: 15px;
     height: 15px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
     border-top-color: #fff;
     animation: modal-btn-spin 0.7s linear infinite;
   }

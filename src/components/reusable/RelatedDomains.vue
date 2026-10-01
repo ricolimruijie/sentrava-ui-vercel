@@ -91,8 +91,8 @@ function hide() {
     gap: 4px;
     padding: 10px 12px;
     border-radius: 10px;
-    background: #fff;
-    color: var(--glacia-ink, #101820);
+    background: var(--surface);
+    color: var(--glacia-ink, var(--glacia-ink));
     border: 1px solid var(--glacia-glass-border, #E3E8EC);
     box-shadow: 0 12px 32px -8px rgba(16, 24, 32, 0.22);
     font-size: 12px;
@@ -106,7 +106,7 @@ function hide() {
       top: 50%;
       width: 8px;
       height: 8px;
-      background: #fff;
+      background: var(--surface);
       border-bottom: 1px solid var(--glacia-glass-border, #E3E8EC);
       border-left: 1px solid var(--glacia-glass-border, #E3E8EC);
       transform: translateY(-50%) rotate(45deg);

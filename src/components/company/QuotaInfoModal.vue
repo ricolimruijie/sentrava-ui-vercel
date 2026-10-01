@@ -105,7 +105,7 @@ function validUntil(iso) {
   max-height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--surface);
   border-radius: 24px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   overflow: hidden;
@@ -117,7 +117,7 @@ function validUntil(iso) {
     justify-content: space-between;
     gap: 16px;
     padding: 24px 32px 20px;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+    border-bottom: 1px solid rgba(var(--tint), 0.1);
     flex-shrink: 0;
   }
 
@@ -143,8 +143,8 @@ function validUntil(iso) {
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    border: 1px solid rgba(15, 23, 42, 0.12);
-    background: #fff;
+    border: 1px solid rgba(var(--tint), 0.12);
+    background: var(--surface);
     color: var(--glacia-ink);
     cursor: pointer;
     display: inline-flex;
@@ -153,7 +153,7 @@ function validUntil(iso) {
     flex-shrink: 0;
     transition: background 0.13s;
 
-    &:hover { background: rgba(15, 23, 42, 0.05); }
+    &:hover { background: rgba(var(--tint), 0.05); }
   }
 
   &__body {
@@ -187,7 +187,7 @@ function validUntil(iso) {
 
 .quota-row {
   padding: 18px 20px;
-  background: #f8fafb;
+  background: var(--surface-3);
   border-radius: 22px;
 
   &__service {
@@ -201,8 +201,8 @@ function validUntil(iso) {
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    background: #fff;
-    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: var(--surface);
+    border: 1px solid rgba(var(--tint), 0.08);
     color: #2b5a99;
     display: inline-flex;
     align-items: center;
@@ -249,7 +249,7 @@ function validUntil(iso) {
     height: 8px;
     margin-top: 8px;
     border-radius: 999px;
-    background: #d8dfe4;
+    background: var(--hairline-strong);
     overflow: hidden;
 
     i {
@@ -273,7 +273,7 @@ function validUntil(iso) {
     gap: 6px;
     padding: 7px 16px;
     border-radius: 999px;
-    background: #e8eff8;
+    background: var(--blue-soft);
     color: #1f4a7d;
     font-size: 15px;
     font-weight: 700;

@@ -7,7 +7,7 @@ import TablePagination from '@/components/table/TablePagination.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import ReportDownloadModal from '@/components/reusable/ReportDownloadModal.vue'
-import { IconDownload } from '@tabler/icons-vue'
+import { IconDownload, IconListDetails } from '@tabler/icons-vue'
 
 const { data, loading } = useFetch(() => get('/company/audit-log'))
 
@@ -118,7 +118,7 @@ function downloadAuditLog(entries) {
       :items="filteredData"
       :loading="loading"
       hide-pagination
-      empty-text="No audit entries found."
+      empty-text="No audit entries found." :empty-icon="IconListDetails"
     >
       <template #cell-dateTime="{ row }">{{ fmt(row.dateTime) }}</template>
       <template #cell-actor="{ row }">
@@ -181,7 +181,7 @@ function downloadAuditLog(entries) {
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  background: rgba(15, 23, 42, 0.06);
+  background: rgba(var(--tint), 0.06);
   color: var(--glacia-ink-dim);
 
   &--named {

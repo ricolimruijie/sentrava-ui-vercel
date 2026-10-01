@@ -43,7 +43,6 @@ Login page shows Quick demo shortcuts when `VITE_IS_STATIC=true`:
 | super_admin | `superadmin@sentra.io` | `demo` |
 | admin | `admin@acme.com` | `demo` |
 | member | `member@acme.com` | `demo` |
-| Empty State (not a role — super admin look, no data anywhere) | `empty@sentra.io` | `demo` |
 
 Any other email → `Invalid credentials` from the mock handler.
 
@@ -115,3 +114,5 @@ Auth flow: `LoginView` → `auth.login()` → `POST /auth/login` → stores `tok
 ## Working Agreement
 
 I'm set up as your orchestrator for this repo: I'll map context first, then plan/delegate/verify changes. I won't commit unless you ask, and I'll keep `lsp_diagnostics` + build/test evidence for edits.
+
+To review empty states for any role, turn on **Show every page with no data** in the login page's Quick demo card before choosing a role (mock mode only). It is not a role: the signed-in role's UI is unchanged, but every mock returns no data (see `src/utils/dataMode.js`).

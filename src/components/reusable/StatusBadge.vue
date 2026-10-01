@@ -26,6 +26,6 @@ const label = computed(() => {
   &.status-open        { background: #fef2f2; color: #DC2626; }
   &.status-in_progress { background: #eff6ff; color: #2563EB; }
   &.status-resolved    { background: #f0fdf4; color: #16A34A; }
-  &.status-accepted    { background: #f9fafb; color: #6B7280; }
+  &.status-accepted    { background: var(--surface-2); color: var(--ink-3); }
 }
 </style>

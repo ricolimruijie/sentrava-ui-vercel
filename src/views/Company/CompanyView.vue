@@ -11,7 +11,7 @@ import AuditLogTab from './tabs/AuditLogTab.vue'
 import ProbeBoxTab from './tabs/ProbeBoxTab.vue'
 import CompanyHeader from '@/components/company/CompanyHeader.vue'
 import {
-  IconDotsVertical, IconPencil, IconUserMinus, IconX, IconCheck, IconAt, IconMail, IconShield,
+  IconDotsVertical, IconPencil, IconUserMinus, IconX, IconCheck, IconAt, IconMail, IconShield, IconUsers,
 } from '@tabler/icons-vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import GlassField from '@/components/reusable/GlassField.vue'
@@ -375,7 +375,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
               :items="filteredMembers"
               :loading="loading"
               hide-pagination
-              empty-text="No members found."
+              empty-text="No members found." :empty-icon="IconUsers"
             >
               <template #cell-name="{ row }">
                 <div class="member-cell">
@@ -475,7 +475,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   padding: 0 18px;
   border-radius: var(--glacia-radius-pill);
   border: 1px solid var(--glacia-glass-border);
-  background: #fff;
+  background: var(--surface);
   color: var(--glacia-ink);
   font-size: 13px;
   font-weight: 600;
@@ -503,7 +503,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   align-self: flex-start;
 
   &__pill {
-    position: absolute; z-index: 0; background: #fff; border-radius: var(--glacia-radius-pill);
+    position: absolute; z-index: 0; background: var(--surface); border-radius: var(--glacia-radius-pill);
     box-shadow: 0 2px 6px rgba(16, 24, 32, 0.1);
     &--ready { transition: left 0.42s cubic-bezier(0.3,1.12,0.5,1), top 0.42s cubic-bezier(0.3,1.12,0.5,1), width 0.42s cubic-bezier(0.3,1.12,0.5,1), height 0.42s cubic-bezier(0.3,1.12,0.5,1); }
   }
@@ -565,7 +565,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  background: rgba(15, 23, 42, 0.06);
+  background: rgba(var(--tint), 0.06);
   color: var(--glacia-ink-dim);
 
   &--named {
@@ -631,7 +631,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 .action-menu {
   position: fixed;
   width: 176px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;
@@ -703,7 +703,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 .create-modal {
   width: 100%;
   max-width: 480px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px;
@@ -756,7 +756,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     padding: 0 18px;
     border-radius: 14px;
     border: 1px solid var(--glacia-glass-border);
-    background: #fff;
+    background: var(--surface);
     color: var(--glacia-ink);
     font-size: 15px;
     font-family: 'Manrope', 'Inter', sans-serif;
@@ -775,7 +775,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     }
 
     &--readonly {
-      background: #f8fafc;
+      background: var(--surface-2);
       color: var(--glacia-ink-dim);
       cursor: default;
 
@@ -859,7 +859,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     width: 15px;
     height: 15px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
     border-top-color: #fff;
     animation: modal-btn-spin 0.7s linear infinite;
   }
@@ -881,7 +881,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 }
 
 .modal-btn__spinner--dark {
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(var(--glass-rgb), 0.4);
   border-top-color: #fff;
 }
 
@@ -900,7 +900,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   padding: 16px 18px;
   border-radius: 18px;
   border: 1.5px solid var(--glacia-red);
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
   user-select: none;
 }
@@ -912,7 +912,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   margin: 0;
   border-radius: 6px;
   border: 2px solid var(--glacia-red);
-  background: #fff;
+  background: var(--surface);
   flex-shrink: 0;
   cursor: pointer;
   position: relative;
@@ -937,7 +937,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid var(--glacia-glass-border);
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
 
   &__header {
@@ -971,7 +971,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #f1f5f9;
+    background: var(--surface-3);
     border: 3px solid #fff;
     box-shadow: 0 4px 12px rgba(16, 24, 32, 0.12);
     color: var(--glacia-ink-dim);
@@ -1050,7 +1050,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     margin-top: 8px;
     padding: 10px 14px;
     border-radius: 12px;
-    background: #e8f5e9;
+    background: var(--green-soft);
   }
 
   &__2fa-label {

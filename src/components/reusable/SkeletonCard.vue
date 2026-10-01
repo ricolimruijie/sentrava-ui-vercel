@@ -14,7 +14,7 @@ defineProps({
 <style scoped lang="scss">
 .skeleton-card { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
 .skel-row {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--surface-3) 25%, var(--surface-3) 50%, var(--surface-3) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   border-radius: 6px;

@@ -10,7 +10,7 @@ import { useTicketStore } from '@/store/tickets'
 import CreateTicketModal from '@/components/tickets/CreateTicketModal.vue'
 import { emptyData } from '@/utils/dataMode'
 import { formatShortDate } from '@/utils/helpers'
-import { IconArrowUpRight, IconPlus } from '@tabler/icons-vue'
+import { IconArrowUpRight, IconPlus, IconTicket } from '@tabler/icons-vue'
 
 const sampleTickets = [
   { id: 't1',  date: '10 February 2026', name: "Can't executed scan in module Domain Inspection", detail: 'Scan job failed with error 500 when targeting protergo.id', category: 'Application & System Failures', ticketId: 'ANO31456123458765', status: 'open' },
@@ -143,7 +143,7 @@ function viewTicket(item) {
       :columns="columns"
       :items="filteredData"
       :loading="false"
-      empty-text="No tickets found."
+      empty-text="No tickets found." :empty-icon="IconTicket"
     >
       <template #cell-name="{ row }">
         <div class="ticket-name">
@@ -236,7 +236,7 @@ function viewTicket(item) {
     transition: background 0.15s, color 0.15s, box-shadow 0.15s;
 
     &--active {
-      background: #fff;
+      background: var(--surface);
       color: var(--glacia-ink);
       box-shadow: 0 2px 8px rgba(16,24,32,0.08);
     }
@@ -246,14 +246,14 @@ function viewTicket(item) {
     min-width: 22px;
     padding: 2px 6px;
     border-radius: 999px;
-    background: #e5e7eb;
+    background: var(--surface-3);
     color: var(--glacia-ink-dim);
     font-size: 11px;
     font-weight: 700;
     text-align: center;
 
     .ticket-tabs__item--active & {
-      background: #e5e7eb;
+      background: var(--surface-3);
       color: var(--glacia-ink);
     }
 

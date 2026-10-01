@@ -33,6 +33,6 @@ const label = computed(() => props.severity.charAt(0).toUpperCase() + props.seve
   &.sev-high     { background: #fff7ed; color: #EA580C; }
   &.sev-medium   { background: #fffbeb; color: #D97706; }
   &.sev-low      { background: #eff6ff; color: #2563EB; }
-  &.sev-info     { background: #f9fafb; color: #6B7280; }
+  &.sev-info     { background: var(--surface-2); color: var(--ink-3); }
 }
 </style>

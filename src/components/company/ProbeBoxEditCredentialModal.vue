@@ -116,7 +116,7 @@ function save() {
 .create-modal {
   width: 100%;
   max-width: 480px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px;
@@ -173,7 +173,7 @@ function save() {
 
   &__divider {
     border: none;
-    border-top: 1px solid rgba(15, 23, 42, 0.12);
+    border-top: 1px solid rgba(var(--tint), 0.12);
     margin: 16px 0 20px;
   }
 
@@ -242,7 +242,7 @@ function save() {
     width: 15px;
     height: 15px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
     border-top-color: #fff;
     animation: modal-btn-spin 0.7s linear infinite;
   }

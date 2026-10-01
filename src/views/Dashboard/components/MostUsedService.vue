@@ -62,7 +62,7 @@ const chartOptions = {
 .panel-title { font-size: var(--text-base); font-weight: 700; color: var(--color-text); margin-bottom: 16px; }
 .chart-wrap { height: 180px; }
 .skel {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--surface-3) 25%, var(--surface-3) 50%, var(--surface-3) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   border-radius: 8px;

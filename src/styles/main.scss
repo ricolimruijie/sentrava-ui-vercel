@@ -46,10 +46,10 @@ body {
 }
 
 .p-select-overlay {
-  background: rgba(255,255,255,0.92) !important;
+  background: rgba(var(--glass-rgb), 0.92) !important;
   backdrop-filter: blur(var(--glacia-blur-md)) !important;
   -webkit-backdrop-filter: blur(var(--glacia-blur-md)) !important;
-  border: 1px solid rgba(255,255,255,0.80) !important;
+  border: 1px solid rgba(var(--glass-rgb), 0.80) !important;
   border-radius: var(--glacia-radius-sm) !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
 
@@ -69,7 +69,7 @@ body {
   max-width: 240px;
 
   .p-tooltip-text {
-    background: #fff !important;
+    background: var(--surface) !important;
     color: var(--glacia-ink) !important;
     font-size: 12px !important;
     font-weight: 500 !important;
@@ -143,4 +143,17 @@ body {
 .dv-modal__title,
 .vd-modal__title {
   font-size: 20px !important;
+}
+
+// ── Dark mode: colored chips and cards ──────────────────────────────────────
+// Status/severity pills, tag chips/cards and severity cards take pastel fills
+// from data (inline styles) with dark text, so tokens can't reach them.
+// Inverting + rotating the hue back turns each pastel fill into a dark tint of
+// the same color and its text into a light one.
+html.dark {
+  .status-pill, .sev-pill, .cycle-pill, .dv-tag, .tag-card, .severity-card,
+  .rep-radio__tag, .rep-card__tone, .rep-summary__tone, .rep-row__status,
+  .sa-quota-card__icon, .account-card__avatar--named {
+    filter: invert(0.92) hue-rotate(180deg);
+  }
 }

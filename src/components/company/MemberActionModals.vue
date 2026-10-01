@@ -234,7 +234,7 @@ defineExpose({ openEdit, openDelete })
 .create-modal {
   width: 100%;
   max-width: 480px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px;
@@ -287,7 +287,7 @@ defineExpose({ openEdit, openDelete })
     padding: 0 18px;
     border-radius: 14px;
     border: 1px solid var(--glacia-glass-border);
-    background: #fff;
+    background: var(--surface);
     color: var(--glacia-ink);
     font-size: 15px;
     font-family: 'Manrope', 'Inter', sans-serif;
@@ -306,7 +306,7 @@ defineExpose({ openEdit, openDelete })
     }
 
     &--readonly {
-      background: #f8fafc;
+      background: var(--surface-2);
       color: var(--glacia-ink-dim);
       cursor: default;
 
@@ -390,7 +390,7 @@ defineExpose({ openEdit, openDelete })
     width: 15px;
     height: 15px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
     border-top-color: #fff;
     animation: modal-btn-spin 0.7s linear infinite;
   }
@@ -412,7 +412,7 @@ defineExpose({ openEdit, openDelete })
 }
 
 .modal-btn__spinner--dark {
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(var(--glass-rgb), 0.4);
   border-top-color: #fff;
 }
 
@@ -424,7 +424,7 @@ defineExpose({ openEdit, openDelete })
   padding: 16px 18px;
   border-radius: 18px;
   border: 1.5px solid var(--glacia-red);
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
   user-select: none;
 }
@@ -436,7 +436,7 @@ defineExpose({ openEdit, openDelete })
   margin: 0;
   border-radius: 6px;
   border: 2px solid var(--glacia-red);
-  background: #fff;
+  background: var(--surface);
   flex-shrink: 0;
   cursor: pointer;
   position: relative;
@@ -461,7 +461,7 @@ defineExpose({ openEdit, openDelete })
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid var(--glacia-glass-border);
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
 
   &__header {
@@ -495,7 +495,7 @@ defineExpose({ openEdit, openDelete })
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #f1f5f9;
+    background: var(--surface-3);
     border: 3px solid #fff;
     box-shadow: 0 4px 12px rgba(16, 24, 32, 0.12);
     color: var(--glacia-ink-dim);
@@ -574,7 +574,7 @@ defineExpose({ openEdit, openDelete })
     margin-top: 8px;
     padding: 10px 14px;
     border-radius: 12px;
-    background: #e8f5e9;
+    background: var(--green-soft);
   }
 
   &__2fa-label {
