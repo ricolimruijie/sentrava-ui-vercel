@@ -5,6 +5,7 @@ import AppLayout    from '@/components/layout/AppLayout.vue'
 import authRoutes   from './auth'
 import dashboardRoutes from './dashboard'
 import { dashboardOrigin } from '@/utils/navOrigin'
+import { getDomains } from '@/modules/domain-inspection/services/domainService'
 
 // Stub placeholder for future pages (render function — the bundler uses the
 // runtime-only Vue build, so a `template:` string would never compile).
@@ -33,6 +34,8 @@ const appRoutes = [
   {
     path: '/assets/domains/:id',
     component: () => import('@/modules/domain-inspection/views/DomainDetailView.vue'),
+    // No domains (e.g. the no-data demo) means there is nothing to show on a detail page.
+    beforeEnter: () => (getDomains().length ? true : '/assets/domains'),
     meta: {
       requiresAuth: true,
       title: 'Domain Detail',
