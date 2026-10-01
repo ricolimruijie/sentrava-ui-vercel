@@ -1,0 +1,360 @@
+.rep-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 24px;
+}
+
+.rep-fade-enter-active { transition: opacity 0.15s ease; }
+.rep-fade-leave-active { transition: opacity 0.22s ease; }
+.rep-fade-enter-from,
+.rep-fade-leave-to { opacity: 0; }
+
+.rep-modal {
+  width: 100%;
+  max-width: 640px;
+  max-height: 80vh;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--glacia-glass-border);
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+    margin: 0;
+  }
+
+  &__subject {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 0;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 13px;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--glacia-glass-border);
+    background: var(--surface);
+    color: var(--glacia-ink);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.13s;
+
+    &:hover { background: rgba(var(--tint), 0.05); }
+  }
+
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 18px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+// ── Summary card ───────────────────────────────────────────────────────────
+.rep-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  // Reputation score card — sits apart from the engine stat tiles below it.
+  &__info {
+    background: var(--surface-3);
+    border-radius: 18px;
+    padding: 18px 22px;
+    min-width: 0;
+  }
+
+  &__label {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__score {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 2px 0 4px;
+  }
+
+  &__pct {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--glacia-ink);
+  }
+
+  &__tone {
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 13px;
+    color: var(--glacia-ink);
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+.rep-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 2px;
+  background: var(--surface-3);
+  border-radius: 14px;
+  padding: 14px 12px;
+
+  &__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__value {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+  }
+}
+
+// ── Engine results ─────────────────────────────────────────────────────────
+.rep-results {
+  &__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+
+  &__title {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+    margin: 0;
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+}
+
+.rep-tabs {
+  display: inline-flex;
+  padding: 4px;
+  gap: 2px;
+  border: 1px solid var(--glacia-glass-border);
+  border-radius: 999px;
+  background: var(--surface-3);
+
+  &__item {
+    border: none;
+    background: transparent;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--glacia-ink-dim);
+    cursor: pointer;
+    transition: background 0.13s, color 0.13s, box-shadow 0.13s;
+
+    &--active {
+      background: var(--surface);
+      color: var(--glacia-ink);
+      box-shadow: 0 1px 3px rgba(16, 24, 32, 0.15);
+    }
+  }
+
+  &__count {
+    margin-left: 4px;
+    font-weight: 500;
+    color: var(--glacia-ink-dim);
+  }
+}
+
+.rep-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--glacia-glass-border);
+  border-radius: 16px;
+  // Fixed to 10 collapsed rows (46px + 1px divider each, plus the 2px border)
+  // so the modal keeps its size on every tab, even an empty one; the rest is
+  // reached by scrolling the list.
+  height: calc(47px * 10 + 2px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(var(--tint), 0.15);
+    border-radius: 999px;
+  }
+  &::-webkit-scrollbar-track { background: transparent; }
+
+  &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 28px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--glacia-ink-dim);
+  }
+}
+
+.rep-row {
+  border-bottom: 1px solid var(--glacia-glass-border);
+
+  &:last-child { border-bottom: none; }
+
+  &--failed { background: #fbeaea; }
+  &--open:not(&--failed) { background: var(--surface-3); }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 46px;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    &--failed { color: #c0392b; }
+    &--passed { color: #4caf6d; }
+  }
+
+  &__name {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--glacia-ink);
+  }
+
+  &__status {
+    font-size: 13px;
+    font-weight: 700;
+
+    &--failed { color: #c0392b; }
+    &--passed {
+      color: #2f7d57;
+      background: #e3f5e8;
+      padding: 3px 12px;
+      border-radius: 999px;
+    }
+  }
+
+  &__chevron {
+    flex-shrink: 0;
+    color: var(--glacia-ink-dim);
+    transition: transform 0.18s ease;
+
+    .rep-row--open & { transform: rotate(180deg); }
+  }
+
+  &__detail {
+    // Cards start at the row's left edge (under the status icon) and share
+    // the row as two equal, equally tall columns.
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: stretch;
+    padding: 0 16px 16px;
+  }
+}
+
+.rep-card {
+  background: var(--surface);
+  border: 1px solid var(--glacia-glass-border);
+  border-radius: 20px;
+  padding: 14px 16px;
+  min-width: 0;
+
+  &--solution { border-color: #c0392b; }
+
+  &__label {
+    margin: 0 0 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--glacia-ink-dim);
+
+    .rep-card--solution & { color: #c0392b; }
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--glacia-ink);
+  }
+}
+
+@media (max-width: 720px) {
+  .rep-row__detail {
+    grid-template-columns: 1fr;
+  }
+}

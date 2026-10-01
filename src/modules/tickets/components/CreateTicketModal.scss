@@ -1,0 +1,236 @@
+// ── Create Company modal ─────────────────────────────────────────────────────
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 20px;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.create-modal {
+  width: 100%;
+  max-width: 540px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
+  padding: 28px;
+  animation: create-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  // Height is tweened by JS (animateModalHeight) whenever in-flow panels
+  // open/close, so the modal grows and shrinks with its content.
+  transition: height 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  &__title {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+    margin: 0;
+  }
+
+  &__close {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--glacia-radius-sm);
+    border: none;
+    background: none;
+    color: var(--glacia-ink-dim);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.13s, color 0.13s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--glacia-ink);
+    }
+  }
+
+  &__label {
+    display: block;
+    margin: 16px 0 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--glacia-ink);
+  }
+
+  &__desc {
+    margin: 8px 0 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--glacia-ink);
+  }
+
+  &__required {
+    color: var(--glacia-red);
+    margin-left: 2px;
+  }
+
+  &__input {
+    width: 100%;
+    height: 54px;
+    padding: 0 18px;
+    border-radius: 14px;
+    border: 0.5px solid var(--glacia-glass-border);
+    background: var(--surface);
+    color: var(--glacia-ink);
+    font-size: 15px;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    outline: none;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
+    transition: border-color 0.13s, box-shadow 0.13s;
+
+    &::placeholder {
+      color: var(--glacia-ink-dim);
+    }
+
+    &:focus {
+      border-color: #2563EB;
+      box-shadow: 0 2px 6px rgba(16, 24, 32, 0.12);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 22px;
+  }
+}
+
+@keyframes create-modal-bounce {
+  0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
+  60%  { opacity: 1; transform: scale(1.01) translateY(0); }
+  100% { transform: scale(1); }
+}
+
+.create-modal__body {
+  // No height cap or scroll here — the modal shell itself tweens its height
+  // to follow this content (see animateModalHeight).
+  overflow-x: hidden;
+  // Setting only overflow-x makes the browser auto-compute overflow-y as
+  // "auto" (not "visible") per spec — which would clip a GlassField
+  // dropdown menu wherever it overflows past this box. Keep it explicit.
+  overflow-y: visible;
+  // Room for the dropdown menus' shadow/focus ring without clipping.
+  padding: 2px 2px 0;
+  margin: 0 -2px;
+}
+
+.create-modal__group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.modal-btn {
+  flex: 1;
+  height: 52px;
+  border-radius: 14px;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.13s, opacity 0.13s;
+
+  &--cancel {
+    background: rgba(220, 38, 38, 0.06);
+    color: var(--glacia-sev-critical);
+
+    &:hover {
+      background: rgba(220, 38, 38, 0.12);
+    }
+  }
+
+  &--save {
+    background: #ff2e3a;
+    color: #fff;
+    box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    &:not(:disabled):not(.modal-btn--saved):hover {
+      background: #e6212c;
+    }
+  }
+
+  &--saved {
+    background: #16a34a;
+    box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.4);
+  }
+
+  &--create {
+    background: var(--glacia-glass-fill-strong);
+    color: var(--glacia-ink);
+    border: 1px solid var(--glacia-glass-border);
+
+    &:disabled {
+      color: var(--glacia-ink-dim);
+      cursor: default;
+    }
+
+    &:not(:disabled):hover {
+      background: rgba(255, 37, 41, 0.08);
+      border-color: rgba(255, 37, 41, 0.3);
+      color: var(--glacia-red);
+    }
+  }
+
+  &__spinner {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
+    border-top-color: #fff;
+    animation: modal-btn-spin 0.7s linear infinite;
+  }
+
+  &__check {
+    animation: modal-btn-pop 0.4s ease;
+  }
+}
+
+@keyframes modal-btn-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes modal-btn-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}

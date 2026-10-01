@@ -1,0 +1,294 @@
+.gf {
+  --gf-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --gf-border: #AEBEC4;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  color: var(--glacia-ink, var(--glacia-ink));
+}
+
+.gf__label {
+  font-size: 14px;
+  font-weight: 700;
+}
+.gf__req {
+  color: var(--color-critical, #dc2626);
+  margin-left: 3px;
+}
+
+.gf__wrap {
+  position: relative;
+}
+
+.gf__box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  border-radius: var(--glacia-radius-sm, 12px);
+  border: 1px solid var(--gf-border, var(--hairline-strong));
+  background: var(--glacia-glass-fill, rgba(var(--glass-rgb), 0.6));
+  backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(var(--glass-rgb), 0.95)), 0 10px 24px -14px rgba(16, 24, 32, 0.2);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  outline: none;
+  transition: border-color 200ms ease, box-shadow 280ms ease;
+}
+.gf__box--area {
+  height: auto;
+  align-items: flex-start;
+  padding: 12px 16px;
+}
+.gf__box--select {
+  padding: 0 12px 0 16px;
+  cursor: pointer;
+}
+.gf:not(.is-active):not(.is-error) .gf__box:hover {
+  border-color: #849599;
+}
+.is-active .gf__box {
+  border-color: #2563EB;
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(var(--glass-rgb), 0.95));
+}
+.is-error .gf__box {
+  border-color: var(--color-critical, #dc2626);
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(var(--glass-rgb), 0.95));
+}
+.is-shake .gf__box {
+  animation: gf-shake 380ms ease both;
+}
+
+.gf__input {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--glacia-ink, var(--glacia-ink));
+}
+.gf__input--area {
+  height: 88px;
+  resize: none;
+  padding-top: 2px;
+  font-family: inherit;
+}
+.gf__input::placeholder {
+  color: var(--glacia-ink-dim, #6c7a80);
+}
+
+.gf__count {
+  position: relative;
+  flex: none;
+  align-self: flex-end;
+  font-family: 'SF Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--glacia-ink-dim, #6c7a80);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.is-active .gf__count {
+  opacity: 1;
+}
+
+.gf__value {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--glacia-ink-dim, #6c7a80);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gf__value.has-value {
+  color: var(--glacia-ink, var(--glacia-ink));
+  animation: gf-row 240ms var(--gf-ease) both;
+}
+
+.gf__chev {
+  position: relative;
+  flex: none;
+  color: var(--glacia-ink-dim, #6c7a80);
+  transition: transform 340ms var(--gf-ease);
+}
+.is-open .gf__chev {
+  transform: rotate(180deg);
+}
+
+.gf__sheen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--glacia-radius-sm, 12px);
+  pointer-events: none;
+}
+.gf__sheen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(var(--glass-rgb), 0.75), transparent);
+  transform: translateX(-120%);
+}
+.gf__sheen.run::before {
+  animation: gf-sweep 900ms ease-out both;
+}
+
+.gf__error {
+  max-height: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--color-critical, #dc2626);
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-4px);
+  transition: opacity 200ms ease, transform 280ms var(--gf-ease), max-height 280ms var(--gf-ease);
+}
+.is-error .gf__error {
+  max-height: 48px; // room for a two-line message in narrow fields
+  opacity: 1;
+  transform: none;
+}
+.gf__error-icon {
+  flex: none;
+  margin-top: 1px;
+}
+
+.gf__menu {
+  // Base position is a fallback only — teleported to <body> and actually
+  // positioned via the inline `menuStyle` (position: fixed + top/left/width
+  // from the trigger's own bounding rect), so it can never be clipped by a
+  // scrollable/collapsible modal ancestor.
+  position: fixed;
+  z-index: 1000;
+  padding: 6px;
+  border-radius: var(--glacia-radius-md, 20px);
+  border: 1px solid var(--glacia-glass-border, rgba(var(--glass-rgb), 0.75));
+  background: var(--surface);
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(var(--glass-rgb), 0.95)), 0 12px 32px -8px rgba(16, 24, 32, 0.2);
+  transform-origin: 50% 0;
+  animation: gf-pop 280ms var(--gf-ease) both;
+}
+.gf__menu-inner {
+  position: relative;
+  // Cap to `visibleRows` visible options (42px rows, default 5) via the
+  // inline max-height — longer lists scroll internally instead of stretching
+  // the menu down the page. The menu is teleported + position: fixed, so it
+  // never affects the modal's height.
+  max-height: 210px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: rgba(var(--tint), 0.18); border-radius: 999px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+}
+.gf__ind {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(var(--tint), 0.05);
+  transition: transform 260ms var(--gf-ease);
+}
+.gf__opt {
+  position: relative;
+  height: 42px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  animation: gf-row 280ms var(--gf-ease) both;
+}
+.gf__opt span {
+  flex: 1;
+}
+.gf__opt[aria-selected='true'] {
+  color: var(--color-primary-dark, #cc1f23);
+  font-weight: 700;
+}
+.gf__opt .gf__cb {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  // The menu is teleported to <body>, outside .gf, so --gf-border isn't defined here.
+  border: 1.5px solid #8A9BA3;
+  background: var(--surface);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 140ms ease, border-color 140ms ease;
+  &.is-on { background: var(--color-primary, #ff2529); border-color: var(--color-primary, #ff2529); }
+}
+.gf__opt .gf__cb + span { flex: 1; }
+.gf__check {
+  flex: none;
+  color: var(--color-primary, #ff2529);
+  animation: gf-check 300ms var(--gf-ease) both;
+}
+
+// Animated "more below" scroll cue — floats over the menu's bottom edge
+// while the 5-row-capped list still has rows hidden below. Hides itself
+// once scrolled to the bottom.
+.gf__more {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  color: var(--glacia-ink-dim, #6c7a80);
+  pointer-events: none;
+  animation: gf-more-bounce 1.2s ease-in-out infinite;
+}
+@keyframes gf-more-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.85; }
+  50% { transform: translateX(-50%) translateY(4px); opacity: 1; }
+}
+
+@keyframes gf-sweep {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(260%); }
+}
+@keyframes gf-pop {
+  from { opacity: 0; transform: scale(0.94) translateY(-6px); }
+}
+@keyframes gf-row {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+@keyframes gf-check {
+  from { opacity: 0; transform: scale(0.8); }
+}
+@keyframes gf-shake {
+  0%, 100% { transform: none; }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gf *, .gf *::before {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

@@ -1,0 +1,461 @@
+// Trigger mirrors the AppNavbar dropdowns (same as DatePicker).
+.form-select {
+  position: relative;
+
+  &__trigger {
+    width: 100%;
+    height: 44px;
+    padding: 0 12px 0 16px;
+    border-radius: var(--glacia-radius-sm, 12px);
+    border: 1px solid var(--hairline-strong);
+    background: var(--glacia-glass-fill, rgba(var(--glass-rgb), 0.6));
+    backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--glacia-blur-sm, 14px)) saturate(160%);
+    box-shadow: inset 0 1px 0 var(--glacia-glass-highlight, rgba(var(--glass-rgb), 0.95)), 0 10px 24px -14px rgba(16, 24, 32, 0.2);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--glacia-ink);
+    text-align: left;
+    transition: border-color 200ms ease, box-shadow 280ms ease;
+
+    &:hover {
+      border-color: #849599;
+    }
+  }
+
+  &__trigger-text--placeholder {
+    color: var(--glacia-ink-dim);
+  }
+}
+
+.select-panel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.22s ease,
+    margin-top 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.open {
+    max-height: 640px;
+    opacity: 1;
+    margin-top: 10px;
+  }
+}
+
+.dt-picker__icon {
+  flex-shrink: 0;
+  color: var(--glacia-ink-dim);
+}
+
+// ── Card ───────────────────────────────────────────────────────────────────
+.dt-card {
+  background: var(--surface);
+  border-radius: 16px;
+  border: 0.5px solid var(--glacia-glass-border);
+  box-shadow: 0 20px 44px -14px rgba(16, 24, 32, 0.28);
+  font-family: 'Manrope', 'Inter', sans-serif;
+  padding: 16px 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.dt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// .dt-section isn't a flex column like .dt-timeblock, so its Date row needs
+// its own gap below it before the month nav starts.
+.dt-section > .dt-row {
+  margin-bottom: 14px;
+}
+
+.dt-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--glacia-ink);
+}
+
+.dt-pill {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #b91c1c;
+  background: #fff1f1;
+  padding: 3px 10px;
+  border-radius: 999px;
+  display: inline-block;
+  animation: dt-bump 0.2s ease;
+}
+
+// ── Calendar ───────────────────────────────────────────────────────────────
+.dt-section {
+  border: 1px solid #e8eef2;
+  border-radius: 16px;
+  padding: 14px 16px 16px;
+  background: var(--surface-3);
+}
+
+.dt-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 0 10px;
+
+  &__btns {
+    display: flex;
+    gap: 2px;
+  }
+
+  &__btn {
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--glacia-ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: rgba(var(--tint), 0.05);
+    }
+  }
+
+  &__month {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--glacia-ink);
+    animation: dt-fade 0.3s ease;
+  }
+}
+
+.dt-gridwrap {
+  // Only needs to clip the month-change slide animation horizontally.
+  // Pairing overflow-x:hidden with overflow-y:visible doesn't work — per the
+  // CSS overflow spec, a 'hidden'/'visible' pair forces the 'visible' side
+  // to compute as 'auto', turning this into a real (if empty) scroll
+  // container. Its scrollHeight can then tick a pixel or two past
+  // clientHeight mid-animation (the selection pill's glide keyframes
+  // briefly overshoot via `scale()`), which was enough to flash a
+  // scrollbar track — worse the further the jump between rows, since a
+  // bigger jump means a bigger overshoot. `overflow: clip` clips without
+  // ever establishing a scroll container, so no scrollbar can appear no
+  // matter how far the pill travels; overflow-clip-margin keeps the pill's
+  // border/shadow from being cut off near the edges.
+  overflow: hidden; // fallback for browsers without `clip` support
+  overflow: clip;
+  overflow-clip-margin: 8px;
+}
+
+.dt-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  row-gap: 3px;
+  column-gap: 4px;
+  position: relative;
+
+  &--slide-l { animation: dt-slide-l 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  &--slide-r { animation: dt-slide-r 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+}
+
+.dt-pillmark {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--glacia-glass-fill-strong);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 37, 41, 0.3);
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight), 0 6px 16px -6px rgba(255, 46, 58, 0.45);
+  box-sizing: border-box;
+  transition: left 0.5s cubic-bezier(0.3, 1.35, 0.5, 1), top 0.5s cubic-bezier(0.3, 1.35, 0.5, 1), opacity 0.2s ease;
+
+  // Alternating classes replay the stretch without remounting (remounting
+  // would jump straight to the new spot and skip the slide transition).
+  &--glide-a { animation: dt-glide-a 0.5s; }
+  &--glide-b { animation: dt-glide-b 0.5s; }
+}
+
+.dt-weekday {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--glacia-ink);
+  height: 28px;
+  line-height: 28px;
+  margin-bottom: 2px;
+  position: relative;
+  z-index: 1;
+
+  &--sun {
+    color: #e01e22;
+  }
+}
+
+.dt-blank {
+  visibility: hidden;
+  height: 36px;
+}
+
+.dt-day {
+  width: 36px;
+  height: 36px;
+  justify-self: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--glacia-ink);
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  transition: color 0.3s ease;
+
+  &--selected {
+    color: #b91c1c;
+    font-weight: 700;
+    animation: dt-pop 0.34s;
+  }
+
+  &:disabled {
+    color: #cbd5e1;
+    cursor: default;
+  }
+}
+
+.dt-divider {
+  height: 1px;
+  background: var(--surface-3);
+}
+
+// ── Time slider ────────────────────────────────────────────────────────────
+.dt-timeblock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid #e8eef2;
+  border-radius: 16px;
+  padding: 12px 16px 14px;
+  background: var(--surface-3);
+}
+
+.dt-track {
+  position: relative;
+  height: 36px;
+  margin-top: 22px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+
+  &__rail {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 15px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    overflow: hidden;
+  }
+
+  &__fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--glacia-red);
+    transition-property: width;
+    transition-timing-function: cubic-bezier(0.3, 1.35, 0.5, 1);
+  }
+
+  &__ticks {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 26px;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 1px;
+
+    span {
+      width: 1px;
+      height: 5px;
+      background: var(--surface-3);
+    }
+  }
+}
+
+.dt-thumbpos {
+  position: absolute;
+  top: 0;
+  width: 0;
+  height: 36px;
+  transition-property: left;
+  transition-timing-function: cubic-bezier(0.3, 1.35, 0.5, 1);
+}
+
+.dt-bubble {
+  position: absolute;
+  bottom: 44px;
+  left: -30px;
+  width: 60px;
+  display: flex;
+  justify-content: center;
+  opacity: 0;
+  margin-bottom: -6px;
+  transition: opacity 0.2s ease, margin-bottom 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
+  pointer-events: none;
+
+  &--visible {
+    opacity: 1;
+    margin-bottom: 0;
+  }
+
+  &__text {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #fff;
+    background: #0f172a;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+}
+
+.dt-thumb {
+  position: absolute;
+  top: 4px;
+  left: -14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--glacia-glass-fill-strong);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 37, 41, 0.3);
+  box-shadow: inset 0 1px 0 var(--glacia-glass-highlight), 0 6px 16px -6px rgba(255, 46, 58, 0.5);
+  box-sizing: border-box;
+  outline: none;
+  transition: width 0.3s cubic-bezier(0.3, 1.5, 0.5, 1), height 0.3s cubic-bezier(0.3, 1.5, 0.5, 1),
+    left 0.3s cubic-bezier(0.3, 1.5, 0.5, 1), top 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
+
+  &--drag {
+    width: 40px;
+    height: 22px;
+    left: -20px;
+    top: 7px;
+  }
+
+  &__dot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    border-radius: 999px;
+    background: var(--glacia-red);
+  }
+}
+
+.dt-scalelabels {
+  display: flex;
+  justify-content: space-between;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.68rem;
+  color: var(--glacia-ink-dim);
+}
+
+// ── Footer ─────────────────────────────────────────────────────────────────
+.dt-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 6px;
+
+  &__spacer {
+    flex: 1;
+  }
+
+  &__btns {
+    display: flex;
+    gap: 8px;
+  }
+}
+
+.dt-btn {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+
+  &--secondary {
+    background: var(--glacia-glass-fill-strong);
+    border: 1px solid var(--glacia-glass-border);
+    color: var(--glacia-ink);
+  }
+
+  &--primary {
+    background: var(--glacia-red);
+    border: none;
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(255, 37, 41, 0.35);
+
+    &:hover {
+      background: #e01e22;
+    }
+  }
+}
+
+@keyframes dt-slide-l { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes dt-slide-r { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+@keyframes dt-fade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes dt-pop {
+  0% { transform: scale(0.8); animation-timing-function: cubic-bezier(0.3, 1.5, 0.5, 1); }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes dt-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes dt-glide-a {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.18, 0.86); animation-timing-function: ease-out; }
+  70% { transform: scale(0.95, 1.05); }
+  100% { transform: scale(1, 1); }
+}
+@keyframes dt-glide-b {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.18, 0.86); animation-timing-function: ease-out; }
+  70% { transform: scale(0.95, 1.05); }
+  100% { transform: scale(1, 1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dt-card * { transition: none !important; animation: none !important; }
+}

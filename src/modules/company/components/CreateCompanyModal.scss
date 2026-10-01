@@ -1,0 +1,479 @@
+// ── Create Company modal ─────────────────────────────────────────────────────
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 20px;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.create-modal {
+  width: 100%;
+  max-width: 540px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
+  padding: 28px;
+  animation: create-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  // Height is tweened by JS (animateModalHeight) whenever in-flow panels
+  // open/close, so the modal grows and shrinks with its content.
+  transition: height 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  &__title {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+    margin: 0;
+  }
+
+  &__close {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--glacia-radius-sm);
+    border: none;
+    background: none;
+    color: var(--glacia-ink-dim);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.13s, color 0.13s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--glacia-ink);
+    }
+  }
+
+  &__label {
+    display: block;
+    margin: 16px 0 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--glacia-ink);
+  }
+
+  &__desc {
+    margin: 8px 0 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--glacia-ink);
+  }
+
+  &__required {
+    color: var(--glacia-red);
+    margin-left: 2px;
+  }
+
+  &__input {
+    width: 100%;
+    height: 54px;
+    padding: 0 18px;
+    border-radius: 14px;
+    border: 0.5px solid var(--glacia-glass-border);
+    background: var(--surface);
+    color: var(--glacia-ink);
+    font-size: 15px;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    outline: none;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
+    transition: border-color 0.13s, box-shadow 0.13s;
+
+    &::placeholder {
+      color: var(--glacia-ink-dim);
+    }
+
+    &:focus {
+      border-color: #2563EB;
+      box-shadow: 0 2px 6px rgba(16, 24, 32, 0.12);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 22px;
+  }
+}
+
+@keyframes create-modal-bounce {
+  0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
+  60%  { opacity: 1; transform: scale(1.01) translateY(0); }
+  100% { transform: scale(1); }
+}
+
+.create-modal__body {
+  // No height cap or scroll here — the modal shell itself tweens its height
+  // to follow this content (see animateModalHeight).
+  overflow-x: hidden;
+  // Setting only overflow-x makes the browser auto-compute overflow-y as
+  // "auto" (not "visible") per spec — which would clip a GlassField
+  // dropdown menu wherever it overflows past this box. Keep it explicit.
+  overflow-y: visible;
+  // Room for the dropdown menus' shadow/focus ring without clipping.
+  padding: 2px 2px 0;
+  margin: 0 -2px;
+}
+
+.create-modal__group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+// In-flow dropdown panel: always rendered, expands via max-height so the
+// modal height can follow it instead of popping in over content.
+.select-panel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.22s ease,
+    margin-top 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.open {
+    max-height: 300px;
+    opacity: 1;
+    margin-top: 10px;
+  }
+
+  &__inner {
+    margin-top: 0;
+  }
+}
+
+// Always rendered (not v-if'd) and driven by max-height + opacity instead of
+// a Vue <Transition> — this reveals the panel growing open rather than
+// popping/sliding as one block, and lets each field inside stagger in on
+// its own (see .quota-stagger-item) instead of moving in lockstep.
+.quota-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.42s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+
+  &--open {
+    // Room for the quota dropdowns' expanding panels.
+    max-height: 1000px;
+    opacity: 1;
+    // GlassField's own dropdown menus float outside their trigger's box —
+    // once fully open there's nothing left to clip, so let them escape
+    // instead of being cut off by this panel's collapse-animation overflow.
+    overflow: visible;
+  }
+}
+
+// A `transition` (rather than an `animation`) here so the stacking context
+// it forces only exists while opacity/transform are actually mid-change —
+// an `animation-name` forces one for as long as it stays attached (forever,
+// with fill-mode: both), which would trap each field's GlassField dropdown
+// menu inside its own item and stop it floating above the fields after it.
+.quota-stagger-item {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.32s ease, transform 0.32s ease;
+
+  // The literal `none` (not `translateY(0)`, which computes to a matrix)
+  // matters: any transform value other than the literal keyword `none`
+  // still forces a stacking context, which would trap each field's
+  // GlassField dropdown inside its own item once settled.
+  &--animate {
+    opacity: 1;
+    transform: none;
+  }
+
+  // Cascading delay per field, matching the panel's own reveal so each
+  // field visibly follows the one before it instead of all arriving at once.
+  &:nth-child(1).quota-stagger-item--animate { transition-delay: 0.1s; }
+  &:nth-child(2).quota-stagger-item--animate { transition-delay: 0.16s; }
+  &:nth-child(3).quota-stagger-item--animate { transition-delay: 0.22s; }
+  &:nth-child(4).quota-stagger-item--animate { transition-delay: 0.28s; }
+}
+
+.form-select {
+  position: relative;
+
+  &__trigger {
+    width: 100%;
+    height: 54px;
+    padding: 0 18px;
+    border-radius: 14px;
+    border: 0.5px solid var(--glacia-glass-border);
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--glacia-ink);
+    text-align: left;
+    transition: border-color 0.13s, box-shadow 0.13s;
+
+    &:hover {
+      border-color: var(--glacia-ink-dim);
+    }
+  }
+
+  &__trigger-text--placeholder {
+    color: var(--glacia-ink-dim);
+  }
+
+  &__chevron {
+    flex-shrink: 0;
+    color: var(--glacia-ink-dim);
+    transition: transform 0.2s ease;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  // Inline — lives in normal document flow right below the trigger, full
+  // width to match it, so opening it pushes the rest of the form (and the
+  // Cancel/Next row) down instead of floating over them.
+  &__inline-menu {
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: 16px;
+    border: 0.5px solid var(--glacia-glass-border);
+    background: var(--surface);
+    max-height: 260px;
+    overflow-y: auto;
+  }
+
+  &__inline-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--glacia-ink);
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'Manrope', 'Inter', sans-serif;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.13s, color 0.13s;
+
+    & + & {
+      margin-top: 4px;
+    }
+
+    &:not(.form-select__inline-item--active):hover {
+      background: rgba(255, 37, 41, 0.06);
+    }
+
+    &--active {
+      color: var(--glacia-red);
+      font-weight: 700;
+      background: rgba(255, 37, 41, 0.08);
+    }
+  }
+}
+
+// translateY-only, same reasoning as .quota-fields above — scaling this
+// bordered box distorted its border/padding rather than reading as smooth.
+.form-select-fade-enter-active {
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.form-select-fade-leave-active {
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.form-select-fade-enter-from,
+.form-select-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.activation-card {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 0.5px solid var(--glacia-glass-border);
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--glacia-ink);
+  }
+
+  &__desc {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__divider {
+    height: 1px;
+    background: var(--glacia-glass-border);
+    margin: 16px 0 0;
+  }
+}
+
+.toggle-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(var(--tint), 0.12);
+  cursor: pointer;
+  transition: background 0.18s ease;
+
+  &--on {
+    background: var(--glacia-red);
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgba(16, 24, 32, 0.25);
+    transition: transform 0.18s ease;
+
+    .toggle-switch--on & {
+      transform: translateX(18px);
+    }
+  }
+}
+
+.modal-btn {
+  flex: 1;
+  height: 52px;
+  border-radius: 14px;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.13s, opacity 0.13s;
+
+  &--cancel {
+    background: rgba(220, 38, 38, 0.06);
+    color: var(--glacia-sev-critical);
+
+    &:hover {
+      background: rgba(220, 38, 38, 0.12);
+    }
+  }
+
+  &--save {
+    background: #ff2e3a;
+    color: #fff;
+    box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    &:not(:disabled):not(.modal-btn--saved):hover {
+      background: #e6212c;
+    }
+  }
+
+  &--saved {
+    background: #16a34a;
+    box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.4);
+  }
+
+  &--create {
+    background: var(--glacia-glass-fill-strong);
+    color: var(--glacia-ink);
+    border: 1px solid var(--glacia-glass-border);
+
+    &:disabled {
+      color: var(--glacia-ink-dim);
+      cursor: default;
+    }
+
+    &:not(:disabled):hover {
+      background: rgba(255, 37, 41, 0.08);
+      border-color: rgba(255, 37, 41, 0.3);
+      color: var(--glacia-red);
+    }
+  }
+
+  &__spinner {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
+    border-top-color: #fff;
+    animation: modal-btn-spin 0.7s linear infinite;
+  }
+
+  &__check {
+    animation: modal-btn-pop 0.4s ease;
+  }
+}
+
+@keyframes modal-btn-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes modal-btn-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
