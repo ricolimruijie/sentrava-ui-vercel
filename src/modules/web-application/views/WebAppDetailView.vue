@@ -1,4 +1,6 @@
 <script setup>
+import ScanTimelineCard from '@/components/common/ScanTimelineCard.vue'
+import { useScanTimeline, scanTypeLabels, to24Hour } from '@/composables/useScanTimeline'
 import HoldToDeleteModal from '@/components/common/HoldToDeleteModal.vue'
 import FindingsReportModal from '@/components/common/FindingsReportModal.vue'
 import { useRole } from '@/composables/useRole'
@@ -11,9 +13,24 @@ import VulnerabilityDetailModal from '@/components/common/VulnerabilityDetailMod
 import { formatShortDate, severityLabel } from '@/utils/helpers'
 import { getWebApps, getWebAppScans, getWebAppVulns, preloadWebAppDetail } from '@/modules/web-application/services/webAppService'
 import {
-  IconDotsVertical, IconArrowUpRight, IconCheck, IconInfoCircle,
-  IconDownload, IconPencil, IconRefresh, IconChevronDown, IconChevronRight, IconMinus, IconTag, IconFlag, IconUpload,
-  IconX, IconLink, IconCalendar, IconBuilding, IconClock, IconTrash, IconShieldSearch,
+  IconDotsVertical,
+  IconArrowUpRight,
+  IconCheck,
+  IconInfoCircle,
+  IconDownload,
+  IconPencil,
+  IconRefresh,
+  IconChevronRight,
+  IconMinus,
+  IconFlag,
+  IconUpload,
+  IconX,
+  IconLink,
+  IconCalendar,
+  IconBuilding,
+  IconClock,
+  IconTrash,
+  IconShieldSearch,
 } from '@tabler/icons-vue'
 
 // Load this page's data before it renders (the page is shown inside <Suspense>).
@@ -28,10 +45,6 @@ const app = computed(() => {
   const id = Number(route.params.id)
   return getWebApps().find((a) => a.id === id) ?? getWebApps()[0]
 })
-
-// Same scan-type wording as the other asset detail views (also used by the
-// Target Details pill below).
-const scanTypeLabels = { manual_scan: 'Manual Scan', manual: 'Manual Scan', singular: 'Manual Scan', scheduled_scan: 'Scheduled Scan', scheduled: 'Scheduled Scan', specified: 'Scheduled Scan', continuous_scan: 'Continuous Scan', continuous: 'Continuous Scan' }
 
 // Same palette as WebAppView/SourceCodeView so tags render identically.
 const tagColors = [
@@ -93,163 +106,19 @@ function deleteScanTimeline() {
   closeTargetDetailModal()
 }
 
-// ── Scan timeline ──────────────────────────────────────────────────────────
-const scans = ref(getWebAppScans(app.value.id))
-// Default to the first selectable scan (skip in-progress/queued rows).
-const selectedScan = ref(Math.max(0, getWebAppScans(app.value.id).findIndex(
-  (s) => !['Scanning', 'Queue', 'Waiting'].includes(s.status),
-)))
-
-const scanTypeLabel = computed(() => scanTypeLabels[app.value.scanType] ?? app.value.scanType)
-
-// Timeline entries are stored as "9 Feb 2025 8:30 AM" — rewrite the trailing
-// 12-hour time into 24-hour, same as the calendar's time picker.
-function to24Hour(dateStr) {
-  const m = dateStr.match(/^(.*)\s(\d{1,2}):(\d{2})\s?(AM|PM)$/i)
-  if (!m) return dateStr
-  const [, datePart, hStr, min, ampm] = m
-  let h = parseInt(hStr, 10)
-  if (ampm.toUpperCase() === 'PM' && h !== 12) h += 12
-  if (ampm.toUpperCase() === 'AM' && h === 12) h = 0
-  return `${datePart} ${String(h).padStart(2, '0')}:${min}`
-}
-
-const scanDot = {
-  Completed: '#16a34a',
-  Queue: '#0284c7',
-  Waiting: '#9aa5b1',
-  Scanning: '#F79009',
-  Failed: '#dc2626',
-}
-
-const tlRef = ref(null)
-const tlRemaining = ref(0)
-const tlAtEnd = ref(false)
-
-function updateTimelineHint() {
-  const el = tlRef.value
-  if (!el) return
-  const left = el.scrollHeight - el.scrollTop - el.clientHeight
-  tlRemaining.value = Math.max(0, Math.ceil((left - 6) / 58))
-  tlAtEnd.value = left <= 6
-}
-
-function scrollTimelineMore() {
-  tlRef.value?.scrollBy({ top: 174, behavior: 'smooth' })
-}
-
-function rescan(index) {
-  if (index != null && scans.value[index]?.status === 'Failed') {
-    scans.value[index] = { ...scans.value[index], status: 'Queue', duration: null }
-    selectedScan.value = index
-    return
-  }
-  const now = new Date().toLocaleString('en-US', {
-    day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
-  })
-  scans.value.unshift({ id: `s-${Date.now()}`, date: now, status: 'Queue' })
-  selectedScan.value += 1
-}
-
-// ── Re-scan confirmation (inline: button transforms into Cancel/Proceed) ──
-const pendingRescanType = ref(null) // 'main' | 'retry'
-const pendingRescanIndex = ref(null)
-const rescanLoading = ref(false)
-const scanInProgress = ref(false)
-const retryLoadingIndex = ref(null)
-const retryDoneIndex = ref(null)
-const stopLoading = ref(false)
-const timelineStopped = ref(false)
-
-// ── Stop scanning (continuous scan types only) ───────────────────────────
-const hasActiveScan = computed(() => scans.value.some((s) => s.status === 'Scanning'))
-
-function stopScanning() {
-  const i = scans.value.findIndex((s) => s.status === 'Scanning')
-  if (i < 0) return
-  scans.value[i] = { ...scans.value[i], status: 'Completed', duration: scans.value[i].duration ?? '—' }
-  const next = scans.value.findIndex((s) => !['Scanning', 'Queue', 'Waiting'].includes(s.status))
-  selectedScan.value = Math.max(0, next)
-}
-
-function openRescanConfirm(index = null) {
-  pendingRescanIndex.value = index
-  pendingRescanType.value = index != null ? 'retry' : 'main'
-}
-
-function openStopConfirm() {
-  pendingRescanIndex.value = null
-  pendingRescanType.value = 'stop'
-}
-
-function cancelRescan() {
-  pendingRescanType.value = null
-  pendingRescanIndex.value = null
-}
-
-// Retry pill visual state per timeline row.
-function rbState(i) {
-  if (retryDoneIndex.value === i) return 'is-done'
-  if (retryLoadingIndex.value === i) return 'is-loading'
-  if (pendingRescanType.value === 'retry' && pendingRescanIndex.value === i) return 'is-confirm'
-  return 'is-idle'
-}
-
-function rbConfirming(i) {
-  const st = rbState(i)
-  return st === 'is-confirm' || st === 'is-loading'
-}
-
-function confirmRescan() {
-  // Main button: loading animation, then the scan starts and the button
-  // becomes a grey disabled "Scan in progress".
-  if (pendingRescanType.value === 'main') {
-    if (rescanLoading.value) return
-    rescanLoading.value = true
-    setTimeout(() => {
-      rescan(pendingRescanIndex.value)
-      rescanLoading.value = false
-      scanInProgress.value = true
-      cancelRescan()
-    }, 1500)
-    return
-  }
-  // Stop button: loading animation, then the timeline is permanently stopped
-  // with an explanatory note in place of the button.
-  if (pendingRescanType.value === 'stop') {
-    if (stopLoading.value) return
-    stopLoading.value = true
-    setTimeout(() => {
-      stopScanning()
-      stopLoading.value = false
-      timelineStopped.value = true
-      cancelRescan()
-    }, 1500)
-    return
-  }
-  // Failed-scan retry pill: confirm pops the pair, loading collapses x
-  // toward check and spins, done fades the pill out as the status flips
-  // to Queue and unmounts it.
-  if (retryLoadingIndex.value != null || retryDoneIndex.value != null) return
-  const i = pendingRescanIndex.value
-  retryLoadingIndex.value = i
-  setTimeout(() => {
-    rescan(i)
-    retryDoneIndex.value = i
-    retryLoadingIndex.value = null
-    setTimeout(() => {
-      retryDoneIndex.value = null
-      cancelRescan()
-    }, 350)
-  }, 1200)
-}
-
-// Shown under the timeline heading for continuous apps.
-const recurrenceLabels = { daily: 'Daily', weekly: 'Weekly', biweekly: 'Every Two Weeks', monthly: 'Monthly' }
-const recurrenceLabel = computed(() =>
-  app.value.scanType === 'continuous_scan' ? (recurrenceLabels[app.value.recurrence] ?? null) : null,
-)
-
+// ── Scan timeline (shared: useScanTimeline + <ScanTimelineCard>) ──
+const timeline = useScanTimeline({
+  target: app,
+  initialScans: getWebAppScans(app.value.id),
+  selectFirstFinished: true,
+  trackDuration: true,
+})
+const {
+  scans, selectedScan, scanTypeLabel, recurrenceLabel, tlRef, updateTimelineHint,
+  rescan, pendingRescanType, pendingRescanIndex, rescanLoading, scanInProgress, retryLoadingIndex, retryDoneIndex,
+  stopLoading, timelineStopped, hasActiveScan, stopScanning, openRescanConfirm, openStopConfirm, cancelRescan,
+  rbState, rbConfirming, confirmRescan,
+} = timeline
 onMounted(() => {
   updateTimelineHint()
   document.addEventListener('mousedown', handleClickOutside)
@@ -494,132 +363,7 @@ const delTlScanLabel = computed(() => {
   <div class="scan-detail">
     <!-- ── Sidebar cards ──────────────────────────────────────────────── -->
     <aside class="scan-timeline">
-      <section class="side-card">
-        <div class="scan-timeline__head">
-          <h2 class="scan-timeline__section">Scan timeline</h2>
-          <span class="scan-timeline__count">{{ scans.length }} scans</span>
-        </div>
-        <p v-if="recurrenceLabel" class="scan-timeline__recurrence">Repeats {{ recurrenceLabel.toLowerCase() }}</p>
-
-        <div class="scan-timeline__scrollwrap">
-          <div ref="tlRef" class="scan-timeline__scroll" @scroll="updateTimelineHint">
-            <div class="scan-timeline__rail" />
-            <button
-              v-for="(s, i) in scans"
-              :key="s.id"
-              type="button"
-              class="scan-timeline__item"
-              :class="{ 'scan-timeline__item--active': i === selectedScan, 'scan-timeline__item--disabled': s.status === 'Scanning' || s.status === 'Queue' || s.status === 'Waiting' }"
-              :disabled="s.status === 'Scanning' || s.status === 'Queue' || s.status === 'Waiting'"
-              @click="selectedScan = i"
-            >
-              <span class="scan-timeline__dot" :style="{ background: scanDot[s.status] ?? '#9aa5b1' }" />
-              <span class="scan-timeline__meta">
-                <span class="scan-timeline__date">{{ to24Hour(s.date) }}</span>
-                <span class="scan-timeline__status">{{ rbConfirming(i) ? 'Retry this scan?' : s.status }}</span>
-              </span>
-              <template v-if="s.status === 'Failed' || retryDoneIndex === i">
-                <div class="rb-pill" :class="rbState(i)">
-                  <button
-                    type="button"
-                    class="rb-sync"
-                    title="Retry scan"
-                    aria-label="Retry scan"
-                    :tabindex="rbState(i) === 'is-idle' ? 0 : -1"
-                    @click.stop="openRescanConfirm(i)"
-                  >
-                    <IconRefresh :size="12" />
-                  </button>
-                  <button
-                    type="button"
-                    class="rb-ok"
-                    title="Confirm retry"
-                    aria-label="Confirm retry"
-                    :tabindex="rbState(i) === 'is-confirm' ? 0 : -1"
-                    @click.stop="confirmRescan"
-                  >
-                    <IconCheck :size="12" class="rb-tick" />
-                    <span class="rb-spinner" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    class="rb-no"
-                    title="Cancel retry"
-                    aria-label="Cancel retry"
-                    :tabindex="rbState(i) === 'is-confirm' ? 0 : -1"
-                    @click.stop="cancelRescan"
-                  >
-                    <IconX :size="12" />
-                  </button>
-                </div>
-              </template>
-            </button>
-          </div>
-          <button
-            v-show="!tlAtEnd"
-            type="button"
-            class="scan-timeline__more"
-            @click="scrollTimelineMore"
-          >
-            {{ tlRemaining }} more <IconChevronDown :size="16" />
-          </button>
-        </div>
-
-        <div class="scan-main__actions">
-          <Transition name="rescan-swap" mode="out-in">
-            <div v-if="timelineStopped" key="stopped" class="scan-stopped-note">
-              <IconInfoCircle :size="16" class="scan-stopped-note__icon" />
-              <span>Scanning for this target has been stopped and cannot be restarted.</span>
-            </div>
-            <button
-              v-else-if="scanInProgress"
-              key="scanning"
-              type="button"
-              class="btn-register btn-register--block btn-register--scanning"
-              disabled
-            >
-              Scan in progress
-            </button>
-            <div v-else-if="pendingRescanType === 'main' || pendingRescanType === 'stop'" key="confirm" class="rescan-confirm-inline">
-              <button
-                type="button"
-                class="btn-register btn-register--block btn-register--cancel"
-                :disabled="rescanLoading || stopLoading"
-                @click="cancelRescan"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                class="btn-register btn-register--block btn-register--proceed"
-                :disabled="rescanLoading || stopLoading"
-                @click="confirmRescan"
-              >
-                <span v-if="rescanLoading || stopLoading" class="btn-register__spinner" aria-hidden="true" />
-                <span v-else>Proceed</span>
-              </button>
-            </div>
-            <button
-              v-else-if="app.scanType === 'continuous_scan' && hasActiveScan"
-              key="stop"
-              type="button"
-              class="btn-register btn-register--block"
-              @click="openStopConfirm"
-            >
-              Stop scanning
-            </button>
-            <button
-              v-else-if="app.scanType === 'manual_scan'"
-              key="rescan"
-              type="button"
-              class="btn-register btn-register--block"
-              @click="() => openRescanConfirm()"
-            >
-              Re-scan
-            </button>
-          </Transition>
-        </div>
-      </section>
+      <ScanTimelineCard :timeline="timeline" :can-rescan="app.scanType === 'manual_scan'" :can-stop="app.scanType === 'continuous_scan'" />
 
       <section class="side-card">
         <p class="scan-timeline__section">Vulnerability cycle</p>

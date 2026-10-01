@@ -64,13 +64,13 @@ src/
   constants/              # ROLES, ASSET_TYPES, SCAN_ENGINES, severity/status maps
   services/api/client.js  # the only HTTP client: axios + mock registry (get/post/put/patch/del)
   stores/                 # global Pinia stores: auth, company
-  composables/            # useFetch, usePagination, usePolling, useRole, useCompanyContext, useTheme
+  composables/            # useFetch, usePagination, usePolling, useRole, useCompanyContext, useTheme, useScanTimeline
   utils/                  # helpers.js (formatters etc.), dataMode.js, navOrigin.js
   styles/                 # design-tokens.css, main.scss, _tokens.scss, _variables.scss
   mocks/                  # index.js (registerMock patterns) + per-feature sample data
   components/
     common/               # shared UI used by 2+ modules (DataTable, badges, dialogs, pickers, FindingsReportModal,
-                          # HoldToDeleteModal ...)
+                          # HoldToDeleteModal, ScanTimelineCard ...)
     layout/               # AppLayout, Sidebar, AppNavbar
   modules/                # one folder per feature: views/ components/ services/ (store/ when needed)
     domain-inspection/    # Domain list + detail
