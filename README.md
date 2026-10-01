@@ -70,7 +70,7 @@ src/
   mocks/                  # index.js (registerMock patterns) + per-feature sample data
   components/
     common/               # shared UI used by 2+ modules (DataTable, badges, dialogs, pickers, FindingsReportModal,
-                          # DeleteTimelineModal ...)
+                          # HoldToDeleteModal ...)
     layout/               # AppLayout, Sidebar, AppNavbar
   modules/                # one folder per feature: views/ components/ services/ (store/ when needed)
     domain-inspection/    # Domain list + detail
