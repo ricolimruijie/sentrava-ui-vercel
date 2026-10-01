@@ -1,4 +1,10 @@
-const actors = ['Rico Lim Rui Jie', 'Nurasiah Ayuni', 'Wiranata Abioka', 'Eldiana Elden Ring', 'System']
+const actors = [
+  { name: 'Rico Lim Rui Jie',   username: 'ricolimruijie' },
+  { name: 'Nurasiah Ayuni',     username: 'nurasiah' },
+  { name: 'Wiranata Abioka',    username: 'wiranata' },
+  { name: 'Eldiana Elden Ring', username: 'eldiana' },
+  { name: 'System',             username: 'system' },
+]
 
 const actionTemplates = [
   { action: 'Added member',          detail: 'Invited budimansuharjo@protergo.id as Member' },
@@ -21,7 +27,8 @@ export const auditLogMock = Array.from({ length: 60 }, (_, i) => {
   return {
     id: `audit-${i + 1}`,
     dateTime: `2026-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00Z`,
-    actor: actors[i % actors.length],
+    actor: actors[i % actors.length].name,
+    actorUsername: actors[i % actors.length].username,
     action: t.action,
     detail: t.detail,
   }

@@ -1,3 +1,4 @@
+import { emptyData } from '@/utils/dataMode'
 // Web Application Assessment seed data. Tags always include the shared
 // Database / Server / Cloud base plus two extras from the same pool, so the
 // table and the Manage Tags popover vocab stay consistent.
@@ -25,6 +26,7 @@ const ROWS = [
 ]
 
 export function getWebApps() {
+  if (emptyData.value) return []
   return structuredClone(ROWS.map((r) => ({
     id: r.id,
     name: r.name,
@@ -79,6 +81,7 @@ export function getWebAppScans(appId) {
 
 // Findings for the selected web app scan.
 export function getWebAppVulns() {
+  if (emptyData.value) return []
   return BASE_WEB_VULNS.map((v) => ({ ...v, codeLine: v.line, ...WEB_VULN_DETAILS[v.id] }))
 }
 

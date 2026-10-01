@@ -100,11 +100,41 @@ const TOP_VULN_DETAILS = {
   },
 }
 
+// Splits a monthly severity total across the four services (DI = Domain
+// Inspection, N = Network, WA = Web Application, SC = Source Code) using
+// largest-remainder rounding so the parts always add up to the total.
+const SERVICE_SHARE = {
+  critical: [0.5, 0.25, 0.15, 0.1],
+  high:     [0.4, 0.3, 0.2, 0.1],
+  medium:   [0.35, 0.25, 0.25, 0.15],
+  low:      [0.3, 0.3, 0.2, 0.2],
+  info:     [0.25, 0.25, 0.25, 0.25],
+}
+function splitByService(total, share) {
+  if (total == null) return null
+  const raw = share.map((r) => total * r)
+  const parts = raw.map(Math.floor)
+  let left = total - parts.reduce((a, b) => a + b, 0)
+  raw.map((v, i) => [v - parts[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => {
+    if (left > 0) { parts[i] += 1; left -= 1 }
+  })
+  const [di, n, wa, sc] = parts
+  return { di, n, wa, sc }
+}
+function withServiceBreakdown(trend) {
+  for (const year of Object.values(trend.byYear)) {
+    year.services = Object.fromEntries(
+      Object.entries(SERVICE_SHARE).map(([sev, share]) => [sev, year[sev].map((t) => splitByService(t, share))]),
+    )
+  }
+  return trend
+}
+
 export const clientDashboardMock = {
   greeting: { name: 'ricolimruijie', company: 'Protergo Cyber Security Ampera' },
 
   // ── 0. Overall Severity Trend ────────────────────────────────────────────────
-  severityTrend: {
+  severityTrend: withServiceBreakdown({
     years: [2026, 2025, 2024],
     months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     byYear: {
@@ -132,7 +162,7 @@ export const clientDashboardMock = {
         info:     [null, null, null, null, null, null, 5, 8, 10, 12, 9, 6],
       },
     },
-  },
+  }),
 
   // ── 1. Asset Registered Tracker ─────────────────────────────────────────────
   assetTracker: {
@@ -261,4 +291,35 @@ export const clientDashboardMock = {
     { id:'webapp1', title:'Web Application Scanner Status',   status:'connected', lastCheck:'2026-02-13T08:30:00Z', overtime:[true,true,true,true,true,true,true,true,true,true,true,true,true,true] },
     { id:'webapp2', title:'Web Application Scanner Status',   status:'connected', lastCheck:'2026-02-13T08:30:00Z', overtime:[true,true,true,true,true,false,true,true,true,true,true,true,true,true] },
   ],
+}
+
+// ── Empty State demo account ─────────────────────────────────────────────────
+// Same shape as the real dashboard payload with every figure at zero and every
+// list empty, so each widget's no-data content can be reviewed.
+const ZERO_SEVERITY = Array(12).fill(0)
+export function emptyClientDashboard() {
+  const base = clientDashboardMock
+  const years = base.severityTrend.years
+  return {
+    ...base,
+    severityTrend: withServiceBreakdown({
+      years,
+      months: base.severityTrend.months,
+      byYear: Object.fromEntries(years.map((y) => [y, {
+        critical: [...ZERO_SEVERITY], high: [...ZERO_SEVERITY], medium: [...ZERO_SEVERITY],
+        low: [...ZERO_SEVERITY], info: [...ZERO_SEVERITY],
+      }])),
+    }),
+    assetTracker: { total: 0, domain: 0, network: 0, webapp: 0, sourceCode: 0 },
+    // Every VA scanner integration is listed (so the card isn't blank) but none
+    // has connected yet: offline, never checked, no history.
+    scannerTools: base.scannerTools.map((t) => ({ ...t, status: 'offline', lastCheck: null, overtime: [] })),
+    topVulnerabilities: [],
+    scanningInProgress: [],
+    ticketFeed: [],
+    vulnerabilityCycle: { active: 0, fixing: 0, mitigated: 0, tolerated: 0, falsePositive: 0 },
+    recentActivity: [],
+    probeBoxHealth: { status: 'disconnected', lastCheck: null, overtime: [] },
+    scannerStatus: [],
+  }
 }

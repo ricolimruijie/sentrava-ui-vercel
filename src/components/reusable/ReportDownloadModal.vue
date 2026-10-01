@@ -1,0 +1,466 @@
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { IconX, IconCheck } from '@tabler/icons-vue'
+
+// "Download Report" modal: pick which rows to include per filter group (all
+// start unchecked), see how many rows are selected, then Download. The parent
+// turns the selected rows into a file on the `download` event.
+const props = defineProps({
+  modelValue: { type: Boolean, default: false },
+  title: { type: String, default: 'Download Report' },
+  description: { type: String, default: 'Choose which entries to include in the export.' },
+  noun: { type: String, default: 'entries' },
+  rows: { type: Array, default: () => [] },
+  // [{ key: <row field>, label, options: [{ value, label }] }] — shown as columns.
+  groups: { type: Array, default: () => [] },
+})
+const emit = defineEmits(['update:modelValue', 'download'])
+
+const selected = ref({})
+const state = ref('idle') // 'idle' | 'loading'
+
+watch(() => props.modelValue, (open) => {
+  if (!open) return
+  selected.value = Object.fromEntries(props.groups.map((g) => [g.key, []]))
+  state.value = 'idle'
+})
+
+function toggle(key, value) {
+  const cur = selected.value[key] ?? []
+  selected.value = { ...selected.value, [key]: cur.includes(value) ? cur.filter((x) => x !== value) : [...cur, value] }
+}
+function selectAll(g) {
+  selected.value = { ...selected.value, [g.key]: g.options.map((o) => o.value) }
+}
+
+// Each option's own count (across all rows, not the current selection) and a
+// mini bar sized relative to the busiest option in its own column.
+const counts = computed(() =>
+  Object.fromEntries(props.groups.map((g) => [g.key, Object.fromEntries(g.options.map((o) => [o.value, props.rows.filter((r) => r[g.key] === o.value).length]))])),
+)
+const maxes = computed(() =>
+  Object.fromEntries(props.groups.map((g) => [g.key, Math.max(1, ...Object.values(counts.value[g.key]))])),
+)
+const chosen = computed(() =>
+  props.rows.filter((r) => props.groups.every((g) => (selected.value[g.key] ?? []).includes(r[g.key]))),
+)
+
+function close() {
+  emit('update:modelValue', false)
+}
+
+function submit() {
+  if (!chosen.value.length || state.value !== 'idle') return
+  state.value = 'loading'
+  setTimeout(() => {
+    emit('download', chosen.value)
+    state.value = 'idle'
+    close()
+  }, 600)
+}
+</script>
+
+<template>
+  <Teleport to="body">
+    <Transition name="modal-fade">
+      <div v-if="modelValue" class="modal-backdrop" @mousedown.self="close">
+        <div class="rep-modal">
+          <div class="rep-modal__head">
+            <div>
+              <h2 class="rep-modal__title">{{ title }}</h2>
+              <p class="rep-modal__desc">{{ description }}</p>
+            </div>
+            <button type="button" class="rep-modal__close" aria-label="Close" @click="close">
+              <IconX :size="18" />
+            </button>
+          </div>
+
+          <div class="rep-modal__grid">
+            <template v-for="(g, gi) in groups" :key="g.key">
+              <div v-if="gi > 0" class="rep-modal__divider" aria-hidden="true" />
+              <div class="rep-modal__col">
+                <div class="rep-modal__col-head">
+                  <p class="rep-modal__label">{{ g.label }}</p>
+                  <button type="button" class="rep-modal__selectall" @click="selectAll(g)">Select all</button>
+                </div>
+                <div class="rep-modal__opts">
+                  <label v-for="o in g.options" :key="o.value" class="rep-check">
+                    <input
+                      type="checkbox"
+                      class="rep-check__input"
+                      :checked="(selected[g.key] ?? []).includes(o.value)"
+                      @change="toggle(g.key, o.value)"
+                    />
+                    <span class="rep-check__box" aria-hidden="true"><IconCheck :size="12" class="rep-check__icon" /></span>
+                    <span class="rep-check__text">{{ o.label }}</span>
+                    <span class="rep-check__bar">
+                      <span
+                        class="rep-check__bar-fill"
+                        :class="{ 'rep-check__bar-fill--on': (selected[g.key] ?? []).includes(o.value) }"
+                        :style="{ width: (counts[g.key][o.value] / maxes[g.key] * 100) + '%' }"
+                      />
+                    </span>
+                    <span class="rep-check__count">{{ counts[g.key][o.value] }}</span>
+                  </label>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <div class="rep-modal__footer">
+            <p class="rep-modal__count"><b>{{ chosen.length }}</b> of {{ rows.length }} {{ noun }} selected</p>
+            <div class="rep-modal__progress">
+              <span
+                class="rep-modal__progress-fill"
+                :style="{ width: (rows.length ? chosen.length / rows.length * 100 : 0) + '%' }"
+              />
+            </div>
+
+            <div class="rep-modal__actions">
+              <button type="button" class="rep-btn rep-btn--cancel" @click="close">Cancel</button>
+              <button
+                type="button"
+                class="rep-btn rep-btn--download"
+                :class="{ 'rep-btn--busy': state === 'loading' }"
+                :disabled="!chosen.length || state !== 'idle'"
+                @click="submit"
+              >
+                <span v-if="state === 'loading'" class="rep-btn__spinner" />
+                <span v-else>Download</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+</template>
+
+<style scoped lang="scss">
+// ── Download Report filter modal ─────────────────────────────────────────
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 20px;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.rep-modal {
+  width: 100%;
+  max-width: 640px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
+  padding: 28px 28px 0;
+  overflow: hidden;
+  animation: rep-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes rep-modal-bounce {
+  0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
+  60%  { opacity: 1; transform: scale(1.01) translateY(0); }
+  100% { transform: scale(1); }
+}
+
+.rep-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 20px;
+}
+
+.rep-modal__title {
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--glacia-ink);
+  margin: 0;
+}
+
+.rep-modal__desc {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--glacia-ink-dim);
+}
+
+.rep-modal__close {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--glacia-ink-dim);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.1);
+    color: var(--glacia-ink);
+  }
+}
+
+.rep-modal__grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  padding: 20px 0;
+  border-top: 1px solid #eef1f4;
+}
+
+.rep-modal__divider {
+  width: 1px;
+  background: #eef1f4;
+}
+
+.rep-modal__col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.rep-modal__label {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--glacia-ink);
+  margin: 0;
+}
+
+.rep-modal__selectall {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--glacia-red);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.rep-modal__opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rep-check {
+  display: grid;
+  grid-template-columns: 22px minmax(64px, auto) 1fr 20px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.13s;
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.04);
+  }
+
+  &__input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &__box {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 8px;
+    border: 2px solid #cbd5e1;
+    background: #fff;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.13s, background 0.13s;
+  }
+
+  &__icon {
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.13s;
+  }
+
+  &__input:checked + &__box {
+    border-color: var(--glacia-red);
+    background: var(--glacia-red);
+  }
+
+  &__input:checked + &__box &__icon {
+    opacity: 1;
+  }
+
+  &__input:focus-visible + &__box {
+    outline: 2px solid var(--glacia-red);
+    outline-offset: 2px;
+  }
+
+  &__text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--glacia-ink);
+  }
+
+  &__bar {
+    height: 6px;
+    border-radius: 999px;
+    background: #eef1f4;
+    overflow: hidden;
+  }
+
+  &__bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: #cbd5e1;
+    transition: background 0.13s;
+
+    &--on {
+      background: var(--glacia-red);
+    }
+  }
+
+  &__count {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--glacia-ink-dim);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.rep-radio__tag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  justify-self: start;
+}
+
+.rep-modal__footer {
+  margin: 0 -28px;
+  padding: 18px 28px 24px;
+  background: #f8f9fb;
+  border-top: 1px solid #eef1f4;
+}
+
+.rep-modal__count {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--glacia-ink-dim);
+
+  b {
+    color: var(--glacia-ink);
+    font-weight: 800;
+  }
+}
+
+.rep-modal__progress {
+  height: 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.rep-modal__progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--glacia-red);
+  transition: width 0.2s ease;
+}
+
+.rep-modal__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.rep-btn {
+  flex: 1;
+  height: 52px;
+  border-radius: 999px;
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &--cancel {
+    background: #fff;
+    color: var(--glacia-ink);
+    border: 1px solid #d3dee2;
+
+    &:hover {
+      background: rgba(15, 23, 42, 0.04);
+    }
+  }
+
+  &--download {
+    background: #ff2e3a;
+    color: #fff;
+    box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
+
+    &:hover:not(:disabled) {
+      background: #e6212c;
+    }
+
+    &:disabled {
+      background: #e5e7eb;
+      color: #9ca3af;
+      box-shadow: none;
+      cursor: default;
+    }
+
+    // Mid-download still reads as "red", not "disabled" — the :disabled
+    // attribute here only blocks a second click while it's in flight.
+    &.rep-btn--busy:disabled {
+      background: #ff2e3a;
+      color: #fff;
+      box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
+    }
+  }
+
+  &__spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    animation: rep-btn-spin 0.7s linear infinite;
+  }
+}
+
+@keyframes rep-btn-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+</style>

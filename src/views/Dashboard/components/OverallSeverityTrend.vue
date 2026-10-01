@@ -48,22 +48,54 @@ const chartData = computed(() => ({
   })),
 }))
 
+
+const serviceNames = [
+  { key: 'di', label: 'Domain Inspection' },
+  { key: 'n',  label: 'Network' },
+  { key: 'wa', label: 'Web Application' },
+  { key: 'sc', label: 'Source Code' },
+]
+
+// Tooltip state, driven by Chart.js through `externalTooltip`.
+const tip = ref({ visible: false, x: 0, y: 0, flip: false })
+const CHART_H = 320
+const TIP_HALF_H = 96 // keeps the card inside the chart vertically
+
+function externalTooltip({ chart, tooltip }) {
+  const point = tooltip.dataPoints?.[0]
+  if (tooltip.opacity === 0 || !point) {
+    tip.value = { ...tip.value, visible: false }
+    return
+  }
+  const sev = series[point.datasetIndex]
+  const total = point.raw
+  const b = activeYearData.value.services?.[sev.key]?.[point.dataIndex]
+  tip.value = {
+    visible: true,
+    // Open to the right of the dot, flipping left past the chart's midpoint.
+    flip: tooltip.caretX > chart.width * 0.6,
+    x: tooltip.caretX,
+    y: Math.min(Math.max(tooltip.caretY, TIP_HALF_H), CHART_H - TIP_HALF_H),
+    month: point.label,
+    year: selectedYear.value,
+    sev: sev.label,
+    color: sev.color,
+    total,
+    rows: b
+      ? serviceNames.map((sv) => ({ ...sv, value: b[sv.key], pct: total ? Math.round((b[sv.key] / total) * 100) : 0 }))
+      : [],
+  }
+}
+
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   interaction: { mode: 'nearest', intersect: false },
   plugins: {
     legend: { display: false },
-    tooltip: {
-      backgroundColor: '#fff',
-      titleColor: '#0F172A',
-      bodyColor: '#0F172A',
-      borderColor: 'rgba(15, 23, 42, 0.08)',
-      borderWidth: 1,
-      padding: 10,
-      boxPadding: 4,
-      usePointStyle: true,
-    },
+    // Custom HTML tooltip (see `tip` below) — the built-in canvas one can't
+    // lay out a per-service breakdown nicely.
+    tooltip: { enabled: false, external: externalTooltip },
   },
   scales: {
     x: {
@@ -107,6 +139,32 @@ const chartOptions = {
       <div v-if="loading" class="severity-trend__empty">Loading…</div>
       <div v-else class="severity-trend__chart">
         <Line :data="chartData" :options="chartOptions" />
+
+        <div
+          class="sev-tip"
+          :class="{ 'sev-tip--on': tip.visible, 'sev-tip--flip': tip.flip }"
+          :style="{ left: `${tip.x}px`, top: `${tip.y}px`, '--tip-color': tip.color }"
+          aria-hidden="true"
+        >
+          <div class="sev-tip__head">
+            <span class="sev-tip__period">{{ tip.month }} {{ tip.year }}</span>
+            <span class="sev-tip__sev">
+              <span class="sev-tip__dot" />
+              {{ tip.sev }}
+            </span>
+          </div>
+          <div class="sev-tip__total">
+            <strong>{{ tip.total }}</strong>
+            <span>total findings</span>
+          </div>
+          <ul v-if="tip.rows?.length" class="sev-tip__rows">
+            <li v-for="r in tip.rows" :key="r.key" class="sev-tip__row">
+              <span class="sev-tip__name">{{ r.label }}</span>
+              <span class="sev-tip__val">{{ r.value }}</span>
+              <span class="sev-tip__bar"><span :style="{ width: `${r.pct}%` }" /></span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -172,6 +230,7 @@ const chartOptions = {
   }
 
   &__chart {
+    position: relative;
     height: 320px;
   }
 
@@ -182,6 +241,130 @@ const chartOptions = {
     justify-content: center;
     color: var(--glacia-ink-dim);
     font-size: 13px;
+  }
+}
+
+.sev-tip {
+  position: absolute;
+  z-index: 5;
+  width: 224px;
+  padding: 14px 16px 12px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 16px 36px -10px rgba(16, 24, 32, 0.28), 0 2px 6px rgba(16, 24, 32, 0.06);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(8px, -50%);
+  transition: opacity 0.12s ease, transform 0.16s ease, left 0.12s ease, top 0.12s ease;
+
+  &--on {
+    opacity: 1;
+    transform: translate(16px, -50%);
+  }
+
+  // Past the chart midpoint the card opens to the left of the dot instead.
+  &--flip {
+    transform: translate(calc(-100% - 8px), -50%);
+
+    &.sev-tip--on {
+      transform: translate(calc(-100% - 16px), -50%);
+    }
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__period {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__sev {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--tip-color) 12%, transparent);
+    color: var(--tip-color);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  &__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--tip-color);
+  }
+
+  &__total {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 8px 0 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+
+    strong {
+      font-family: 'Manrope', 'Inter', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--glacia-ink);
+    }
+
+    span {
+      font-size: 12px;
+      color: var(--glacia-ink-dim);
+    }
+  }
+
+  &__rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    row-gap: 4px;
+    font-size: 12.5px;
+  }
+
+  &__name {
+    color: var(--glacia-ink);
+    font-weight: 500;
+  }
+
+  &__val {
+    font-weight: 700;
+    color: var(--glacia-ink);
+  }
+
+  &__bar {
+    grid-column: 1 / -1;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--tip-color);
+    }
   }
 }
 

@@ -1,3 +1,4 @@
+import { emptyData } from '@/utils/dataMode'
 // Source Code Assessment seed data — shared by SourceCodeView (list) and
 // SourceCodeDetailView (timeline + findings). Factories return deep copies
 // because both views mutate rows locally (status changes, deletes, tags).
@@ -9,6 +10,7 @@ const REPOS = [
 ]
 
 export function getSourceCodeRepos() {
+  if (emptyData.value) return []
   return structuredClone(REPOS)
 }
 
@@ -392,5 +394,6 @@ const VULN_DETAILS = {
 }
 
 export function getSourceCodeVulns() {
+  if (emptyData.value) return []
   return BASE_VULNS.map((v) => ({ ...v, codeLine: v.line, ...VULN_DETAILS[v.id] }))
 }

@@ -2,10 +2,15 @@
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatShortDate } from '@/utils/helpers'
+import { useTicketStore } from '@/store/tickets'
+import { useRole } from '@/composables/useRole'
 import { IconUser, IconPhoto, IconFile, IconSend2, IconArrowLeft, IconX, IconTicket, IconCheck } from '@tabler/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
+const ticketStore = useTicketStore()
+// Only a super admin can close a ticket.
+const { isSuperAdmin } = useRole()
 const ticketId = computed(() => route.params.id ?? 'ANO31456123458765')
 
 const ticketMap = {
@@ -137,9 +142,28 @@ const ticketMap = {
   },
 }
 
-const ticket = ref({ ...ticketMap[ticketId.value] ?? ticketMap.ANO31456123458765 })
+// Tickets created this session live in the ticket store; the rest are the samples above.
+function lookup(id) {
+  const made = ticketStore.byId(id)
+  if (made) {
+    return {
+      id: `#${made.ticketId}`,
+      status: 'Open',
+      title: made.name,
+      submissionDate: made.date,
+      submitter: made.submitter,
+      company: made.company,
+      category: made.category,
+      description: made.description,
+      attachments: [],
+      isClosed: false,
+    }
+  }
+  return ticketMap[id] ?? ticketMap.ANO31456123458765
+}
+const ticket = ref({ ...lookup(ticketId.value) })
 watch(ticketId, (id) => {
-  const next = ticketMap[id] ?? ticketMap.ANO31456123458765
+  const next = lookup(id)
   ticket.value = { ...next }
 })
 
@@ -293,6 +317,7 @@ function closeAttachmentModal() {
         </div>
 
         <button
+          v-if="isSuperAdmin"
           type="button"
           class="close-ticket-btn"
           :disabled="ticket.isClosed"
@@ -305,7 +330,7 @@ function closeAttachmentModal() {
 
     <Teleport to="body">
       <Transition name="modal-fade">
-        <div v-if="showCloseModal" class="modal-backdrop" @mousedown.self="closeCloseModal">
+        <div v-if="isSuperAdmin && showCloseModal" class="modal-backdrop" @mousedown.self="closeCloseModal">
           <div class="create-modal">
             <div class="create-modal__head">
               <h2 class="create-modal__title">Close Ticket</h2>

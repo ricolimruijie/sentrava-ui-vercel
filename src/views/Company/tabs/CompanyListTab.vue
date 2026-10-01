@@ -7,7 +7,8 @@ import DataTable from '@/components/table/DataTable.vue'
 import TablePagination from '@/components/table/TablePagination.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
-import { IconDotsVertical, IconEye, IconSettings } from '@tabler/icons-vue'
+import DeleteCompanyModal from '@/components/company/DeleteCompanyModal.vue'
+import { IconDotsVertical, IconArrowUpRight, IconTrash } from '@tabler/icons-vue'
 
 const { data, loading } = useFetch(() => get('/company/list'))
 
@@ -61,7 +62,8 @@ const statusOptions = [
 const statusFilter = ref(null)
 
 const filteredData = computed(() => {
-  let list = data.value ?? []
+  // This tab only lists sub companies — the head company is excluded.
+  let list = (data.value ?? []).filter((c) => displayType(c.type) === 'Sub Company')
   if (statusFilter.value) list = list.filter((c) => c.status === statusFilter.value)
   const q = search.value.trim().toLowerCase()
   if (q) list = list.filter((c) => c.name.toLowerCase().includes(q))
@@ -69,7 +71,7 @@ const filteredData = computed(() => {
 })
 
 const openMenuId = ref(null)
-const menuPos = ref({ top: 0, left: 0 })
+const menuPos = ref({ top: 0, right: 0 })
 
 function toggleMenu(item, event) {
   if (openMenuId.value === item.id) {
@@ -77,18 +79,27 @@ function toggleMenu(item, event) {
     return
   }
   const rect = event.currentTarget.getBoundingClientRect()
-  menuPos.value = { top: rect.bottom + 6, left: rect.right - 176 }
+  // Anchored by its right edge so the menu can size to its widest item.
+  menuPos.value = { top: rect.bottom + 6, right: window.innerWidth - rect.right }
   openMenuId.value = item.id
 }
 function closeMenu() { openMenuId.value = null }
 
 function viewCompany(item) {
   closeMenu()
-  console.info('View company', item.id)
+  router.push(`/companies/${item.id}`)
 }
-function manageCompany(item) {
+const showDelete = ref(false)
+const deletingCompany = ref(null)
+function deleteSubCompany(item) {
   closeMenu()
-  console.info('Manage company', item.id)
+  deletingCompany.value = item
+  showDelete.value = true
+}
+function onSubCompanyDeleted() {
+  const id = deletingCompany.value?.id
+  data.value = (data.value ?? []).filter((c) => c.id !== id)
+  tableRef.value?.pagination.goTo(tableRef.value.pagination.page.value)
 }
 
 function handleClickOutside(e) {
@@ -134,15 +145,27 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       </template>
     </DataTable>
 
+    <DeleteCompanyModal
+      v-model="showDelete"
+      :company-name="deletingCompany?.name ?? ''"
+      title="Delete Sub Company"
+      ack-text="I understand that this action is irreversible and will permanently delete this sub company and all associated user accounts."
+      @deleted="onSubCompanyDeleted"
+    />
+
     <Teleport to="body">
-      <div v-if="openMenuId" class="action-menu" :style="{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }">
+      <div v-if="openMenuId" class="action-menu" :style="{ top: `${menuPos.top}px`, right: `${menuPos.right}px` }">
         <button type="button" class="action-menu__item" @click="viewCompany((data ?? []).find((i) => i.id === openMenuId))">
-          <IconEye :size="15" />
-          View
+          <IconArrowUpRight :size="15" />
+          See Details
         </button>
-        <button type="button" class="action-menu__item" @click="manageCompany((data ?? []).find((i) => i.id === openMenuId))">
-          <IconSettings :size="15" />
-          Manage
+        <button
+          type="button"
+          class="action-menu__item action-menu__item--danger"
+          @click="deleteSubCompany((data ?? []).find((i) => i.id === openMenuId))"
+        >
+          <IconTrash :size="15" />
+          Delete sub company
         </button>
       </div>
     </Teleport>
@@ -200,7 +223,8 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 .action-menu {
   position: fixed;
-  width: 176px;
+  width: max-content;
+  min-width: 176px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
@@ -223,12 +247,21 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     font-size: 13px;
     font-weight: 500;
     font-family: 'Manrope', 'Inter', sans-serif;
+    white-space: nowrap;
     cursor: pointer;
     text-align: left;
     transition: background 0.13s, color 0.13s;
 
     &:hover {
       background: rgba(0, 0, 0, 0.05);
+    }
+
+    &--danger {
+      color: var(--glacia-sev-critical);
+
+      &:hover {
+        background: rgba(220, 38, 38, 0.08);
+      }
     }
   }
 }

@@ -857,7 +857,7 @@ function submitReportDownload() {
             <div class="rep-modal__head">
               <div>
                 <h2 class="rep-modal__title">Download Report</h2>
-                <p class="rep-modal__desc">Choose which findings to include in the CSV export.</p>
+                <p class="rep-modal__desc">Choose which findings to include in the PDF export.</p>
               </div>
               <button type="button" class="rep-modal__close" aria-label="Close" @click="showReportModal = false">
                 <IconX :size="18" />

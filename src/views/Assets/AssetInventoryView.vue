@@ -5,6 +5,7 @@ import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import GlassField from '@/components/reusable/GlassField.vue'
+import { emptyData } from '@/utils/dataMode'
 import { IconDotsVertical, IconPlus, IconWorld, IconBrowser, IconNetwork, IconCode, IconTag, IconChevronDown, IconX, IconCheck, IconArrowUpRight, IconRefresh, IconTrash, IconSitemap, IconCircleDot, IconArrowsLeftRight, IconPencil, IconArrowRight, IconPalette, IconSearch } from '@tabler/icons-vue'
 
 const tabs = [
@@ -44,7 +45,7 @@ onMounted(() => {
 onUnmounted(() => window.removeEventListener('resize', onTabResize))
 watch(activeTab, () => nextTick(moveTabPill))
 
-const assets = ref([
+const assets = ref(emptyData.value ? [] : [
   { id: 1, domain: 'protergo.id', owner: 'Protergo Cyber Security Ampera', lastScanned: '23 June 2026', status: 'Completed', tags: [{ label: 'Production', colorId: 4 }, { label: 'Staging', colorId: 2 }] },
   { id: 2, domain: 'api.protergo.id', owner: 'Protergo Cyber Security Ampera', lastScanned: '22 June 2026', status: 'Queue', tags: [{ label: 'Internal', colorId: 10 }] },
   { id: 3, domain: 'app.protergo.id', owner: 'Protergo Cyber Security Jakarta', lastScanned: '20 June 2026', status: 'Scanning', tags: [{ label: 'Staging', colorId: 2 }] },
@@ -61,7 +62,7 @@ const assets = ref([
   { id: 14, domain: 'status.protergo.id', owner: 'Beta Ventures Security', lastScanned: '15 May 2026', status: 'Failed', tags: [{ label: 'Internal', colorId: 10 }] },
 ])
 
-const webapps = ref([
+const webapps = ref(emptyData.value ? [] : [
   { id: 1, appName: 'Protergo Website', url: 'https://protergo.id/', owner: 'Protergo Cyber Security Ampera', basicAuth: 'Inactive', lastScanned: '03 June 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Completed' },
   { id: 2, appName: 'Protergo Admin', url: 'https://admin.protergo.id/', owner: 'Protergo Cyber Security Jakarta', basicAuth: 'Active', lastScanned: '02 June 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Scanning' },
   { id: 3, appName: 'API Gateway', url: 'https://api.protergo.id/v1', owner: 'Protergo Cyber Security Surabaya', basicAuth: 'Active', lastScanned: '01 June 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Queue' },
@@ -77,7 +78,7 @@ const webapps = ref([
   { id: 13, appName: 'Status Page', url: 'https://status.protergo.id/', owner: 'Beta Ventures Security', basicAuth: 'Active', lastScanned: '05 May 2026', tags: [{ label: 'Staging', colorId: 2 }], status: 'Failed' },
 ])
 
-const networks = ref([
+const networks = ref(emptyData.value ? [] : [
   { id: 1, endpoint: '163.7.16.212', endpointType: 'IP Single', owner: 'Protergo Cyber Security Ampera', lastScanned: '22 June 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Completed' },
   { id: 2, endpoint: '172.20.0.4', endpointType: 'IP Single', owner: 'Protergo Cyber Security Ampera', lastScanned: '14 July 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Completed' },
   { id: 3, endpoint: '10.20.0.0/24', endpointType: 'CIDR', owner: 'Protergo Cyber Security Jakarta', lastScanned: '18 June 2026', tags: [{ label: 'Dev', colorId: 3 }], status: 'Scanning' },
@@ -157,7 +158,7 @@ const filteredNetworks = computed(() => {
   return list
 })
 
-const sourceCodes = ref([
+const sourceCodes = ref(emptyData.value ? [] : [
   { id: 1, repoOwner: 'protergo-ampera', repoName: 'protergo-web', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security Ampera', lastScanned: '20 June 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Completed' },
   { id: 2, repoOwner: 'protergo', repoName: 'protergo-api', gitProvider: 'GitHub', visibility: 'Public', owner: 'Protergo Cyber Security Ampera', lastScanned: '18 June 2026', tags: [{ label: 'CDN', colorId: 5 }], status: 'Completed' },
   { id: 3, repoOwner: 'protergo-jkt', repoName: 'billing-service', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Cyber Security Jakarta', lastScanned: '15 June 2026', tags: [{ label: 'Dev', colorId: 3 }], status: 'Scanning' },
@@ -404,7 +405,7 @@ const statusOptions = [
   { value: 'Failed', label: 'Failed' },
   { value: 'Waiting', label: 'Waiting' },
 ]
-const tagsData = ref([
+const tagsData = ref(emptyData.value ? [] : [
   { id: 1, name: 'Production', color: '#2f9e52', bg: '#e8f5e9', usedBy: 3 },
   { id: 2, name: 'Load balancer', color: '#1197c2', bg: '#dff3fc', usedBy: 1 },
   { id: 3, name: 'Internal', color: '#5c6470', bg: '#eceef0', usedBy: 2 },
@@ -650,7 +651,7 @@ const tagPopoverSource = ref(null) // 'webapp' | 'network' | 'networkHost' | 'so
 const tagPopoverPos = ref({ top: 0, left: 0 })
 const tagQuery = ref('')
 const tagNewColor = ref(4)
-const createdTags = ref([
+const createdTags = ref(emptyData.value ? [] : [
   { label: 'Production', colorId: 4 },
   { label: 'Staging', colorId: 1 },
   { label: 'Dev', colorId: 3 },
@@ -1788,7 +1789,6 @@ function submitRegisterWebapp() {
         <div class="tags-empty__icon"><IconTag :size="26" /></div>
         <div class="tags-empty__title">No tags registered yet</div>
         <p class="tags-empty__desc">Tags help you categorize and quickly filter your assets. Create your first tag to get started.</p>
-        <button type="button" class="btn-register btn-register--red" @click="addTagEntry"><IconPlus :size="14" /> Add Tag</button>
       </div>
     </div>
 

@@ -1,7 +1,9 @@
+import { emptyData } from '@/utils/dataMode'
 import { endpointSeverity } from './severity.js'
 
 // Network Assessment seed data.
 export function getNetworks() {
+  if (emptyData.value) return []
   return structuredClone([
     { id: 1, endpoint: '10.10.19.2/24', targetType: 'CIDR', scanType: 'manual_scan', lastScanned: '14 July 2026', registeredCount: 30, status: 'Scanning', tags: [] },
     { id: 3, endpoint: '10.10.20.0/24', targetType: 'CIDR', scanType: 'scheduled_scan', lastScanned: '23 June 2026', registeredCount: 45, status: 'Completed', tags: [] },
@@ -111,6 +113,7 @@ const ENDPOINT_TAGS = [
 ]
 
 export function getNetworkEndpoints() {
+  if (emptyData.value) return []
   const ips = [
     '10.10.10.12', '10.10.10.27', '10.10.10.34', '10.10.10.59', '10.10.10.73',
     '10.10.10.88', '10.10.10.101', '10.10.10.126', '10.10.10.148', '10.10.10.203',
@@ -160,6 +163,7 @@ const NETWORK_SOLUTION_TYPES = [
 ]
 
 export function getNetworkVulns() {
+  if (emptyData.value) return []
   return structuredClone(SINGLE_VULNS.map((v, i) => ({
     id: `nv-${i + 1}`,
     ...v,

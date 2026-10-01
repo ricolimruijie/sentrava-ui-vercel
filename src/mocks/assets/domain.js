@@ -1,7 +1,9 @@
+import { emptyData } from '@/utils/dataMode'
 import { endpointSeverity } from './severity.js'
 
 // Domain Inspection seed data.
 export function getDomains() {
+  if (emptyData.value) return []
   return structuredClone([
     { id: 1, endpoint: 'protergo.id', targetType: 'Domain', scanType: 'manual_scan', lastScanned: '14 July 2026', registeredCount: 10, status: 'Scanning', tags: [], owner: 'Protergo Cyber Security Rempoa' },
     { id: 2, endpoint: 'acme-corp.com', targetType: 'Domain', scanType: 'scheduled_scan', lastScanned: '23 June 2026', registeredCount: 10, status: 'Completed', tags: [], owner: 'Protergo Cyber Security Ampera' },
@@ -171,6 +173,7 @@ const RELATED_PREFIXES = [
 ]
 
 export function getDomainEndpoints() {
+  if (emptyData.value) return []
   const subs = [
     'api.protergo.id', 'app.protergo.id', 'mail.protergo.id', 'vpn.protergo.id', 'cdn.protergo.id',
     'portal.protergo.id', 'dev.protergo.id', 'staging.protergo.id', 'blog.protergo.id', 'shop.protergo.id',
@@ -229,6 +232,7 @@ const DOMAIN_SOLUTION_TYPES = [
 ]
 
 export function getDomainVulns() {
+  if (emptyData.value) return []
   return structuredClone(DOMAIN_VULNS.map((v, i) => ({
     id: `nv-${i + 1}`,
     ...v,

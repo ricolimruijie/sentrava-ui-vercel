@@ -7,7 +7,7 @@ import TablePagination from '@/components/table/TablePagination.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import ProbeBoxOverviewModal from '@/components/company/ProbeBoxOverviewModal.vue'
-import { IconDotsVertical, IconArrowUpRight, IconRefresh, IconTrash } from '@tabler/icons-vue'
+import { IconDotsVertical, IconArrowUpRight, IconPlugConnected } from '@tabler/icons-vue'
 
 const { data, loading } = useFetch(() => get('/company/probes'))
 
@@ -15,10 +15,10 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: '#', width: '24px', dim: true },
-  { key: 'name', label: 'Integration Name', width: '28%', bold: true, mono: true, truncate: true},
-  { key: 'ip', label: 'IP Address', width: '20%', mono: true, dim: true, truncate: true},
-  { key: 'lastSeen', label: 'Last Checked', width: '24%', dim: true, truncate: true},
-  { key: 'status', label: 'Status', width: '18%', align: 'center' },
+  { key: 'name', label: 'Integration Name', width: '24%', bold: true, mono: true, truncate: true},
+  { key: 'lastSeen', label: 'Last Checked', width: '22%', dim: true, truncate: true},
+  { key: 'monitoring', label: 'Connection Monitoring', width: '32%' },
+  { key: 'status', label: 'Status', width: '12%', align: 'center' },
   { key: 'action', label: 'Action', width: '76px', align: 'center' },
 ]
 
@@ -47,7 +47,7 @@ const filteredData = computed(() => {
   let list = data.value ?? []
   if (statusFilter.value) list = list.filter((p) => p.status === statusFilter.value)
   const q = search.value.trim().toLowerCase()
-  if (q) list = list.filter((p) => p.name.toLowerCase().includes(q) || p.ip.includes(q))
+  if (q) list = list.filter((p) => p.name.toLowerCase().includes(q))
   return list
 })
 
@@ -79,13 +79,9 @@ function updateProbe(patch) {
   data.value = (data.value ?? []).map((p) => (p.id === patch.id ? { ...p, ...patch } : p))
   if (overviewProbe.value?.id === patch.id) overviewProbe.value = { ...overviewProbe.value, ...patch }
 }
-function restartProbe(item) {
+function checkConnection(item) {
   closeMenu()
-  console.info('Restart probe', item.id)
-}
-function removeProbe(item) {
-  closeMenu()
-  data.value = (data.value ?? []).filter((p) => p.id !== item.id)
+  console.info('Check connection', item.id)
 }
 
 function handleClickOutside(e) {
@@ -122,6 +118,17 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
         </span>
       </template>
       <template #cell-lastSeen="{ row }">{{ fmt(row.lastSeen) }}</template>
+      <template #cell-monitoring="{ row }">
+        <div class="monitor" role="img" :aria-label="`Last ${row.monitoring?.length ?? 0} connection checks`">
+          <span
+            v-for="(check, i) in row.monitoring ?? []"
+            :key="i"
+            class="monitor__tick"
+            :class="{ 'monitor__tick--down': check === 'down' }"
+            :title="check === 'down' ? 'Down' : 'Up'"
+          />
+        </div>
+      </template>
       <template #cell-action="{ row }">
         <button type="button" class="action-btn" aria-label="Actions" @click.stop="toggleMenu(row, $event)">
           <IconDotsVertical :size="16" />
@@ -137,17 +144,9 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
           <IconArrowUpRight :size="15" />
           See Details
         </button>
-        <button type="button" class="action-menu__item" @click="restartProbe((data ?? []).find((i) => i.id === openMenuId))">
-          <IconRefresh :size="15" />
-          Restart integration
-        </button>
-        <button
-          type="button"
-          class="action-menu__item action-menu__item--danger"
-          @click="removeProbe((data ?? []).find((i) => i.id === openMenuId))"
-        >
-          <IconTrash :size="15" />
-          Remove integration
+        <button type="button" class="action-menu__item" @click="checkConnection((data ?? []).find((i) => i.id === openMenuId))">
+          <IconPlugConnected :size="15" />
+          Check connection
         </button>
       </div>
     </Teleport>
@@ -182,6 +181,26 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.monitor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 320px;
+
+  &__tick {
+    flex: 1 1 0;
+    min-width: 6px;
+    max-width: 20px;
+    aspect-ratio: 1;
+    border-radius: 5px;
+    background: #62c46b;
+
+    &--down {
+      background: #e8776f;
+    }
+  }
 }
 
 .action-btn {

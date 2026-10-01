@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { post } from '@/utils/request'
 import { ROLES } from '@/utils/constants'
+import { emptyData } from '@/utils/dataMode'
 
 export const useAuthStore = defineStore('auth', () => {
   const user  = ref(null)
@@ -11,6 +12,9 @@ export const useAuthStore = defineStore('auth', () => {
   const role            = computed(() => user.value?.role ?? null)
   const isSuperAdmin    = computed(() => role.value === ROLES.SUPER_ADMIN)
   const companies       = computed(() => user.value?.companies ?? [])
+
+  // Demo accounts flagged `dataMode: 'empty'` see every page without data.
+  watch(user, (u) => { emptyData.value = u?.dataMode === 'empty' }, { immediate: true })
 
   async function login(email, password) {
     const res = await post('/auth/login', { email, password })

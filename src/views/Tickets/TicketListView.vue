@@ -4,10 +4,15 @@ import DataTable from '@/components/table/DataTable.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
 import { useRouter } from 'vue-router'
+import { useRole } from '@/composables/useRole'
+import { useAuthStore } from '@/store/auth'
+import { useTicketStore } from '@/store/tickets'
+import CreateTicketModal from '@/components/tickets/CreateTicketModal.vue'
+import { emptyData } from '@/utils/dataMode'
 import { formatShortDate } from '@/utils/helpers'
-import { IconArrowUpRight } from '@tabler/icons-vue'
+import { IconArrowUpRight, IconPlus } from '@tabler/icons-vue'
 
-const rawTickets = [
+const sampleTickets = [
   { id: 't1',  date: '10 February 2026', name: "Can't executed scan in module Domain Inspection", detail: 'Scan job failed with error 500 when targeting protergo.id', category: 'Application & System Failures', ticketId: 'ANO31456123458765', status: 'open' },
   { id: 't2',  date: '12 February 2026', name: 'Potential Port Scanning detected on 10.20.1.10', detail: 'IDS flagged repeated SYN probes from external IP', category: 'Application & System Failures', ticketId: 'ANO31456123458766', status: 'open' },
   { id: 't3',  date: '15 February 2026', name: 'Web Application scan returns empty results', detail: 'Nuclei scan finished but no findings stored', category: 'Application & System Failures', ticketId: 'ANO31456123458767', status: 'open' },
@@ -19,6 +24,36 @@ const rawTickets = [
   { id: 't9',  date: '28 February 2026', name: 'False positive on CVE-2023-1234', detail: 'Semgrep flagged test fixture as critical', category: 'Application & System Failures', ticketId: 'ANO31456123458773', status: 'resolved' },
   { id: 't10', date: '02 March 2026',     name: 'Top-up credit not reflected in dashboard', detail: 'Payment succeeded but credits still 0', category: 'General Enquiry', ticketId: 'ANO31456123458774', status: 'open' },
 ]
+
+// Tickets created this session sit above the built-in samples.
+const ticketStore = useTicketStore()
+const rawTickets = computed(() => [...ticketStore.created, ...(emptyData.value ? [] : sampleTickets)])
+
+// Only roles other than super admin raise tickets.
+const { isClientRole } = useRole()
+const auth = useAuthStore()
+const showCreate = ref(false)
+
+function createTicket({ name, category, description }) {
+  const now = new Date()
+  // 'ANO' + 17 digits, like the sample ticket IDs (13-digit timestamp + 4 random digits).
+  const ticketId = `ANO${now.getTime()}${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`
+  ticketStore.add({
+    id: `new-${ticketId}`,
+    ticketId,
+    date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
+    name,
+    detail: description,
+    description,
+    category,
+    status: 'open',
+    submitter: auth.user?.name ?? auth.user?.username ?? 'You',
+    company: auth.user?.companies?.[0]?.name ?? '—',
+  })
+  issueFilter.value = null
+  search.value = ''
+  activeTab.value = 'open'
+}
 
 const tableRef = ref(null)
 
@@ -39,8 +74,8 @@ const statusMeta = {
 function s(status) { return statusMeta[status] ?? { label: status, color: '#64748b', bg: 'rgba(100,116,139,0.12)' } }
 
 const activeTab = ref('open')
-const openCount = computed(() => rawTickets.filter((t) => t.status === 'open').length)
-const resolvedCount = computed(() => rawTickets.filter((t) => t.status === 'resolved').length)
+const openCount = computed(() => rawTickets.value.filter((t) => t.status === 'open').length)
+const resolvedCount = computed(() => rawTickets.value.filter((t) => t.status === 'resolved').length)
 
 const router = useRouter()
 
@@ -53,7 +88,7 @@ const issueCategoryOptions = [
 const issueFilter = ref(null)
 
 const filteredData = computed(() => {
-  let list = rawTickets.filter((t) => t.status === activeTab.value)
+  let list = rawTickets.value.filter((t) => t.status === activeTab.value)
   if (issueFilter.value) list = list.filter((t) => t.category === issueFilter.value)
   const q = search.value.trim().toLowerCase()
   if (q) list = list.filter((t) => t.name.toLowerCase().includes(q) || t.ticketId.toLowerCase().includes(q) || t.category.toLowerCase().includes(q))
@@ -71,23 +106,28 @@ function viewTicket(item) {
   <div class="ticket-list">
     <div class="ticket-list__head">
       <h1 class="ticket-list__title">Ticket List</h1>
-      <div class="ticket-tabs">
-        <button
-          type="button"
-          class="ticket-tabs__item"
-          :class="{ 'ticket-tabs__item--active': activeTab === 'open' }"
-          @click="activeTab = 'open'"
-        >
-          Open <span class="ticket-tabs__count">{{ openCount }}</span>
+      <div class="ticket-list__actions">
+        <button v-if="isClientRole" type="button" class="btn-create-ticket" @click="showCreate = true">
+          <IconPlus :size="15" /> Create Ticket
         </button>
-        <button
-          type="button"
-          class="ticket-tabs__item"
-          :class="{ 'ticket-tabs__item--active': activeTab === 'resolved' }"
-          @click="activeTab = 'resolved'"
-        >
-          Resolved <span class="ticket-tabs__count ticket-tabs__count--dim">{{ resolvedCount }}</span>
-        </button>
+        <div class="ticket-tabs">
+          <button
+            type="button"
+            class="ticket-tabs__item"
+            :class="{ 'ticket-tabs__item--active': activeTab === 'open' }"
+            @click="activeTab = 'open'"
+          >
+            Open <span class="ticket-tabs__count">{{ openCount }}</span>
+          </button>
+          <button
+            type="button"
+            class="ticket-tabs__item"
+            :class="{ 'ticket-tabs__item--active': activeTab === 'resolved' }"
+            @click="activeTab = 'resolved'"
+          >
+            Resolved <span class="ticket-tabs__count ticket-tabs__count--dim">{{ resolvedCount }}</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -130,6 +170,8 @@ function viewTicket(item) {
         </button>
       </template>
     </DataTable>
+
+    <CreateTicketModal v-if="isClientRole" v-model="showCreate" @create="createTicket" />
   </div>
 </template>
 
@@ -144,6 +186,13 @@ function viewTicket(item) {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     flex-wrap: wrap;
   }
 
@@ -164,8 +213,8 @@ function viewTicket(item) {
   border-radius: var(--glacia-radius-pill);
   background: var(--glacia-glass-fill-strong);
   border: 1px solid var(--glacia-glass-border);
-  width: 100%;
-  max-width: 260px;
+  width: 260px;
+  max-width: 100%;
 
   &__item {
     flex: 1;
@@ -277,5 +326,13 @@ function viewTicket(item) {
   justify-content: center;
   transition: background 0.13s, color 0.13s;
   &:hover { background: rgba(0,0,0,0.05); color: var(--glacia-ink); }
+}
+
+.btn-create-ticket {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 14px;
+  border-radius: var(--glacia-radius-pill); border: none;
+  background: var(--glacia-red); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  box-shadow: 0 6px 20px rgba(255, 37, 41, 0.4); transition: background 0.15s, box-shadow 0.15s;
+  &:hover { background: #e01e22; box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5); }
 }
 </style>

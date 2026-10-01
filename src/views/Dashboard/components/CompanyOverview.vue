@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { IconUsers, IconShield, IconEye, IconUser } from '@tabler/icons-vue'
+import { IconUsers, IconShield, IconUser } from '@tabler/icons-vue'
 
 const props = defineProps({
   data:    { type: Object,  default: () => ({}) },
@@ -9,7 +9,6 @@ const props = defineProps({
 
 const roles = computed(() => [
   { key: 'admin',   label: 'Admins',   icon: IconShield, color: '#7C3AED', count: props.data.byRole?.admin  ?? 0 },
-  { key: 'analyst', label: 'Analysts', icon: IconEye,    color: '#2563EB', count: props.data.byRole?.analyst ?? 0 },
   { key: 'member',  label: 'Members',  icon: IconUser,   color: '#0D9488', count: props.data.byRole?.member  ?? 0 },
 ])
 

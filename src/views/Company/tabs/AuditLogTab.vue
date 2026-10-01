@@ -6,7 +6,8 @@ import DataTable from '@/components/table/DataTable.vue'
 import TablePagination from '@/components/table/TablePagination.vue'
 import FilterDropdown from '@/components/filter/FilterDropdown.vue'
 import SearchInput from '@/components/reusable/SearchInput.vue'
-import { IconArrowUpRight } from '@tabler/icons-vue'
+import ReportDownloadModal from '@/components/reusable/ReportDownloadModal.vue'
+import { IconDownload } from '@tabler/icons-vue'
 
 const { data, loading } = useFetch(() => get('/company/audit-log'))
 
@@ -14,22 +15,27 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: '#', width: '24px', dim: true },
-  { key: 'dateTime', label: 'Date and Time', width: '16%', truncate: true},
-  { key: 'actor', label: 'Actor', width: '14%', bold: true, truncate: true},
+  { key: 'dateTime', label: 'Date and Time', width: '17%', truncate: true},
+  { key: 'actor', label: 'Actor', width: '22%' },
   { key: 'action', label: 'Activity', width: '16%', truncate: true},
-  { key: 'detail', label: 'Detail', width: '43%', dim: true, truncate: true },
-  { key: 'view', label: 'Action', width: '32px', align: 'center' },
+  { key: 'detail', label: 'Detail', width: '35%', dim: true, truncate: true },
 ]
 
-function viewEntry(item) {
-  // stub — wire up to a real audit entry detail view when the API exists
-  console.info('View audit entry', item.id)
+// Same day-month-year style as the Last Scanned column ("14 July 2026"),
+// with the time after it ("14 July 2026, 15:45").
+// Initials for the avatar — same rule as the Overview members table.
+function initials(row) {
+  const parts = row.actor.trim().split(/\s+/)
+  return parts.length > 1
+    ? ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase()
+    : row.actor.slice(0, 2).toUpperCase()
 }
 
 function fmt(iso) {
-  return new Date(iso).toLocaleString('en-US', {
-    month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
-  })
+  const d = new Date(iso)
+  const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })
+  return `${date}, ${time}`
 }
 
 const search = ref('')
@@ -57,6 +63,36 @@ const filteredData = computed(() => {
   }
   return list
 })
+
+// ── Download report — same flow as the scan Download Report modal: pick which
+// entries to include, see the count, then Download.
+const showDownload = ref(false)
+const downloadGroups = computed(() => {
+  const uniq = (key) => [...new Set((data.value ?? []).map((e) => e[key]))].map((v) => ({ value: v, label: v }))
+  return [
+    { key: 'action', label: 'Activity', options: uniq('action') },
+    { key: 'actor', label: 'Actor', options: uniq('actor') },
+  ]
+})
+
+function downloadAuditLog(entries) {
+  const header = ['No', 'Date and Time', 'Actor', 'Username', 'Activity', 'Detail']
+  const rows = [header, ...entries.map((e, i) => [
+    i + 1,
+    `"${fmt(e.dateTime)}"`,
+    `"${e.actor.replace(/"/g, '""')}"`,
+    e.actorUsername,
+    `"${e.action.replace(/"/g, '""')}"`,
+    `"${e.detail.replace(/"/g, '""')}"`,
+  ])]
+  const blob = new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'audit-log.csv'
+  a.click()
+  URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
@@ -64,6 +100,10 @@ const filteredData = computed(() => {
     <div class="company-controls">
       <SearchInput v-model="search" placeholder="Search…" />
       <FilterDropdown v-model="actionFilter" :options="actionOptions" placeholder="Action" />
+
+      <button type="button" class="btn-download" @click="showDownload = true">
+        <IconDownload :size="15" /> Download report
+      </button>
 
       <TablePagination
         v-if="tableRef"
@@ -81,12 +121,26 @@ const filteredData = computed(() => {
       empty-text="No audit entries found."
     >
       <template #cell-dateTime="{ row }">{{ fmt(row.dateTime) }}</template>
-      <template #cell-view="{ row }">
-        <button type="button" class="view-btn" aria-label="View entry" @click="viewEntry(row)">
-          <IconArrowUpRight :size="17" />
-        </button>
+      <template #cell-actor="{ row }">
+        <div class="member-cell">
+          <span class="member-avatar" :class="{ 'member-avatar--named': row.actor !== 'System' }">{{ initials(row) }}</span>
+          <div class="member-cell__text">
+            <div class="member-cell__name">{{ row.actor }}</div>
+            <div class="member-cell__username">{{ row.actorUsername }}</div>
+          </div>
+        </div>
       </template>
     </DataTable>
+
+    <ReportDownloadModal
+      v-model="showDownload"
+      title="Download Audit Log"
+      description="Choose which audit entries to include in the export."
+      noun="entries"
+      :rows="data ?? []"
+      :groups="downloadGroups"
+      @download="downloadAuditLog"
+    />
   </div>
 </template>
 
@@ -110,22 +164,54 @@ const filteredData = computed(() => {
   margin-left: auto;
 }
 
-.view-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: var(--glacia-radius-sm);
-  background: none;
-  border: none;
-  color: var(--glacia-ink-dim);
-  cursor: pointer;
+// Actor cell — same avatar + name + username layout as the Overview members table.
+.member-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.13s, color 0.13s;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--glacia-ink-dim);
 
-  &:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: var(--glacia-ink);
+  &--named {
+    background: rgba(255, 37, 41, 0.1);
+    color: var(--glacia-red);
   }
+}
+
+.member-cell__text {
+  min-width: 0;
+}
+
+.member-cell__name {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--glacia-ink);
+}
+
+.member-cell__username {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--glacia-ink-dim);
+}
+
+.btn-download {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 14px;
+  border-radius: var(--glacia-radius-pill); border: none;
+  background: var(--glacia-red); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  box-shadow: 0 6px 20px rgba(255, 37, 41, 0.4); transition: background 0.15s, box-shadow 0.15s;
+  &:hover { background: #e01e22; box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5); }
 }
 </style>

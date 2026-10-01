@@ -42,8 +42,8 @@ Login page shows Quick demo shortcuts when `VITE_IS_STATIC=true`:
 | --- | --- | --- |
 | super_admin | `superadmin@sentra.io` | `demo` |
 | admin | `admin@acme.com` | `demo` |
-| analyst | `analyst@acme.com` | `demo` |
 | member | `member@acme.com` | `demo` |
+| Empty State (not a role — super admin look, no data anywhere) | `empty@sentra.io` | `demo` |
 
 Any other email → `Invalid credentials` from the mock handler.
 

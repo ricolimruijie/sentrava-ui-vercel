@@ -38,7 +38,7 @@ const appRoutes = [
       title: 'Domain Detail',
       crumbs: [{ label: 'Services' }, { label: 'Domain Inspection', to: '/assets/domains' }],
       tabQuery: 'view',
-      tabLabels: { findings: 'Endpoint Findings' },
+      tabLabels: { findings: 'Endpoint Findings', reputation: 'Domain Reputation' },
     },
   },
   { path: '/assets/networks',    component: () => import('@/views/Assets/NetworkView.vue'), meta: { requiresAuth: true, title: 'Network', crumbs: [{ label: 'Services' }] } },
@@ -111,7 +111,22 @@ const appRoutes = [
       // this lets the breadcrumb reflect the active tab as a trailing
       // crumb instead of always showing the static page title.
       tabQuery: 'tab',
-      tabLabels: { overview: 'Overview', list: 'Company list', audit: 'Audit log', probe: 'Integration' },
+      tabLabels: { overview: 'Overview', list: 'Sub company', audit: 'Audit log', probe: 'Integration' },
+    },
+  },
+  {
+    path: '/companies/:id',
+    component: () => import('@/views/Company/CompanyMembersView.vue'),
+    meta: {
+      requiresAuth: true,
+      title: 'Company Members',
+      // Mirrors the Company page's own trail for the Sub company tab
+      // (Manage › Company › Sub company), then this page as the current crumb.
+      crumbs: [
+        { label: 'Manage' },
+        { label: 'Company', to: '/companies' },
+        { label: 'Sub company', to: '/companies?tab=list' },
+      ],
     },
   },
   { path: '/credits',             component: Placeholder, meta: { requiresAuth: true } },
