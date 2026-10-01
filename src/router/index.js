@@ -156,7 +156,14 @@ const appRoutes = [
   {
     path: '/notifications',
     component: () => import('@/modules/notifications/views/NotificationsView.vue'),
-    meta: { requiresAuth: true, title: 'Notifications', crumbs: [] },
+    meta: {
+      requiresAuth: true,
+      title: 'Notifications',
+      crumbs: [],
+      // The active tab lives in ?tab= so the breadcrumb can show it (Notifications > Scans), like Company.
+      tabQuery: 'tab',
+      tabLabels: { all: 'All', scans: 'Scans', infrastructure: 'Infrastructure', tickets: 'Tickets', system: 'System' },
+    },
   },
   {
     path: '/tickets',

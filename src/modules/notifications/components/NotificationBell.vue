@@ -27,7 +27,7 @@ async function openItem(n) {
   close()
   if (n.link) router.push(n.link)
 }
-function viewAll() { close(); router.push('/notifications') }
+function viewAll() { close(); router.push({ path: '/notifications', query: { tab: tab.value } }) }
 
 function onOutside(e) { if (open.value && root.value && !root.value.contains(e.target)) close() }
 function onKey(e) { if (e.key === 'Escape') close() }
