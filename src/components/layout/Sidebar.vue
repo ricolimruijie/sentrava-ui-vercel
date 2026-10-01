@@ -1,7 +1,7 @@
 <script setup>
 import { ref, nextTick, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { IconShieldFilled } from '@tabler/icons-vue'
+import logoIcon from '@/assets/sentrava-logo-icon.svg'
 import { navSections as sections } from '@/config/navSections'
 
 const props = defineProps({
@@ -72,7 +72,7 @@ onMounted(() => nextTick(movePill))
 
     <!-- ── Header ──────────────────────────────────────────────── -->
     <div class="sidebar__header">
-      <IconShieldFilled class="sidebar__logo-icon" :size="26" aria-hidden="true" />
+      <img :src="logoIcon" class="sidebar__logo-icon" width="30" height="30" alt="" aria-hidden="true" />
       <transition name="label-fade">
         <span v-if="!props.collapsed" class="sidebar__logo-text">SentraVA</span>
       </transition>
@@ -154,7 +154,7 @@ $w-collapsed:  64px;
   }
 
   &__logo-icon {
-    color: #FF2529;
+    display: block;
     flex-shrink: 0;
   }
 
