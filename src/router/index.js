@@ -6,6 +6,9 @@ import authRoutes   from './auth'
 import dashboardRoutes from './dashboard'
 import { dashboardOrigin } from '@/utils/navOrigin'
 import { fetchDomains } from '@/modules/domain-inspection/services/domainService'
+import { fetchNetworks } from '@/modules/network/services/networkService'
+import { fetchWebApps } from '@/modules/web-application/services/webAppService'
+import { fetchSourceCodeRepos } from '@/modules/source-code/services/sourceCodeService'
 
 // Stub placeholder for future pages (render function — the bundler uses the
 // runtime-only Vue build, so a `template:` string would never compile).
@@ -48,6 +51,8 @@ const appRoutes = [
   {
     path: '/assets/networks/:id',
     component: () => import('@/modules/network/views/NetworkDetailView.vue'),
+    // Nothing registered (e.g. the no-data demo) means there is no detail page to show.
+    beforeEnter: async () => ((await fetchNetworks()).length ? true : '/assets/networks'),
     meta: {
       requiresAuth: true,
       title: 'Network Detail',
@@ -60,6 +65,8 @@ const appRoutes = [
   {
     path: '/assets/webapps/:id',
     component: () => import('@/modules/web-application/views/WebAppDetailView.vue'),
+    // Nothing registered (e.g. the no-data demo) means there is no detail page to show.
+    beforeEnter: async () => ((await fetchWebApps()).length ? true : '/assets/webapps'),
     meta: {
       requiresAuth: true,
       title: 'Web Application Detail',
@@ -74,6 +81,8 @@ const appRoutes = [
   {
     path: '/assets/source-code/:id',
     component: () => import('@/modules/source-code/views/SourceCodeDetailView.vue'),
+    // Nothing registered (e.g. the no-data demo) means there is no detail page to show.
+    beforeEnter: async () => ((await fetchSourceCodeRepos()).length ? true : '/assets/source-code'),
     meta: {
       requiresAuth: true,
       title: 'Source Code Detail',
