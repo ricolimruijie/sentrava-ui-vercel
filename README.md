@@ -50,7 +50,9 @@ Login page shows Quick demo shortcuts when `VITE_IS_STATIC=true`:
 | admin | `admin@acme.com` | `demo` |
 | member | `member@acme.com` | `demo` |
 
-Any other email → `Invalid credentials` from the mock handler.
+Any other email or a wrong password → `Invalid credentials` from the mock handler.
+
+**Security rules in the mock (PRD 2.2):** 5 consecutive failed logins for an email lock it for 30 minutes (even the right password is refused meanwhile; a success resets the counter; tracked in `localStorage`, key `sentra_login_attempts` — delete it to unlock while demoing). A signed-in session ends after 15 minutes without activity or after 8 hours regardless of activity (`src/modules/auth/utils/session.js`, enforced by `useSessionGuard`), and the login page says why. Multi-device login can only be enforced by a real backend.
 
 The Quick demo card also has a **Show every page with no data** switch (see
 [No-data demo mode](#no-data-demo-mode)). A **Forgot password** page

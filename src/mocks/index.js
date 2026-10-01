@@ -1,6 +1,7 @@
 import { registerMock } from '@/services/api/client'
 import { clientDashboardMock, emptyClientDashboard } from './dashboard/client'
 import { emptyData } from '@/utils/dataMode'
+import { createLockoutTracker, lockedMessage } from '@/modules/auth/utils/lockout'
 import { apiKeysMock }             from './settings/apiKeys'
 import { cicdRunsMock }            from './scans/cicd'
 import { vulnerabilitiesMock }     from './scans/vulnerabilities'
@@ -55,15 +56,25 @@ registerMock(/\/scans\/history/, () => (emptyData.value ? [] : cicdRunsMock))
 // ── Auth ─────────────────────────────────────────────────────────────────────
 // Always succeeds — the real endpoint must not reveal whether the email has an account.
 registerMock(/\/auth\/forgot-password/, () => ({ ok: true }))
+const lockout = createLockoutTracker(window.localStorage)
+const DEMO_PASSWORD = 'demo'
 registerMock(/\/auth\/login/, (_, cfg) => {
-  const { email, dataMode } = cfg.data ?? {}
+  const { email, password, dataMode } = cfg.data ?? {}
+  // PRD 2.2: 5 consecutive failures lock the account for 30 minutes; even the right password is refused meanwhile.
+  const lock = lockout.status(email)
+  if (lock.locked) return Promise.reject({ message: lockedMessage(lock.retryAfterMs), code: 'ACCOUNT_LOCKED' })
   const roleMappings = {
     'superadmin@sentra.io': { id: 'u0', name: 'Root Admin',   role: 'super_admin', email: 'superadmin@sentra.io', companies: [], twoFAEnabled: true },
     'admin@acme.com':       { id: 'u1', name: 'Alex Johnson', role: 'admin',       email: 'admin@acme.com',       companies: [{ id: 'c1', name: 'Acme Corporation' }], twoFAEnabled: true },
     'member@acme.com':      { id: 'u3', name: 'James Park',   role: 'member',      email: 'member@acme.com',      companies: [{ id: 'c1', name: 'Acme Corporation' }], twoFAEnabled: true },
   }
-  const user = roleMappings[email]
-  if (!user) return Promise.reject({ message: 'Invalid credentials' })
+  const user = roleMappings[String(email ?? '').trim().toLowerCase()]
+  if (!user || password !== DEMO_PASSWORD) {
+    const after = lockout.recordFailure(email)
+    const message = after.locked ? lockedMessage(after.retryAfterMs) : 'Invalid credentials'
+    return Promise.reject({ message, code: after.locked ? 'ACCOUNT_LOCKED' : 'INVALID_CREDENTIALS' })
+  }
+  lockout.recordSuccess(email)
   // Any role can be signed in "with no data" (see utils/dataMode.js) to review empty states.
   return { token: 'mock-jwt-token', user: dataMode === 'empty' ? { ...user, dataMode: 'empty' } : user }
 })

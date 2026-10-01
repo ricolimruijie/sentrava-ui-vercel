@@ -1,7 +1,8 @@
 <script setup>
 import { ref, reactive, computed, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore, LOGOUT_REASON_KEY } from '@/stores/auth'
+import { SESSION_MESSAGES } from '@/modules/auth/utils/session'
 import GlassField from '@/components/common/GlassField.vue'
 import AuthLayout from '@/modules/auth/views/AuthLayout.vue'
 
@@ -27,6 +28,14 @@ const noData = ref(false) // demo: sign in with every page empty (works with any
 const done = ref(false)
 const shakeKey = ref(0)
 let timer
+
+// Say why the user landed here when the session ended on its own (idle / expired).
+{
+  let reason = route.query.reason
+  try { reason = reason || localStorage.getItem(LOGOUT_REASON_KEY) } catch { /* ignore */ }
+  if (SESSION_MESSAGES[reason]) errors.form = SESSION_MESSAGES[reason]
+  try { localStorage.removeItem(LOGOUT_REASON_KEY) } catch { /* ignore */ }
+}
 
 const isSplit = computed(() => layout === 'split')
 const btnLabel = computed(() => (busy.value ? 'Logging in…' : done.value ? 'Logged in' : 'Log in'))

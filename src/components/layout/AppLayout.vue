@@ -2,8 +2,10 @@
 import { ref } from 'vue'
 import Sidebar   from './Sidebar.vue'
 import AppNavbar from './AppNavbar.vue'
+import { useSessionGuard } from '@/composables/useSessionGuard'
 
 const collapsed = ref(false)
+useSessionGuard()
 </script>
 
 <template>
