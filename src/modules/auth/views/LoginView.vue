@@ -5,6 +5,7 @@ import { useAuthStore, LOGOUT_REASON_KEY } from '@/stores/auth'
 import { SESSION_MESSAGES } from '@/modules/auth/utils/session'
 import GlassField from '@/components/common/GlassField.vue'
 import AuthLayout from '@/modules/auth/views/AuthLayout.vue'
+import logoIcon from '@/assets/sentrava-logo-icon.svg'
 
 // Login page — design and behavior from references/LoginPage.vue (animated
 // coral visual, floating-label-free inputs with focus/error rings, shake on
@@ -91,10 +92,10 @@ onBeforeUnmount(() => clearTimeout(timer))
   <AuthLayout :layout="layout" :motion="motion">
       <div class="card">
         <header class="head rise" style="--d: 80ms">
-          <span v-if="!isSplit" class="brand">SENTRAVA</span>
+          <span v-if="!isSplit" class="brand"><img :src="logoIcon" class="brand__logo" width="28" height="28" alt="" aria-hidden="true" />SENTRAVA</span>
           <h1 class="title">Stay ahead of every threat</h1>
           <p class="subtitle">
-            Log in to SENTRAVA to see <strong class="hl">every asset</strong>, <strong class="hl">every risk</strong>, and <strong class="hl">what to fix next</strong> across your <strong class="hl hl--dark">environment</strong>.
+            Log in to SENTRAVA to see <strong class="hl">every asset</strong>, <strong class="hl">every risk</strong>, and <strong class="hl">what to mitigate next</strong> across your <strong class="hl hl--dark">environment</strong>.
           </p>
         </header>
 
