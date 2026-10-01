@@ -1,4 +1,7 @@
 <script setup>
+import RegisterWebAppModal from '@/modules/asset-inventory/components/RegisterWebAppModal.vue'
+import RegisterDomainModal from '@/modules/asset-inventory/components/RegisterDomainModal.vue'
+import RegisterNetworkModal from '@/modules/asset-inventory/components/RegisterNetworkModal.vue'
 import { useRole } from '@/composables/useRole'
 import { ref, computed, reactive, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
@@ -212,92 +215,6 @@ const totalCount = computed(() => {
   if (activeTab.value === 'tags') return filteredTags.value.length
   return 0
 })
-
-// ── Register Network modal — same pattern as Register Domain/Web Application
-const showRegisterNetworkModal = ref(false)
-const regNetOwner = ref(null)
-const regNetType = ref(null) // 'single' | 'range'
-const regNetState = ref('idle') // 'idle' | 'loading' | 'saved'
-const regNetIp = ref('')
-const regNetRange = ref('')
-// Set once Proceed is clicked while the IP fields are still empty — only
-// then do the inline "required" errors show, matching the reference (the
-// button itself stays enabled once Owner + Type are picked; it's the IP
-// fields that block the actual submit).
-const regNetAttempted = ref(false)
-const ipTypeOptions = [
-  { value: 'single', label: 'IP Single' },
-  { value: 'range',  label: 'IP Range' },
-]
-// Owner + Type alone gate whether Proceed is clickable at all.
-const canRegisterNetwork = computed(() => !!regNetOwner.value && !!regNetType.value)
-const isValidIpAddress = (v) => /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(v.trim())
-const isValidCidrRange = (v) => /^\d{1,2}$/.test(v.trim()) && Number(v.trim()) >= 0 && Number(v.trim()) <= 32
-const regNetIpError = computed(() => {
-  if (!regNetAttempted.value) return ''
-  if (!regNetIp.value.trim()) return 'IP Address is required'
-  if (!isValidIpAddress(regNetIp.value)) return 'Enter a valid IP address, e.g. 1.xx.34.82'
-  return ''
-})
-const regNetRangeError = computed(() => {
-  if (!regNetAttempted.value || regNetType.value !== 'range') return ''
-  if (!regNetRange.value.trim()) return 'Range is required'
-  if (!isValidCidrRange(regNetRange.value)) return 'Enter a valid range, e.g. 24'
-  return ''
-})
-
-function openRegisterNetworkModal() {
-  regNetOwner.value = null
-  regNetType.value = null
-  regNetState.value = 'idle'
-  regNetIp.value = ''
-  regNetRange.value = ''
-  regNetAttempted.value = false
-  showRegisterNetworkModal.value = true
-}
-function closeRegisterNetworkModal() {
-  showRegisterNetworkModal.value = false
-}
-function selectRegNetOwner(value) {
-  regNetOwner.value = value
-}
-function selectRegNetType(value) {
-  regNetType.value = value
-  regNetIp.value = ''
-  regNetRange.value = ''
-  regNetAttempted.value = false
-}
-function onRegNetIpInput(e) {
-  const cleaned = e.target.value.replace(/[^0-9.]/g, '')
-  regNetIp.value = cleaned
-  if (e.target.value !== cleaned) e.target.value = cleaned
-}
-function onRegNetRangeInput(e) {
-  const cleaned = e.target.value.replace(/[^0-9]/g, '')
-  regNetRange.value = cleaned
-  if (e.target.value !== cleaned) e.target.value = cleaned
-}
-function submitRegisterNetwork() {
-  if (!canRegisterNetwork.value || regNetState.value !== 'idle') return
-  regNetAttempted.value = true
-  if (regNetIpError.value || regNetRangeError.value) return
-  regNetState.value = 'loading'
-  setTimeout(() => {
-    const newId = networks.value.length + 1
-    const endpoint = regNetType.value === 'single' ? regNetIp.value.trim() : `${regNetIp.value.trim()}/${regNetRange.value.trim()}`
-    networks.value.unshift({
-      id: newId,
-      endpoint,
-      endpointType: regNetType.value === 'single' ? 'IP Single' : 'CIDR',
-      owner: regNetOwner.value,
-      lastScanned: '-',
-      tags: [],
-      status: 'Scanning',
-    })
-    regNetState.value = 'saved'
-    setTimeout(closeRegisterNetworkModal, 700)
-  }, 500)
-}
 
 // ── Register Repository modal — same pattern as Register Domain/Web Application/Network
 const showRegisterSourceModal = ref(false)
@@ -1444,105 +1361,23 @@ function confirmRescan() {
   }, 500)
 }
 
-// ── Register Domain modal — same pattern as other modals
-const showRegisterModal = ref(false)
-const registerOwner = ref(null)
-const registerDomain = ref('')
-const registerState = ref('idle') // 'idle' | 'loading' | 'saved'
-const canProceedRegister = computed(() => {
-  const d = registerDomain.value.trim()
-  const domainOk = /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(d)
-  return !!registerOwner.value && domainOk
-})
-const registerDomainError = computed(() => {
-  const d = registerDomain.value.trim()
-  if (!d) return ''
-  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(d)) return 'Please enter a valid domain (e.g., example.com)'
-  return ''
-})
-function openRegisterModal() {
-  registerOwner.value = null
-  registerDomain.value = ''
-  registerState.value = 'idle'
-  showRegisterModal.value = true
-}
-function closeRegisterModal() {
-  showRegisterModal.value = false
-}
-function selectRegisterOwner(value) {
-  registerOwner.value = value
-}
-function submitRegister() {
-  if (!canProceedRegister.value || registerState.value !== 'idle') return
-  registerState.value = 'loading'
-  setTimeout(() => {
-    const newId = assets.value.length + 1
-    assets.value.unshift({
-      id: newId,
-      domain: registerDomain.value.trim(),
-      owner: registerOwner.value,
-      lastScanned: '-',
-      status: 'Scanning',
-    })
-    registerState.value = 'saved'
-    setTimeout(closeRegisterModal, 700)
-  }, 500)
+
+// ── Register Web Application modal (RegisterWebAppModal) ──
+const showRegisterWebappModal = ref(false)
+function onWebappRegistered(row) {
+  webapps.value.unshift({ id: webapps.value.length + 1, ...row })
 }
 
-// ── Register Web Application modal ──────────────────────────────────────
-const showRegisterWebappModal = ref(false)
-const regWAOwner = ref(null)
-const regWAName = ref('')
-const regWAUrl = ref('')
-const regWABasic = ref(false)
-const regWAUser = ref('')
-const regWAPass = ref('')
-const regWAState = ref('idle') // 'idle' | 'loading' | 'saved'
-const regWAUrlError = computed(() => {
-  const u = regWAUrl.value.trim()
-  if (!u) return ''
-  if (!/^(https?:\/\/)?[a-z0-9.-]+\.[a-z]{2,}(\/\S*)?$/i.test(u)) return 'Please enter a valid URL (e.g., https://example.com)'
-  return ''
-})
-const canRegisterWebapp = computed(() => {
-  if (!regWAOwner.value || !regWAName.value.trim() || !regWAUrl.value.trim() || regWAUrlError.value) return false
-  if (regWABasic.value && (!regWAUser.value.trim() || !regWAPass.value)) return false
-  return true
-})
-function openRegisterWebappModal() {
-  regWAOwner.value = null
-  regWAName.value = ''
-  regWAUrl.value = ''
-  regWABasic.value = false
-  regWAUser.value = ''
-  regWAPass.value = ''
-  regWAState.value = 'idle'
-  showRegisterWebappModal.value = true
+// ── Register Domain modal (RegisterDomainModal) ──
+const showRegisterModal = ref(false)
+function onDomainRegistered(row) {
+  assets.value.unshift({ id: assets.value.length + 1, ...row })
 }
-function closeRegisterWebappModal() {
-  showRegisterWebappModal.value = false
-}
-function selectRegWAOwner(value) {
-  regWAOwner.value = value
-}
-function submitRegisterWebapp() {
-  if (!canRegisterWebapp.value || regWAState.value !== 'idle') return
-  regWAState.value = 'loading'
-  setTimeout(() => {
-    const newId = webapps.value.length + 1
-    webapps.value.unshift({
-      id: newId,
-      appName: regWAName.value.trim(),
-      url: regWAUrl.value.trim(),
-      owner: regWAOwner.value,
-      basicAuth: regWABasic.value ? 'Active' : 'Inactive',
-      lastScanned: '-',
-      tags: [],
-      status: 'Scanning',
-    })
-    regWAState.value = 'saved'
-    setTimeout(closeRegisterWebappModal, 700)
-  }, 500)
+
+// ── Register Network modal (RegisterNetworkModal) ──
+const showRegisterNetworkModal = ref(false)
+function onNetworkRegistered(row) {
+  networks.value.unshift({ id: networks.value.length + 1, ...row })
 }
 </script>
 
@@ -1581,7 +1416,7 @@ function submitRegisterWebapp() {
         </div>
         <div class="asset-controls__right">
           <SearchInput v-model="search" placeholder="Search…" />
-          <button type="button" class="btn-register" @click="openRegisterModal"><IconPlus :size="14" /> Register Domain</button>
+          <button type="button" class="btn-register" @click="showRegisterModal = true"><IconPlus :size="14" /> Register Domain</button>
         </div>
       </template>
       <template v-else-if="activeTab === 'webapp'">
@@ -1592,7 +1427,7 @@ function submitRegisterWebapp() {
         </div>
         <div class="asset-controls__right">
           <SearchInput v-model="search" placeholder="Search…" />
-          <button type="button" class="btn-register" @click="openRegisterWebappModal"><IconPlus :size="14" /> Register URL</button>
+          <button type="button" class="btn-register" @click="showRegisterWebappModal = true"><IconPlus :size="14" /> Register URL</button>
         </div>
       </template>
       <template v-else-if="activeTab === 'network'">
@@ -1627,7 +1462,7 @@ function submitRegisterWebapp() {
         </div>
         <div class="asset-controls__right">
           <SearchInput v-model="search" placeholder="Search…" />
-          <button type="button" class="btn-register" @click="openRegisterNetworkModal"><IconPlus :size="14" /> Register Network</button>
+          <button type="button" class="btn-register" @click="showRegisterNetworkModal = true"><IconPlus :size="14" /> Register Network</button>
         </div>
       </template>
       <template v-else-if="activeTab === 'source'">
@@ -2417,241 +2252,11 @@ function submitRegisterWebapp() {
       </Transition>
     </Teleport>
 
-    <Teleport to="body">
-      <Transition name="modal-fade">
-        <div v-if="showRegisterModal" class="modal-backdrop" @mousedown.self="closeRegisterModal">
-          <div class="create-modal">
-            <div class="create-modal__head">
-              <h2 class="create-modal__title">Register Domain</h2>
-              <button type="button" class="create-modal__close" aria-label="Close" @click="closeRegisterModal">
-                <IconX :size="20" />
-              </button>
-            </div>
-            <p class="create-modal__desc">Once the domain is registered, it will go through scanning to discover and find all endpoints that are related to the domain.</p>
+    <RegisterDomainModal v-model="showRegisterModal" :owner-options="ownerOptions" @registered="onDomainRegistered" />
 
-            <div class="create-modal__body create-modal__group">
-              <GlassField
-                type="select"
-                label="Asset Owner"
-                placeholder="Asset Owner"
-                required
-                :options="ownerOptions"
-                :model-value="registerOwner"
-                @update:model-value="selectRegisterOwner"
-                error-text="Asset Owner is required"
-              />
+    <RegisterWebAppModal v-model="showRegisterWebappModal" :owner-options="ownerOptions" @registered="onWebappRegistered" />
 
-              <GlassField
-                v-model="registerDomain"
-                label="Domain"
-                placeholder="Input Domain"
-                required
-                :invalid="!!registerDomainError"
-                :error-text="registerDomainError || 'Domain is required'"
-              />
-            </div>
-
-            <div class="create-modal__actions">
-              <button type="button" class="modal-btn modal-btn--cancel" @click="closeRegisterModal">Cancel</button>
-              <button
-                type="button"
-                class="modal-btn"
-                :class="canProceedRegister ? { 'modal-btn--save': true, 'modal-btn--saved': registerState === 'saved' } : 'modal-btn--create'"
-                :disabled="!canProceedRegister"
-                @click="submitRegister"
-              >
-                <span v-if="registerState === 'loading'" class="modal-btn__spinner" />
-                <IconCheck v-else-if="registerState === 'saved'" :size="18" class="modal-btn__check" />
-                <span v-else>Register</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
-
-    <Teleport to="body">
-      <Transition name="modal-fade">
-        <div v-if="showRegisterWebappModal" class="modal-backdrop" @mousedown.self="closeRegisterWebappModal">
-          <div class="create-modal">
-            <div class="create-modal__head">
-              <h2 class="create-modal__title">Register URL</h2>
-              <button type="button" class="create-modal__close" aria-label="Close" @click="closeRegisterWebappModal">
-                <IconX :size="20" />
-              </button>
-            </div>
-
-            <div class="create-modal__body">
-              <div class="create-modal__group">
-                <GlassField
-                  type="select"
-                  label="Asset Owner"
-                  placeholder="Asset Owner"
-                  required
-                  :options="ownerOptions"
-                  :model-value="regWAOwner"
-                  @update:model-value="selectRegWAOwner"
-                  error-text="Asset Owner is required"
-                />
-
-                <GlassField
-                  v-model="regWAName"
-                  label="Application Name"
-                  placeholder="Application Name"
-                  required
-                  error-text="Application Name is required"
-                />
-
-                <GlassField
-                  v-model="regWAUrl"
-                  label="Input URL"
-                  placeholder="Input URL"
-                  required
-                  :invalid="!!regWAUrlError"
-                  :error-text="regWAUrlError || 'URL is required'"
-                />
-              </div>
-
-              <div class="auth-block">
-                <span class="auth-block__label">Authentication</span>
-                <div class="basic-auth-card">
-                  <div class="basic-auth-card__row">
-                    <span class="basic-auth-card__title">Basic Authentication</span>
-                    <button
-                      type="button"
-                      class="toggle-switch"
-                      :class="{ 'toggle-switch--on': regWABasic }"
-                      role="switch"
-                      :aria-checked="regWABasic"
-                      @click="regWABasic = !regWABasic"
-                    >
-                      <span class="toggle-switch__thumb" />
-                    </button>
-                  </div>
-                  <Transition name="dv-expand">
-                    <div v-if="regWABasic" class="basic-auth-card__fields">
-                      <GlassField v-model="regWAUser" label="Username" placeholder="Username" required error-text="Username is required" />
-                      <GlassField v-model="regWAPass" label="Password" placeholder="Password" input-type="password" required error-text="Password is required" />
-                    </div>
-                  </Transition>
-                </div>
-              </div>
-            </div>
-
-            <div class="create-modal__actions">
-              <button type="button" class="modal-btn modal-btn--cancel" @click="closeRegisterWebappModal">Cancel</button>
-              <button
-                type="button"
-                class="modal-btn"
-                :class="canRegisterWebapp ? { 'modal-btn--save': true, 'modal-btn--saved': regWAState === 'saved' } : 'modal-btn--create'"
-                :disabled="!canRegisterWebapp"
-                @click="submitRegisterWebapp"
-              >
-                <span v-if="regWAState === 'loading'" class="modal-btn__spinner" />
-                <IconCheck v-else-if="regWAState === 'saved'" :size="18" class="modal-btn__check" />
-                <span v-else>Register</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
-
-    <Teleport to="body">
-      <Transition name="modal-fade">
-        <div v-if="showRegisterNetworkModal" class="modal-backdrop" @mousedown.self="closeRegisterNetworkModal">
-          <div class="create-modal">
-            <div class="create-modal__head">
-              <h2 class="create-modal__title">Register Network</h2>
-              <button type="button" class="create-modal__close" aria-label="Close" @click="closeRegisterNetworkModal">
-                <IconX :size="20" />
-              </button>
-            </div>
-
-            <div class="create-modal__body create-modal__group">
-              <GlassField
-                type="select"
-                label="Asset Owner"
-                placeholder="Asset Owner"
-                required
-                :options="ownerOptions"
-                :model-value="regNetOwner"
-                @update:model-value="selectRegNetOwner"
-                error-text="Asset Owner is required"
-              />
-
-              <GlassField
-                type="select"
-                label="IP Address Type"
-                placeholder="IP Address Type"
-                required
-                :options="ipTypeOptions"
-                :model-value="regNetType"
-                @update:model-value="selectRegNetType"
-                error-text="IP Address Type is required"
-              />
-
-              <Transition name="dv-expand">
-                <div v-if="regNetType === 'single'" class="ip-field-gap">
-                  <GlassField
-                    :model-value="regNetIp"
-                    @update:model-value="(v) => onRegNetIpInput({ target: { value: v } })"
-                    label="IP Address"
-                    placeholder="Input IP Address"
-                    required
-                    :invalid="!!regNetIpError"
-                    :error-text="regNetIpError || 'IP Address is required'"
-                  />
-                  <p v-if="!regNetIpError" class="field-hint">Example: 1.xx.34.82</p>
-                </div>
-                <div v-else-if="regNetType === 'range'" class="ip-range-row ip-field-gap">
-                  <div class="ip-range-row__field">
-                    <GlassField
-                      :model-value="regNetIp"
-                      @update:model-value="(v) => onRegNetIpInput({ target: { value: v } })"
-                      label="IP Address"
-                      placeholder="IP Address"
-                      required
-                      :invalid="!!regNetIpError"
-                      :error-text="regNetIpError || 'IP Address is required'"
-                    />
-                    <p v-if="!regNetIpError" class="field-hint">Example: 1.xx.34.0</p>
-                  </div>
-                  <span class="ip-range-row__sep">/</span>
-                  <div class="ip-range-row__field">
-                    <GlassField
-                      :model-value="regNetRange"
-                      @update:model-value="(v) => onRegNetRangeInput({ target: { value: v } })"
-                      label="Range"
-                      placeholder="Range"
-                      required
-                      :invalid="!!regNetRangeError"
-                      :error-text="regNetRangeError || 'Range is required'"
-                    />
-                    <p v-if="!regNetRangeError" class="field-hint">Example: 24</p>
-                  </div>
-                </div>
-              </Transition>
-            </div>
-
-            <div class="create-modal__actions">
-              <button type="button" class="modal-btn modal-btn--cancel" @click="closeRegisterNetworkModal">Cancel</button>
-              <button
-                type="button"
-                class="modal-btn"
-                :class="canRegisterNetwork ? { 'modal-btn--save': true, 'modal-btn--saved': regNetState === 'saved' } : 'modal-btn--create'"
-                :disabled="!canRegisterNetwork"
-                @click="submitRegisterNetwork"
-              >
-                <span v-if="regNetState === 'loading'" class="modal-btn__spinner" />
-                <IconCheck v-else-if="regNetState === 'saved'" :size="18" class="modal-btn__check" />
-                <span v-else>Proceed</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <RegisterNetworkModal v-model="showRegisterNetworkModal" :owner-options="ownerOptions" @registered="onNetworkRegistered" />
 
     <Teleport to="body">
       <Transition name="modal-fade">
