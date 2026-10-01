@@ -216,10 +216,12 @@ $w-collapsed:  64px;
     opacity: 0.7;
   }
 
+  // Same total height as a section label (17px) so the items below keep their position
+  // when the sidebar collapses.
   &__section-divider {
     height: 1px;
     background: var(--glacia-glass-border);
-    margin: 2px 6px 6px;
+    margin: 2px 6px 14px;
   }
 
   // ── Nav item ────────────────────────────────────────────────────
@@ -242,9 +244,9 @@ $w-collapsed:  64px;
     white-space: nowrap;
     overflow: hidden;
 
+    // Icons keep the exact same position when collapsed (the label just disappears).
     .sidebar--collapsed & {
-      justify-content: center;
-      padding: 9px 0;
+      justify-content: flex-start;
     }
 
     // Plain, instant hover — the pill only ever slides for the active item.
