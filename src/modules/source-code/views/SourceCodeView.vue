@@ -1,4 +1,5 @@
 <script setup>
+import HoldToDeleteModal from '@/components/common/HoldToDeleteModal.vue'
 import { useRole } from '@/composables/useRole'
 import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -341,89 +342,18 @@ function seeDetail(id) {
   router.push(`/assets/source-code/${id}`)
 }
 
-// ── Delete repository modal — port of references/DeleteModal.vue ─────────
-// Acknowledge checkbox → press-and-hold Delete (1000ms fill) → deleting
-// spinner → done panel. Close is blocked while deleting.
+// ── Delete modal (shared HoldToDeleteModal) ──
 const showDeleteModal = ref(false)
 const deletingRepo = ref(null)
-const deleteState = ref('idle') // 'idle' | 'loading' | 'saved'
-const deleteAcknowledged = ref(false)
-const deleteHolding = ref(false)
-let deleteHoldTimer = null
-let deleteDoneTimer = null
-
-const deleteReady = computed(() => deleteAcknowledged.value && deleteState.value === 'idle')
-const deleteLabel = computed(() => {
-  if (deleteState.value === 'loading') return 'Deleting…'
-  if (!deleteAcknowledged.value) return 'Delete'
-  return deleteHolding.value ? 'Keep holding…' : 'Hold to delete'
-})
-const deleteHint = computed(() => {
-  if (!deleteAcknowledged.value && deleteState.value === 'idle') return 'Tick the box above to enable Delete'
-  if (deleteReady.value && !deleteHolding.value) return 'Press and hold, or hold Enter'
-  return ''
-})
 
 function deleteRepo(id) {
   closeMenu()
   deletingRepo.value = repos.value.find((r) => r.id === id) ?? null
-  deleteState.value = 'idle'
-  deleteAcknowledged.value = false
-  deleteHolding.value = false
   showDeleteModal.value = true
 }
-
-function closeDeleteModal() {
-  if (deleteState.value === 'loading') return
-  clearTimeout(deleteHoldTimer)
-  deleteHolding.value = false
-  showDeleteModal.value = false
-  deletingRepo.value = null
-  deleteState.value = 'idle'
-  deleteAcknowledged.value = false
+function confirmDeleteRepo() {
+  repos.value = repos.value.filter((r) => r.id !== deletingRepo.value.id)
 }
-
-function toggleDeleteAck() {
-  if (deleteState.value !== 'idle') return
-  deleteAcknowledged.value = !deleteAcknowledged.value
-  deleteHolding.value = false
-}
-
-function doDeleteRepo() {
-  clearTimeout(deleteHoldTimer)
-  deleteHolding.value = false
-  deleteState.value = 'loading'
-  deleteDoneTimer = setTimeout(() => {
-    repos.value = repos.value.filter((r) => r.id !== deletingRepo.value.id)
-    deleteState.value = 'saved'
-  }, 1200)
-}
-
-function deleteHoldStart() {
-  if (!deleteReady.value) return
-  deleteHolding.value = true
-  clearTimeout(deleteHoldTimer)
-  deleteHoldTimer = setTimeout(doDeleteRepo, 1000)
-}
-function deleteHoldEnd() {
-  if (deleteHolding.value) {
-    clearTimeout(deleteHoldTimer)
-    deleteHolding.value = false
-  }
-}
-function deleteKeyDown(e) {
-  if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
-    e.preventDefault()
-    deleteHoldStart()
-  }
-}
-function deleteKeyUp(e) {
-  if (e.key === 'Enter' || e.key === ' ') deleteHoldEnd()
-}
-onUnmounted(() => {
-  clearTimeout(deleteHoldTimer)
-  clearTimeout(deleteDoneTimer)
-})
 
 // ── Multi-Tags picker popover (same pattern as AssetInventoryView) ─────────
 const tagPopoverFor = ref(null) // repo id
@@ -865,75 +795,16 @@ onMounted(() => {
       </Transition>
     </Teleport>
 
-    <Teleport to="body">
-      <Transition name="modal-fade">
-        <div v-if="showDeleteModal" class="modal-backdrop" @mousedown.self="closeDeleteModal">
-          <div class="del-modal" role="dialog" aria-modal="true" aria-labelledby="del-title">
-            <div class="del-stack">
-              <div class="del-panel" :class="{ 'del-hidden': deleteState === 'saved' }">
-                <div class="del-head">
-                  <span class="del-tile" :class="{ 'del-tile--acked': deleteAcknowledged }">
-                    <IconTrash :size="22" />
-                  </span>
-                  <div class="del-titles">
-                    <span id="del-title" class="del-title">Delete repository</span>
-                    <span class="del-repo">
-                      <IconFolder :size="14" class="del-repo__icon" /><span class="del-ellip">{{ deletingRepo?.repo }}</span>
-                    </span>
-                  </div>
-                  <button type="button" class="del-close" aria-label="Close" @click="closeDeleteModal">
-                    <IconX :size="18" />
-                  </button>
-                </div>
-
-                <p class="del-body">
-                  <strong>{{ deletingRepo?.repo }}</strong> and its scan history will be removed immediately.
-                  Once deleted, you won't be able to view or restore its findings.
-                </p>
-
-                <button
-                  type="button"
-                  class="del-ack"
-                  :class="{ 'del-ack--on': deleteAcknowledged }"
-                  role="checkbox"
-                  :aria-checked="deleteAcknowledged"
-                  @click="toggleDeleteAck"
-                >
-                  <span class="del-box"><IconCheck :size="16" class="del-tick" /></span>
-                  <span class="del-ack__text">This action is permanent and cannot be undone.</span>
-                </button>
-
-                <div class="del-actions">
-                  <button type="button" class="del-btn del-btn--cancel" @click="closeDeleteModal">Cancel</button>
-                  <button
-                    type="button"
-                    class="del-btn del-btn--delete"
-                    :class="{ 'is-ready': deleteReady, 'is-holding': deleteHolding, 'is-deleting': deleteState === 'loading' }"
-                    :aria-disabled="!deleteReady"
-                    @pointerdown="deleteHoldStart"
-                    @pointerup="deleteHoldEnd"
-                    @pointerleave="deleteHoldEnd"
-                    @keydown="deleteKeyDown"
-                    @keyup="deleteKeyUp"
-                  >
-                    <span class="del-fill" aria-hidden="true" />
-                    <span class="del-label"><span v-if="deleteState === 'loading'" class="del-spinner" aria-hidden="true" />{{ deleteLabel }}</span>
-                  </button>
-                </div>
-                <span class="del-hint">{{ deleteHint }}</span>
-              </div>
-
-              <div class="del-panel del-done" :class="{ 'is-shown': deleteState === 'saved' }">
-                <span class="del-done__icon"><IconCheck :size="28" /></span>
-                <span class="del-done__title">Repository deleted</span>
-                <span class="del-done__body"><span class="del-mono">{{ deletingRepo?.repo }}</span> has been removed.</span>
-                <button type="button" class="del-btn del-btn--cancel del-done__btn" @click="closeDeleteModal">Done</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <HoldToDeleteModal
+      v-model="showDeleteModal"
+      title="Delete repository"
+      :subject="deletingRepo?.repo"
+      :icon="IconFolder"
+      message="and its scan history will be removed immediately. Once deleted, you won't be able to view or restore its findings."
+      done-title="Repository deleted"
+      @confirm="confirmDeleteRepo"
+      @closed="deletingRepo = null"
+    />
   </div>
 </template>
 

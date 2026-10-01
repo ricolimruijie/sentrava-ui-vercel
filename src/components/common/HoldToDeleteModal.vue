@@ -1,15 +1,21 @@
 <script setup>
 import { ref, computed, watch, onUnmounted } from 'vue'
-import { IconTrash, IconCalendar, IconX, IconCheck } from '@tabler/icons-vue'
+import { IconTrash, IconX, IconCheck } from '@tabler/icons-vue'
 
-// Shared "Delete timeline" confirmation for the asset detail pages. Same hold-to-delete
-// pattern as the other delete modals: tick the box, then press and hold Delete. The
-// parent removes the scan on `confirm`; this shows the "deleted" state afterwards.
+// Shared hold-to-delete confirmation (delete a domain / network / application /
+// repository / scan timeline). Tick the box, then press and hold Delete; the parent
+// does the actual removal on `confirm` and this shows the "deleted" state afterwards.
+// `closed` fires once the modal has been dismissed.
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
-  scanLabel: { type: String, default: '' },
+  title: { type: String, required: true },          // "Delete domain"
+  subject: { type: String, default: '' },           // what is being deleted (bold, shown under the title)
+  icon: { type: [Object, Function], default: null }, // icon shown next to the subject
+  message: { type: String, required: true },        // text after the subject: "and its scan history will be ..."
+  doneTitle: { type: String, required: true },      // "Domain deleted"
+  above: { type: Boolean, default: false },         // sit above other modals
 })
-const emit = defineEmits(['update:modelValue', 'confirm'])
+const emit = defineEmits(['update:modelValue', 'confirm', 'closed'])
 
 const state = ref('idle') // 'idle' | 'loading' | 'saved'
 const acked = ref(false)
@@ -42,6 +48,7 @@ function close() {
   clearTimeout(holdTimer)
   holding.value = false
   emit('update:modelValue', false)
+  emit('closed')
   state.value = 'idle'
   acked.value = false
 }
@@ -89,8 +96,8 @@ onUnmounted(() => {
 <template>
 <Teleport to="body">
   <Transition name="modal-fade">
-    <div v-if="modelValue" class="modal-backdrop modal-backdrop--above" @mousedown.self="close">
-      <div class="del-modal" role="dialog" aria-modal="true" aria-labelledby="del-tl-title">
+    <div v-if="modelValue" class="modal-backdrop" :class="{ 'modal-backdrop--above': above }" @mousedown.self="close">
+      <div class="del-modal" role="dialog" aria-modal="true" aria-labelledby="del-title">
         <div class="del-stack">
           <div class="del-panel" :class="{ 'del-hidden': state === 'saved' }">
             <div class="del-head">
@@ -98,9 +105,9 @@ onUnmounted(() => {
                 <IconTrash :size="22" />
               </span>
               <div class="del-titles">
-                <span id="del-tl-title" class="del-title">Delete timeline</span>
+                <span id="del-title" class="del-title">{{ title }}</span>
                 <span class="del-repo">
-                  <IconCalendar :size="14" class="del-repo__icon" /><span class="del-ellip">{{ scanLabel }}</span>
+                  <component :is="icon" v-if="icon" :size="14" class="del-repo__icon" /><span class="del-ellip">{{ subject }}</span>
                 </span>
               </div>
               <button type="button" class="del-close" aria-label="Close" @click="close">
@@ -109,8 +116,7 @@ onUnmounted(() => {
             </div>
 
             <p class="del-body">
-              <strong>{{ scanLabel }}</strong> and its results will be removed from the timeline immediately.
-              Once deleted, you won't be able to view or restore this scan.
+              <strong>{{ subject }}</strong> {{ message }}
             </p>
 
             <button
@@ -147,8 +153,8 @@ onUnmounted(() => {
 
           <div class="del-panel del-done" :class="{ 'is-shown': state === 'saved' }">
             <span class="del-done__icon"><IconCheck :size="28" /></span>
-            <span class="del-done__title">Timeline deleted</span>
-            <span class="del-done__body"><span class="del-mono">{{ scanLabel }}</span> has been removed.</span>
+            <span class="del-done__title">{{ doneTitle }}</span>
+            <span class="del-done__body"><span class="del-mono">{{ subject }}</span> has been removed.</span>
             <button type="button" class="del-btn del-btn--cancel del-done__btn" @click="close">Done</button>
           </div>
         </div>
@@ -159,4 +165,4 @@ onUnmounted(() => {
 
 </template>
 
-<style scoped lang="scss" src="./DeleteTimelineModal.scss"></style>
+<style scoped lang="scss" src="./HoldToDeleteModal.scss"></style>

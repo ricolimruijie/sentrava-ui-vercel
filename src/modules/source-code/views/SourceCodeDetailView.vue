@@ -1,5 +1,5 @@
 <script setup>
-import DeleteTimelineModal from '@/components/common/DeleteTimelineModal.vue'
+import HoldToDeleteModal from '@/components/common/HoldToDeleteModal.vue'
 import FindingsReportModal from '@/components/common/FindingsReportModal.vue'
 import { useRole } from '@/composables/useRole'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
@@ -835,7 +835,16 @@ function downloadReport({ rows: findings }) {
       </Transition>
     </Teleport>
 
-    <DeleteTimelineModal v-model="showDelTlModal" :scan-label="delTlScanLabel" @confirm="deleteScanTimeline" />
+    <HoldToDeleteModal
+      v-model="showDelTlModal"
+      above
+      title="Delete timeline"
+      :subject="delTlScanLabel"
+      :icon="IconCalendar"
+      message="and its results will be removed from the timeline immediately. Once deleted, you won't be able to view or restore this scan."
+      done-title="Timeline deleted"
+      @confirm="deleteScanTimeline"
+    />
   </div>
 </template>
 
