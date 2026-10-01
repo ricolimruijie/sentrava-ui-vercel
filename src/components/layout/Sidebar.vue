@@ -175,9 +175,12 @@ $w-collapsed:  64px;
     overflow: hidden;
   }
 
+  // Centred on the same vertical line as the nav icons (x = 31.5px) in both states; the
+  // margins keep the wordmark exactly where it was.
   &__logo-icon {
     display: block;
     flex-shrink: 0;
+    margin: 0 3.5px 0 -3.5px;
   }
 
   &__logo-text {
@@ -270,8 +273,10 @@ $w-collapsed:  64px;
     z-index: 1;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 9px 10px;
+    // Icon centre at x = 31.5px: the middle of the 43px collapsed pill, so the icon sits in the
+    // same spot open and closed. Label position is unchanged (padding-left + gap = 20px).
+    gap: 8.5px;
+    padding: 9px 10px 9px 11.5px;
     border-radius: 9px;
     color: var(--glacia-ink-dim);
     font-size: 13.5px;
