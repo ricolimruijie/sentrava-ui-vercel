@@ -1,4 +1,5 @@
 <script setup>
+import { useRole } from '@/composables/useRole'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getScanHistory } from '@/modules/scans/services/scansService'
@@ -8,6 +9,8 @@ import DataTable from '@/components/common/DataTable.vue'
 import FilterDropdown from '@/components/common/FilterDropdown.vue'
 import GlassField from '@/components/common/GlassField.vue'
 import { IconDotsVertical, IconArrowUpRight, IconTrash, IconX, IconCheck, IconTag, IconLogs } from '@tabler/icons-vue'
+
+const { can } = useRole()
 
 const router = useRouter()
 const { data, loading } = useFetch(() => getScanHistory())
@@ -235,6 +238,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
           Manage Tags
         </button>
         <button
+          v-if="can('delete_scan')"
           type="button"
           class="action-menu__item action-menu__item--danger"
           @click="deleteRun((data ?? []).find((i) => i.id === openMenuId))"

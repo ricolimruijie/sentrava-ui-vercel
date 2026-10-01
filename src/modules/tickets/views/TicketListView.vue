@@ -10,6 +10,7 @@ import { useTicketStore } from '@/modules/tickets/store/tickets'
 import CreateTicketModal from '@/modules/tickets/components/CreateTicketModal.vue'
 import { emptyData } from '@/utils/dataMode'
 import { formatShortDate } from '@/utils/helpers'
+import { sampleTicketOwners, canViewTicket } from '@/modules/tickets/utils/visibility'
 import { IconArrowUpRight, IconPlus, IconTicket } from '@tabler/icons-vue'
 
 const sampleTickets = [
@@ -27,11 +28,16 @@ const sampleTickets = [
 
 // Tickets created this session sit above the built-in samples.
 const ticketStore = useTicketStore()
-const rawTickets = computed(() => [...ticketStore.created, ...(emptyData.value ? [] : sampleTickets)])
+const { can } = useRole()
+const auth = useAuthStore()
+const allTickets = computed(() => [
+  ...ticketStore.created,
+  ...(emptyData.value ? [] : sampleTickets.map((t) => ({ ...t, ...sampleTicketOwners[t.ticketId] }))),
+])
+// Each role only sees the tickets it is allowed to (super admin: all).
+const rawTickets = computed(() => allTickets.value.filter((t) => canViewTicket(t, auth.user)))
 
 // Only roles other than super admin raise tickets.
-const { isClientRole } = useRole()
-const auth = useAuthStore()
 const showCreate = ref(false)
 
 function createTicket({ name, category, description }) {
@@ -107,7 +113,7 @@ function viewTicket(item) {
     <div class="ticket-list__head">
       <h1 class="ticket-list__title">Ticket List</h1>
       <div class="ticket-list__actions">
-        <button v-if="isClientRole" type="button" class="btn-create-ticket" @click="showCreate = true">
+        <button v-if="can('create_ticket')" type="button" class="btn-create-ticket" @click="showCreate = true">
           <IconPlus :size="15" /> Create Ticket
         </button>
         <div class="ticket-tabs">
@@ -171,7 +177,7 @@ function viewTicket(item) {
       </template>
     </DataTable>
 
-    <CreateTicketModal v-if="isClientRole" v-model="showCreate" @create="createTicket" />
+    <CreateTicketModal v-if="can('create_ticket')" v-model="showCreate" @create="createTicket" />
   </div>
 </template>
 

@@ -1,4 +1,5 @@
 <script setup>
+import { useRole } from '@/composables/useRole'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DataTable from '@/components/common/DataTable.vue'
@@ -13,6 +14,8 @@ import {
   IconX, IconGitBranch, IconLock, IconTrash, IconCode, IconCalendar, IconBuilding, IconClock,
   IconAlertCircle, IconShieldSearch,
 } from '@tabler/icons-vue'
+
+const { can } = useRole()
 
 const route = useRoute()
 const router = useRouter()
@@ -1033,9 +1036,9 @@ function submitReportDownload() {
               </div>
             </div>
 
-            <div class="target-modal__divider" />
+            <div v-if="can('delete_scan')" class="target-modal__divider" />
 
-            <div class="target-modal__footer">
+            <div v-if="can('delete_scan')" class="target-modal__footer">
               <p class="target-modal__footer-desc">Removes this scan and its results from the timeline.</p>
               <button type="button" class="target-modal__delete" @click="openDelTlModal">
                 <IconTrash :size="13" /> Delete Timeline

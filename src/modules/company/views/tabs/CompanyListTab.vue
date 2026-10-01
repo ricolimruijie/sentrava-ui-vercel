@@ -1,4 +1,5 @@
 <script setup>
+import { useRole } from '@/composables/useRole'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getCompanyList } from '@/modules/company/services/companyService'
@@ -9,6 +10,8 @@ import FilterDropdown from '@/components/common/FilterDropdown.vue'
 import SearchInput from '@/components/common/SearchInput.vue'
 import DeleteCompanyModal from '@/modules/company/components/DeleteCompanyModal.vue'
 import { IconDotsVertical, IconArrowUpRight, IconTrash, IconBuilding } from '@tabler/icons-vue'
+
+const { can } = useRole()
 
 const { data, loading } = useFetch(() => getCompanyList())
 
@@ -160,6 +163,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
           See Details
         </button>
         <button
+          v-if="can('manage_company')"
           type="button"
           class="action-menu__item action-menu__item--danger"
           @click="deleteSubCompany((data ?? []).find((i) => i.id === openMenuId))"

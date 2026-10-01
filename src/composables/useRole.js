@@ -10,17 +10,23 @@ export function useRole() {
   const isMember     = computed(() => auth.role === ROLES.MEMBER)
   const isClientRole = computed(() => !isSuperAdmin.value && auth.isAuthenticated)
 
+  // Permission matrix from the PRD (section 9.2). Anything not listed here is
+  // open to every role (view/register assets, start scans, findings, tags,
+  // reports, activity log), so only the restricted actions need a key.
+  const S = ROLES.SUPER_ADMIN, A = ROLES.ADMIN, M = ROLES.MEMBER
+  const PERMISSIONS = {
+    delete_asset:    [S, A],
+    delete_scan:     [S, A],
+    manage_api_keys: [S, A],      // create, rename, revoke
+    create_ticket:   [A, M],
+    close_ticket:    [S],
+    // Company: create company/sub-company, edit/delete, invite, remove user,
+    // change role, Company Configuration, Quota Information, activation.
+    manage_company:  [S],
+  }
+
   function can(action) {
-    const role = auth.role
-    const perms = {
-      run_scan:       [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-      manage_users:   [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-      manage_billing: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-      view_reports:   [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-      view_dashboard: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.MEMBER],
-      schedule_scans: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-    }
-    return perms[action]?.includes(role) ?? false
+    return PERMISSIONS[action]?.includes(auth.role) ?? false
   }
 
   return { isSuperAdmin, isAdmin, isMember, isClientRole, can }

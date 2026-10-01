@@ -1,4 +1,5 @@
 <script setup>
+import { useRole } from '@/composables/useRole'
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getCompanyInfo, getMembers } from '@/modules/company/services/companyService'
@@ -15,6 +16,8 @@ import {
 } from '@tabler/icons-vue'
 import SearchInput from '@/components/common/SearchInput.vue'
 import GlassField from '@/components/common/GlassField.vue'
+
+const { can } = useRole()
 
 const { data: company } = useFetch(() => getCompanyInfo())
 const { data: members, loading } = useFetch(() => getMembers())
@@ -81,7 +84,7 @@ watch(() => route.query.tab, (val) => {
 
 const tableRef = ref(null)
 
-const columns = [
+const allColumns = [
   { key: '__index', label: '#', width: '24px', dim: true },
   { key: 'name', label: 'Name', width: '25%' },
   { key: 'email', label: 'Email Address', width: '23%', dim: true, truncate: true},
@@ -89,6 +92,8 @@ const columns = [
   { key: 'role', label: 'Role', width: '12%', align: 'center' },
   { key: 'action', label: 'Action', width: '32px', align: 'center' },
 ]
+// The action column only holds actions this role may not use.
+const columns = computed(() => allColumns.filter((c) => c.key !== 'action' || can('manage_company')))
 
 const roleMeta = {
   admin:  { label: 'Admin',  color: 'var(--glacia-red)', bg: 'rgba(255, 37, 41, 0.1)' },

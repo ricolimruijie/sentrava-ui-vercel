@@ -1,4 +1,5 @@
 <script setup>
+import { useRole } from '@/composables/useRole'
 import { ref, computed, reactive, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import DataTable from '@/components/common/DataTable.vue'
@@ -7,6 +8,8 @@ import SearchInput from '@/components/common/SearchInput.vue'
 import GlassField from '@/components/common/GlassField.vue'
 import { emptyData } from '@/utils/dataMode'
 import { IconDotsVertical, IconPlus, IconWorld, IconBrowser, IconNetwork, IconCode, IconTag, IconChevronDown, IconX, IconCheck, IconArrowUpRight, IconRefresh, IconTrash, IconSitemap, IconCircleDot, IconArrowsLeftRight, IconPencil, IconArrowRight, IconPalette, IconSearch } from '@tabler/icons-vue'
+
+const { can } = useRole()
 
 const tabs = [
   { key: 'domain', label: 'Domain', icon: IconWorld },
@@ -1802,7 +1805,7 @@ function submitRegisterWebapp() {
           <button type="button" class="action-menu__item" @click="viewDetail(openMenuRow)"><IconArrowUpRight :size="14" /> See Detail</button>
           <button v-if="activeTab === 'webapp' || activeTab === 'network' || activeTab === 'source'" type="button" class="action-menu__item" @click="manageRowTags(openMenuRow, $event)"><IconTag :size="14" /> Manage tag</button>
           <button type="button" class="action-menu__item" @click="rescan(openMenuRow)"><IconRefresh :size="14" /> Re-scan</button>
-          <button type="button" class="action-menu__item action-menu__item--danger" @click="deleteAsset(openMenuRow)"><IconTrash :size="14" /> Delete</button>
+          <button v-if="can('delete_asset')" type="button" class="action-menu__item action-menu__item--danger" @click="deleteAsset(openMenuRow)"><IconTrash :size="14" /> Delete</button>
         </template>
       </div>
     </Teleport>

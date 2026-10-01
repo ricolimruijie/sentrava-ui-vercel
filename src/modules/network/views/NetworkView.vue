@@ -1,4 +1,5 @@
 <script setup>
+import { useRole } from '@/composables/useRole'
 import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from '@/components/common/DataTable.vue'
@@ -8,6 +9,8 @@ import DateTimePicker from '@/components/common/DateTimePicker.vue'
 import GlassField from '@/components/common/GlassField.vue'
 import { getNetworks, getNetworkEndpoints } from '@/modules/network/services/networkService'
 import { IconDotsVertical, IconCirclePlus, IconScan, IconCheck, IconX, IconArrowUpRight, IconTrash, IconNetwork, IconPlus, IconArrowRight } from '@tabler/icons-vue'
+
+const { can } = useRole()
 
 // modalOnly: rendered from the Dashboard's Start Scan menu — shows just the
 // Start Scanning modal (opened on mount) and tells the parent when it closes.
@@ -513,7 +516,7 @@ onMounted(() => {
           <IconArrowUpRight :size="15" />
           See Detail
         </button>
-        <button type="button" class="action-menu__item action-menu__item--danger" @click="deleteNetwork(openMenuId)">
+        <button v-if="can('delete_asset')" type="button" class="action-menu__item action-menu__item--danger" @click="deleteNetwork(openMenuId)">
           <IconTrash :size="15" />
           Delete
         </button>

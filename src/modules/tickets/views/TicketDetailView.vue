@@ -4,13 +4,16 @@ import { useRoute, useRouter } from 'vue-router'
 import { formatShortDate } from '@/utils/helpers'
 import { useTicketStore } from '@/modules/tickets/store/tickets'
 import { useRole } from '@/composables/useRole'
+import { useAuthStore } from '@/stores/auth'
+import { sampleTicketOwners, canViewTicket } from '@/modules/tickets/utils/visibility'
 import { IconUser, IconPhoto, IconFile, IconSend2, IconArrowLeft, IconX, IconTicket, IconCheck } from '@tabler/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const ticketStore = useTicketStore()
 // Only a super admin can close a ticket.
-const { isSuperAdmin } = useRole()
+const { can } = useRole()
+const auth = useAuthStore()
 const ticketId = computed(() => route.params.id ?? 'ANO31456123458765')
 
 const ticketMap = {
@@ -159,9 +162,15 @@ function lookup(id) {
       isClosed: false,
     }
   }
-  return ticketMap[id] ?? ticketMap.ANO31456123458765
+  const known = ticketMap[id] ?? ticketMap.ANO31456123458765
+  const key = ticketMap[id] ? id : 'ANO31456123458765'
+  return { ...known, ...sampleTicketOwners[key] }
 }
 const ticket = ref({ ...lookup(ticketId.value) })
+// Members only see their own tickets and admins their company's (PRD 6.4);
+// anything else goes back to the list.
+const allowed = computed(() => canViewTicket(ticket.value, auth.user))
+watch(allowed, (ok) => { if (!ok) router.replace('/tickets') }, { immediate: true })
 watch(ticketId, (id) => {
   const next = lookup(id)
   ticket.value = { ...next }
@@ -232,7 +241,7 @@ function closeAttachmentModal() {
 </script>
 
 <template>
-  <div class="ticket-detail">
+  <div v-if="allowed" class="ticket-detail">
     <button type="button" class="back-btn" @click="router.push('/tickets')">
       <IconArrowLeft :size="16" /> Back to Ticket List
     </button>
@@ -317,7 +326,7 @@ function closeAttachmentModal() {
         </div>
 
         <button
-          v-if="isSuperAdmin"
+          v-if="can('close_ticket')"
           type="button"
           class="close-ticket-btn"
           :disabled="ticket.isClosed"
@@ -330,7 +339,7 @@ function closeAttachmentModal() {
 
     <Teleport to="body">
       <Transition name="modal-fade">
-        <div v-if="isSuperAdmin && showCloseModal" class="modal-backdrop" @mousedown.self="closeCloseModal">
+        <div v-if="can('close_ticket') && showCloseModal" class="modal-backdrop" @mousedown.self="closeCloseModal">
           <div class="create-modal">
             <div class="create-modal__head">
               <h2 class="create-modal__title">Close Ticket</h2>

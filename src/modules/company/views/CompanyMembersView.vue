@@ -1,4 +1,5 @@
 <script setup>
+import { useRole } from '@/composables/useRole'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getCompanyList, getMembers } from '@/modules/company/services/companyService'
@@ -10,6 +11,8 @@ import SearchInput from '@/components/common/SearchInput.vue'
 import MemberActionModals from '@/modules/company/components/MemberActionModals.vue'
 import CompanyHeader from '@/modules/company/components/CompanyHeader.vue'
 import { IconDotsVertical, IconPencil, IconUserMinus, IconUsers } from '@tabler/icons-vue'
+
+const { can } = useRole()
 
 const route = useRoute()
 const router = useRouter()
@@ -54,7 +57,7 @@ function onRemoved(id) {
 const tableRef = ref(null)
 
 // Same columns as the Company overview members table, minus the row actions.
-const columns = [
+const allColumns = [
   { key: '__index', label: '#', width: '24px', dim: true },
   { key: 'name', label: 'Name', width: '25%' },
   { key: 'email', label: 'Email Address', width: '23%', dim: true, truncate: true },
@@ -62,6 +65,8 @@ const columns = [
   { key: 'role', label: 'Role', width: '12%', align: 'center' },
   { key: 'action', label: 'Action', width: '32px', align: 'center' },
 ]
+// The action column only holds actions this role may not use.
+const columns = computed(() => allColumns.filter((c) => c.key !== 'action' || can('manage_company')))
 
 const roleMeta = {
   admin:  { label: 'Admin',  color: 'var(--glacia-red)', bg: 'rgba(255, 37, 41, 0.1)' },

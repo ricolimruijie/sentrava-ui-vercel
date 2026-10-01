@@ -1,4 +1,5 @@
 <script setup>
+import { useRole } from '@/composables/useRole'
 import { formatDateLong } from '@/utils/helpers'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { getApiKeys } from '@/modules/settings/services/apiKeysService'
@@ -9,13 +10,15 @@ import {
   IconCirclePlus, IconDotsVertical, IconPencil, IconKeyOff, IconX, IconCopy, IconCheck, IconAlertTriangle, IconKey,
 } from '@tabler/icons-vue'
 
+const { can } = useRole()
+
 const { data, loading } = useFetch(() => getApiKeys())
 
 const MAX_KEYS = 100
 
 const tableRef = ref(null)
 
-const columns = [
+const allColumns = [
   { key: '__index', label: '#', width: '24px', dim: true },
   { key: 'name', label: 'Name', width: '14%', dim: true, truncate: true },
   { key: 'trackingId', label: 'Tracking ID', width: '18%', dim: true, truncate: true },
@@ -25,6 +28,8 @@ const columns = [
   { key: 'requests', label: 'API Request', width: '10%', align: 'center', dim: true },
   { key: 'action', label: 'Action', width: '90px', align: 'center' },
 ]
+// The action column only holds actions this role may not use.
+const columns = computed(() => allColumns.filter((c) => c.key !== 'action' || can('manage_api_keys')))
 
 // ── Create new API key modal ─────────────────────────────────────────────────
 // Two steps: 'form' (name the key) -> 'reveal' (show the full key exactly
@@ -208,7 +213,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   <div class="apikeys">
     <div class="apikeys__head">
       <h1 class="apikeys__title">API Keys</h1>
-      <button type="button" class="btn-create" @click="openCreateModal">
+      <button v-if="can('manage_api_keys')" type="button" class="btn-create" @click="openCreateModal">
         <IconCirclePlus :size="16" />
         Create New API Key
       </button>
@@ -245,11 +250,12 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
     <Teleport to="body">
       <div v-if="openMenuId" class="action-menu" :style="{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }">
-        <button type="button" class="action-menu__item" @click="editKey((data ?? []).find((i) => i.id === openMenuId))">
+        <button v-if="can('manage_api_keys')" type="button" class="action-menu__item" @click="editKey((data ?? []).find((i) => i.id === openMenuId))">
           <IconPencil :size="15" />
           Edit
         </button>
         <button
+          v-if="can('manage_api_keys')"
           type="button"
           class="action-menu__item action-menu__item--danger"
           @click="revokeKey((data ?? []).find((i) => i.id === openMenuId))"

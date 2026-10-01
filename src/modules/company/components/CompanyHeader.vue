@@ -1,4 +1,5 @@
 <script setup>
+import { useRole } from '@/composables/useRole'
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import QuotaInfoModal from '@/modules/company/components/QuotaInfoModal.vue'
 import AssignQuotaModal from '@/modules/company/components/AssignQuotaModal.vue'
@@ -8,6 +9,8 @@ import { formatDate } from '@/utils/helpers'
 import {
   IconBuildingSkyscraper, IconChartBar, IconUsers, IconFileText, IconChevronRight, IconChevronLeft, IconPower, IconDotsVertical, IconPencil, IconUserPlus, IconSitemap, IconTrash, IconX, IconCheck, IconLock, IconCalendar, IconWorld, IconNetwork, IconBrowser, IconCode, IconPlug,
 } from '@tabler/icons-vue'
+
+const { can } = useRole()
 
 // Company header — title, meta row and the liquid ⋮ actions menu with all of
 // its modals. Shared by the Company page and a sub company's members page.
@@ -573,6 +576,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
           <div class="company-header__titlerow">
             <h1 class="company-header__title">{{ company?.name ?? '—' }}</h1>
               <div
+                v-if="can('manage_company')"
                 class="lm"
                 :class="{ 'is-open': liquidOpen, 'is-closing': liquidClosing }"
               >

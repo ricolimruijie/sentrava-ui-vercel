@@ -2,6 +2,7 @@
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useRole } from '@/composables/useRole'
 import { navSections } from '@/config/navSections'
 import { getCompanyList } from '@/modules/company/services/companyService'
 import { dashboardOrigin } from '@/utils/navOrigin'
@@ -31,6 +32,7 @@ defineProps({
 const emit = defineEmits(['toggle-sidebar'])
 
 const auth   = useAuthStore()
+const { can, isSuperAdmin } = useRole()
 const router = useRouter()
 const route  = useRoute()
 
@@ -179,7 +181,7 @@ function openCreateCompany() {
     </div>
 
     <div class="navbar__right">
-      <template v-if="isCompanyPage">
+      <template v-if="isCompanyPage && can('manage_company')">
         <button type="button" class="navbar__create-company" @click="openCreateCompany">
           <IconPlus :size="16" />
           Create Company
@@ -188,13 +190,15 @@ function openCreateCompany() {
         <div class="navbar__divider" />
       </template>
 
-      <FilterDropdown
-        v-model="companyFilter"
-        :options="companyOptions"
-        placeholder="Filter company"
-      />
+      <template v-if="isSuperAdmin">
+        <FilterDropdown
+          v-model="companyFilter"
+          :options="companyOptions"
+          placeholder="Filter company"
+        />
 
-      <div class="navbar__divider" />
+        <div class="navbar__divider" />
+      </template>
 
       <button
         type="button"

@@ -1,4 +1,5 @@
 <script setup>
+import { useRole } from '@/composables/useRole'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DataTable from '@/components/common/DataTable.vue'
@@ -15,6 +16,8 @@ import {
   IconDotsVertical, IconCheck, IconMinus, IconPencil, IconTrash, IconArrowUpRight, IconTag, IconScan, IconFlag,
   IconCalendar, IconClock, IconBuilding, IconLink, IconLoader2, IconUpload, IconShieldSearch, IconWorld,
 } from '@tabler/icons-vue'
+
+const { can } = useRole()
 
 const route = useRoute()
 const router = useRouter()
@@ -1489,6 +1492,7 @@ onUnmounted(() => {
           Re-scan
         </button>
         <button
+          v-if="can('delete_asset')"
           type="button"
           class="action-menu__item action-menu__item--danger"
           @click="deleteEndpoint(epMenuId)"
@@ -1849,9 +1853,9 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <div v-if="!selectedEndpoint" class="target-modal__divider" />
+            <div v-if="!selectedEndpoint && can('delete_scan')" class="target-modal__divider" />
 
-            <div v-if="!selectedEndpoint" class="target-modal__footer">
+            <div v-if="!selectedEndpoint && can('delete_scan')" class="target-modal__footer">
               <p class="target-modal__footer-desc">Removes this scan and its results from the timeline.</p>
               <button type="button" class="target-modal__delete" @click="openDelTlModal">
                 <IconTrash :size="13" /> Delete Timeline

@@ -1,4 +1,5 @@
 <script setup>
+import { useRole } from '@/composables/useRole'
 import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from '@/components/common/DataTable.vue'
@@ -8,6 +9,8 @@ import DateTimePicker from '@/components/common/DateTimePicker.vue'
 import GlassField from '@/components/common/GlassField.vue'
 import { IconDotsVertical, IconCirclePlus, IconScan, IconArrowUpRight, IconArrowRight, IconTrash, IconX, IconChevronDown, IconCheck, IconPlus, IconTag, IconFolder, IconCode } from '@tabler/icons-vue'
 import { getSourceCodeRepos } from '@/modules/source-code/services/sourceCodeService'
+
+const { can } = useRole()
 
 // modalOnly: rendered from the Dashboard's Start Scan menu — shows just the
 // Start Scanning modal (opened on mount) and tells the parent when it closes.
@@ -558,7 +561,7 @@ onMounted(() => {
           <IconTag :size="15" />
           Manage tag
         </button>
-        <button type="button" class="action-menu__item action-menu__item--danger" @click="deleteRepo(openMenuId)">
+        <button v-if="can('delete_asset')" type="button" class="action-menu__item action-menu__item--danger" @click="deleteRepo(openMenuId)">
           <IconTrash :size="15" />
           Delete
         </button>
