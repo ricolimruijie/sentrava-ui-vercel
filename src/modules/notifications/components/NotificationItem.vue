@@ -56,7 +56,7 @@ const warn = computed(() => ['N-SC-02', 'N-AI-02', 'N-IN-01', 'N-IN-02', 'N-CD-0
   align-items: flex-start;
   gap: 12px;
   width: 100%;
-  padding: 12px 16px;
+  padding: 12px 16px 12px 24px; // room on the left for the unread dot
   border: none;
   border-bottom: 1px solid var(--glacia-glass-border);
   background: transparent;
@@ -92,7 +92,7 @@ const warn = computed(() => ['N-SC-02', 'N-AI-02', 'N-IN-01', 'N-IN-02', 'N-CD-0
   &__time { font-size: 11.5px; color: var(--glacia-ink-dim); opacity: 0.8; }
   &__side { flex: none; display: flex; align-items: center; align-self: stretch; }
   // Unread dot on the left edge of the row, level with the middle of the icon.
-  &__dot { position: absolute; left: 5px; top: 25px; width: 8px; height: 8px; border-radius: 50%; background: var(--glacia-red); }
+  &__dot { position: absolute; left: 7px; top: 25px; width: 8px; height: 8px; border-radius: 50%; background: var(--glacia-red); }
   // Same arrow button as the "view" action in the tables.
   &__go {
     width: 30px;
