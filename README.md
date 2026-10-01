@@ -101,7 +101,7 @@ styles in a sibling `Name.scss` (`<style scoped lang="scss" src="./Name.scss">`)
 - Guarded layout: `/` → `AppLayout` (Sidebar + Navbar), `meta.requiresAuth: true` redirects to `/login?redirect=...`.
 - `/` and unknown paths redirect to `/dashboard`.
 - Implemented routes:
-  - `/dashboard` → `DashboardView.vue` (currently always renders `ClientDashboard`; `SuperAdminDashboard` exists but is not wired in yet)
+  - `/dashboard` → `DashboardView.vue` (one dashboard for every role per the PRD; Super Admin additionally gets the company filter in the navbar)
   - `/assets` → Asset Inventory
   - `/assets/domains|networks|webapps|source-code` → service list pages, each with an `/:id` detail page (Domain and Network details use `?view=` for Endpoint Findings / Domain Reputation)
   - `/scans/history` → Report Log (CI/CD runs); `/scans/history/:runId/vulnerabilities` → findings
@@ -118,14 +118,14 @@ Auth flow: `LoginView` → `auth.login()` → `POST /auth/login` → stores `tok
 `src/services/api/client.js` exports `request/get/post/put/patch/del`:
 
 - **Live mode:** axios client with `Authorization: Bearer <sentra_token>`, 15s timeout, `res.data` unwrap.
-- **Static mode:** `registerMock(/pattern/, handler)` registry with ~80–260ms fake latency. Patterns cover `/dashboard/client`, `/dashboard/super-admin`, `/settings/api-keys`, `/company/info|members|list|audit-log|probes`, `/scans/history`, `/scans/history/:id/vulnerabilities`, `/auth/login`, `/auth/forgot-password`. Asset sample data lives in `src/mocks/assets/`.
+- **Static mode:** `registerMock(/pattern/, handler)` registry with ~80–260ms fake latency. Patterns cover `/dashboard/client`, `/settings/api-keys`, `/company/info|members|list|audit-log|probes`, `/scans/history`, `/scans/history/:id/vulnerabilities`, `/auth/login`, `/auth/forgot-password`. Asset sample data lives in `src/mocks/assets/`.
 - `useFetch(fetchFn)` gives `{ data, loading, error, execute, refresh }` for view-level loading.
 - `constants/index.js`: `ROLES`, `ASSET_TYPES` (domain/network/webapp/source_code/url_crawl), `SCAN_ENGINES` (Greenbone/Nuclei/Semgrep/Katana), `SEVERITY` + colors, `STATUS` + colors, activity category colors/labels.
 - `helpers.js`: `formatNumber/Date/RelativeTime`, `greeting`, `severityColor/statusColor/activityColor/activityLabel`, `sleep`.
 
 ## Key Views
 
-- **Dashboards:** `ClientDashboard` + 20+ widgets (`StatCardRow`, `OverallSeverityTrend`, `TopVulnerabilities`, `RecentlyScanned`, `ScansInProgress`, `ScheduledScans`, `ActivityFeed`, `TicketFeed/Overview`, `CreditsOverview`, `AssetRegisteredTracker`, `VulnerabilityCycleTracker`, etc.). `SuperAdminDashboard` adds `CompanyOverview`, `TopSpendingCompany`, `MostUsedService`, `ScannerToolsChecker`, `IntegrationConnection`.
+- **Dashboard:** `ClientDashboard` (shown to every role) with its widgets in `modules/dashboard/components` (`OverallSeverityTrend`, `TopVulnerabilities`, `AssetRegisteredTracker`, `VulnerabilityCycleTracker`, `TicketFeed`, `IntegrationConnection`, `ScanningInProgress`, `AccountOverview`, `DashboardHeader` with the Start Scan menu).
 - **Services / Assets:** Domain Inspection (with reputation modal), Network, Web Application and Source Code list + detail pages, plus the Asset Inventory.
 - **Scans:** Report Log (CI/CD runs) → per-run vulnerability overview with severity/status badges and detail modal.
 - **Tickets:** list, detail and create-ticket modal.

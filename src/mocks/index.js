@@ -1,7 +1,6 @@
 import { registerMock } from '@/services/api/client'
 import { clientDashboardMock, emptyClientDashboard } from './dashboard/client'
 import { emptyData } from '@/utils/dataMode'
-import { superAdminDashboardMock } from './dashboard/superAdmin'
 import { apiKeysMock }             from './settings/apiKeys'
 import { cicdRunsMock }            from './scans/cicd'
 import { vulnerabilitiesMock }     from './scans/vulnerabilities'
@@ -16,7 +15,6 @@ import { getSourceCodeRepos, getSourceCodeVulns, getSourceCodeScans } from './as
 
 // ── Dashboard ────────────────────────────────────────────────────────────────
 registerMock(/\/dashboard\/client/,      () => (emptyData.value ? emptyClientDashboard() : clientDashboardMock))
-registerMock(/\/dashboard\/super-admin/, () => superAdminDashboardMock)
 
 // ── Settings ─────────────────────────────────────────────────────────────────
 registerMock(/\/settings\/api-keys/, () => (emptyData.value ? [] : apiKeysMock))
