@@ -69,7 +69,8 @@ src/
   styles/                 # design-tokens.css, main.scss, _tokens.scss, _variables.scss
   mocks/                  # index.js (registerMock patterns) + per-feature sample data
   components/
-    common/               # shared UI used by 2+ modules (DataTable, badges, dialogs, pickers, modals...)
+    common/               # shared UI used by 2+ modules (DataTable, badges, dialogs, pickers, FindingsReportModal,
+                          # DeleteTimelineModal ...)
     layout/               # AppLayout, Sidebar, AppNavbar
   modules/                # one folder per feature: views/ components/ services/ (store/ when needed)
     domain-inspection/    # Domain list + detail
@@ -88,7 +89,8 @@ docs/design-references/   # design reference snippets (not part of the build)
 
 Rules: modules must not import each other (shared code goes to `components/common`,
 `composables` or `utils`); components and views call the API only through a module's
-`services/`; check `utils/helpers.js` before adding a formatter.
+`services/`; check `utils/helpers.js` before adding a formatter. Large components keep their
+styles in a sibling `Name.scss` (`<style scoped lang="scss" src="./Name.scss">`).
 
 ## Routing & Auth
 
