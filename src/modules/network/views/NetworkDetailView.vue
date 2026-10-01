@@ -8,12 +8,15 @@ import SearchInput from '@/components/common/SearchInput.vue'
 import FindingsBadge from '@/components/common/FindingsBadge.vue'
 import VulnerabilityDetailModal from '@/components/common/VulnerabilityDetailModal.vue'
 import { formatShortDate } from '@/utils/helpers'
-import { getNetworks, getNetworkScans, getNetworkEndpoints, getNetworkVulns } from '@/modules/network/services/networkService'
+import { getNetworks, getNetworkScans, getNetworkEndpoints, getNetworkVulns, preloadNetworkDetail } from '@/modules/network/services/networkService'
 import {
   IconEye, IconDownload, IconRefresh, IconChevronDown, IconChevronRight, IconX, IconInfoCircle,
   IconDotsVertical, IconCheck, IconMinus, IconPencil, IconTrash, IconArrowUpRight, IconTag, IconScan, IconFlag, IconUpload,
   IconCalendar, IconClock, IconBuilding, IconLink, IconNetwork, IconShieldSearch,
 } from '@tabler/icons-vue'
+
+// Load this page's data before it renders (the page is shown inside <Suspense>).
+await preloadNetworkDetail()
 
 const { can } = useRole()
 

@@ -9,13 +9,16 @@ import RelatedDomains from '@/components/common/RelatedDomains.vue'
 import FindingsBadge from '@/components/common/FindingsBadge.vue'
 import VulnerabilityDetailModal from '@/components/common/VulnerabilityDetailModal.vue'
 import { formatShortDate } from '@/utils/helpers'
-import { getDomains, getDomainScans, getDomainEndpoints, getDomainVulns, getDomainReputation, getDomainReputationEngines } from '@/modules/domain-inspection/services/domainService'
+import { getDomains, getDomainScans, getDomainEndpoints, getDomainVulns, getDomainReputation, getDomainReputationEngines, preloadDomainDetail } from '@/modules/domain-inspection/services/domainService'
 import ReputationModal from '@/components/common/ReputationModal.vue'
 import {
   IconEye, IconDownload, IconRefresh, IconChevronDown, IconChevronRight, IconX, IconInfoCircle,
   IconDotsVertical, IconCheck, IconMinus, IconPencil, IconTrash, IconArrowUpRight, IconTag, IconScan, IconFlag,
   IconCalendar, IconClock, IconBuilding, IconLink, IconLoader2, IconUpload, IconShieldSearch, IconWorld,
 } from '@tabler/icons-vue'
+
+// Load this page's data before it renders (the page is shown inside <Suspense>).
+await preloadDomainDetail()
 
 const { can } = useRole()
 

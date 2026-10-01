@@ -9,6 +9,10 @@ import { companyInfoMock, companyMembersMock } from './company/members'
 import { companyListMock } from './company/companyList'
 import { auditLogMock } from './company/auditLog'
 import { probeBoxMock } from './company/probeBox'
+import { getDomains, getDomainEndpoints, getDomainVulns, getDomainScans, getDomainReputation, getDomainReputationEngines } from './assets/domain'
+import { getNetworks, getNetworkEndpoints, getNetworkVulns, getNetworkScans } from './assets/network'
+import { getWebApps, getWebAppVulns, getWebAppScans } from './assets/webApp'
+import { getSourceCodeRepos, getSourceCodeVulns, getSourceCodeScans } from './assets/sourceCode'
 
 // ── Dashboard ────────────────────────────────────────────────────────────────
 registerMock(/\/dashboard\/client/,      () => (emptyData.value ? emptyClientDashboard() : clientDashboardMock))
@@ -23,6 +27,26 @@ registerMock(/\/company\/members/,    () => (emptyData.value ? [] : companyMembe
 registerMock(/\/company\/list/,       () => (emptyData.value ? [] : companyListMock))
 registerMock(/\/company\/audit-log/,  () => (emptyData.value ? [] : auditLogMock))
 registerMock(/\/company\/probes/,     () => (emptyData.value ? [] : probeBoxMock))
+
+// ── Assets ───────────────────────────────────────────────────────────────────
+// The mock getters already return no data in the no-data demo (see mocks/assets/*).
+const idOf = (url) => Number(url.match(/\/assets\/[^/]+\/(\d+)\//)?.[1])
+registerMock(/^\/assets\/domains$/,                          () => getDomains())
+registerMock(/^\/assets\/domains\/endpoints$/,               () => getDomainEndpoints())
+registerMock(/^\/assets\/domains\/vulns$/,                   () => getDomainVulns())
+registerMock(/^\/assets\/domains\/\d+\/scans$/,              (url) => getDomainScans(idOf(url)))
+registerMock(/^\/assets\/domains\/\d+\/reputation$/,         (url) => getDomainReputation(idOf(url)))
+registerMock(/^\/assets\/domains\/\d+\/reputation-engines$/, (url) => getDomainReputationEngines(idOf(url)))
+registerMock(/^\/assets\/networks$/,                         () => getNetworks())
+registerMock(/^\/assets\/networks\/endpoints$/,              () => getNetworkEndpoints())
+registerMock(/^\/assets\/networks\/vulns$/,                  () => getNetworkVulns())
+registerMock(/^\/assets\/networks\/\d+\/scans$/,             (url) => getNetworkScans(idOf(url)))
+registerMock(/^\/assets\/webapps$/,                          () => getWebApps())
+registerMock(/^\/assets\/webapps\/vulns$/,                   () => getWebAppVulns())
+registerMock(/^\/assets\/webapps\/\d+\/scans$/,              (url) => getWebAppScans(idOf(url)))
+registerMock(/^\/assets\/source-code$/,                      () => getSourceCodeRepos())
+registerMock(/^\/assets\/source-code\/vulns$/,               () => getSourceCodeVulns())
+registerMock(/^\/assets\/source-code\/\d+\/scans$/,          (url) => getSourceCodeScans(idOf(url)))
 
 // ── Scans ────────────────────────────────────────────────────────────────────
 // More specific pattern registered first — /scans/history/:id/vulnerabilities

@@ -43,7 +43,6 @@ pinia.use(piniaPersistedState)
 const app = createApp(App)
 
 app.use(pinia)
-app.use(router)
 app.use(PrimeVue, {
   theme: {
     preset: SentraPreset,
@@ -67,5 +66,8 @@ app.directive('tooltip', Tooltip)
   const { useAuthStore } = await import('@/stores/auth')
   useAuthStore().hydrateFromStorage()
 
+  // Installing the router starts its first navigation, so do it only now that the
+  // mocks and the saved login are ready (route guards fetch data and read auth).
+  app.use(router)
   app.mount('#app')
 })()

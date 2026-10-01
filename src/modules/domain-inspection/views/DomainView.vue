@@ -7,8 +7,11 @@ import FilterDropdown from '@/components/common/FilterDropdown.vue'
 import SearchInput from '@/components/common/SearchInput.vue'
 import DateTimePicker from '@/components/common/DateTimePicker.vue'
 import GlassField from '@/components/common/GlassField.vue'
-import { getDomains, getDomainEndpoints } from '@/modules/domain-inspection/services/domainService'
+import { getDomains, getDomainEndpoints, preloadDomainList } from '@/modules/domain-inspection/services/domainService'
 import { IconDotsVertical, IconCirclePlus, IconScan, IconCheck, IconX, IconArrowUpRight, IconTrash, IconGlobe, IconPlus, IconArrowRight, IconWorld } from '@tabler/icons-vue'
+
+// Load this page's data before it renders (the page is shown inside <Suspense>).
+await preloadDomainList()
 
 const { can } = useRole()
 

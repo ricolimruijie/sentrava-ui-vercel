@@ -23,7 +23,12 @@ const collapsed = ref(false)
       </AppNavbar>
 
       <main class="app-layout__content">
-        <router-view />
+        <!-- Pages load their data with a top-level await, so they render inside Suspense. -->
+        <router-view v-slot="{ Component }">
+          <Suspense>
+            <component :is="Component" />
+          </Suspense>
+        </router-view>
       </main>
     </div>
   </div>

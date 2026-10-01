@@ -7,8 +7,11 @@ import FilterDropdown from '@/components/common/FilterDropdown.vue'
 import SearchInput from '@/components/common/SearchInput.vue'
 import DateTimePicker from '@/components/common/DateTimePicker.vue'
 import GlassField from '@/components/common/GlassField.vue'
-import { getNetworks, getNetworkEndpoints } from '@/modules/network/services/networkService'
+import { getNetworks, getNetworkEndpoints, preloadNetworkList } from '@/modules/network/services/networkService'
 import { IconDotsVertical, IconCirclePlus, IconScan, IconCheck, IconX, IconArrowUpRight, IconTrash, IconNetwork, IconPlus, IconArrowRight } from '@tabler/icons-vue'
+
+// Load this page's data before it renders (the page is shown inside <Suspense>).
+await preloadNetworkList()
 
 const { can } = useRole()
 

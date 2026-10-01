@@ -79,7 +79,9 @@ const hi = computed(() => greeting())
       </div>
     </div>
 
-    <component :is="scanView" v-if="scanView" :key="scanModule" modal-only @close-scan="scanModule = null" />
+    <Suspense v-if="scanView">
+      <component :is="scanView" :key="scanModule" modal-only @close-scan="scanModule = null" />
+    </Suspense>
   </div>
 </template>
 

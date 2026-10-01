@@ -7,12 +7,15 @@ import FilterDropdown from '@/components/common/FilterDropdown.vue'
 import SearchInput from '@/components/common/SearchInput.vue'
 import VulnerabilityDetailModal from '@/components/common/VulnerabilityDetailModal.vue'
 import { formatShortDate } from '@/utils/helpers'
-import { getWebApps, getWebAppScans, getWebAppVulns } from '@/modules/web-application/services/webAppService'
+import { getWebApps, getWebAppScans, getWebAppVulns, preloadWebAppDetail } from '@/modules/web-application/services/webAppService'
 import {
   IconDotsVertical, IconArrowUpRight, IconCheck, IconInfoCircle,
   IconDownload, IconPencil, IconRefresh, IconChevronDown, IconChevronRight, IconMinus, IconTag, IconFlag, IconUpload,
   IconX, IconLink, IconCalendar, IconBuilding, IconClock, IconTrash, IconShieldSearch,
 } from '@tabler/icons-vue'
+
+// Load this page's data before it renders (the page is shown inside <Suspense>).
+await preloadWebAppDetail()
 
 const { can } = useRole()
 
