@@ -15,7 +15,7 @@ const { data, loading } = useFetch(() => getAuditLog())
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'dateTime', label: 'Date and Time', width: '17%', truncate: true},
   { key: 'actor', label: 'Actor', width: '22%' },
   { key: 'action', label: 'Activity', width: '16%', truncate: true},

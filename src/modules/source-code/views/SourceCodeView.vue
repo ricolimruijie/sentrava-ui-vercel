@@ -27,7 +27,7 @@ const router = useRouter()
 const repos = ref(getSourceCodeRepos())
 
 const columns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'lastScanned', label: 'Last Scanned', width: '11%', truncate: true },
   { key: 'repo', label: 'Repository', width: '14%', truncate: true },
   { key: 'branch', label: 'Branch', width: '7%', truncate: true},

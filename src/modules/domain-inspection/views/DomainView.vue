@@ -28,7 +28,7 @@ const router = useRouter()
 const domains = ref(getDomains())
 
 const columns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'lastScanned', label: 'Last Scanned', width: '12%', truncate: true },
   { key: 'endpoint', label: 'Domain', width: '18%', truncate: true },
   { key: 'registeredCount', label: 'Registered endpoint', width: '14%', align: 'center' },

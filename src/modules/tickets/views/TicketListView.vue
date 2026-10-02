@@ -71,7 +71,7 @@ function createTicket({ name, category, description }) {
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: '#',            width: '24px',  dim: true, align: 'left' },
+  { key: '__index', label: 'No',            width: '52px',  dim: true, align: 'left' },
   { key: 'date',     label: 'Submission Date', width: '15%', padLeft: '4px', truncate: true },
   { key: 'name',     label: 'Ticket Name', width: '28%' },
   { key: 'category', label: 'Issue Category', width: '18%', truncate: true },

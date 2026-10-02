@@ -58,7 +58,7 @@ const tableRef = ref(null)
 
 // Same columns as the Company overview members table, minus the row actions.
 const allColumns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'name', label: 'Name', width: '25%' },
   { key: 'email', label: 'Email Address', width: '23%', dim: true, truncate: true },
   { key: 'company', label: 'Company', width: '27%', dim: true, truncate: true },

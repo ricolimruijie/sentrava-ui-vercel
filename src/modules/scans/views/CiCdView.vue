@@ -18,7 +18,7 @@ const { data, loading } = useFetch(() => getScanHistory())
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: '#', width: '52px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'dateTime', label: 'Date and Time', width: '20%', dim: true, truncate: true },
   { key: 'repository', label: 'Repository', width: '24%', dim: true, truncate: true},
   { key: 'branch', label: 'Branch', width: '20%', dim: true, truncate: true},

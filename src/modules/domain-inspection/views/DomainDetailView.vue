@@ -159,7 +159,7 @@ const filtered = computed(() => {
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: '#', width: '52px', dim: true, mono: true },
+  { key: '__index', label: 'No', width: '52px', dim: true, mono: true },
   { key: 'ip', label: 'Endpoint', width: '16%', mono: true, truncate: true },
   { key: 'relatedDomain', label: 'Related Domain', width: '22%', truncate: true },
   { key: 'totalSeverity', label: 'Total Findings', width: '140px', align: 'center' },
@@ -317,7 +317,7 @@ function openReputationDetail() {
 const drStatusFilter = ref(null)
 const drSearch = ref('')
 const drColumns = [
-  { key: '__index', label: 'No.', width: '48px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'ip', label: 'Endpoint', width: '20%', mono: true, truncate: true },
   { key: 'relatedDomain', label: 'Related Domain', width: '22%', truncate: true },
   { key: 'tags', label: 'Multi-Tags', width: '22%' },
@@ -349,7 +349,7 @@ const epFiltered = computed(() => {
 
 const epColumns = [
   { key: 'check', label: '', width: '32px', align: 'center', compact: true },
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'name', label: 'Vulnerability Name', width: '36%', truncate: true },
   { key: 'lastModified', label: 'Last Modified', width: '120px', dim: true },
   { key: 'severity', label: 'Severity', width: '96px', align: 'center' },
@@ -463,7 +463,7 @@ const filteredVulns = computed(() => {
 
 const vulnColumns = [
   { key: 'check', label: '', width: '32px', align: 'center', compact: true },
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'name', label: 'Vulnerability Name', width: '36%', truncate: true },
   { key: 'lastModified', label: 'Last Modified', width: '120px', dim: true },
   { key: 'severity', label: 'Severity', width: '96px', align: 'center' },

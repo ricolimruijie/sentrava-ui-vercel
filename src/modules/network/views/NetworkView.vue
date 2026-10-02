@@ -28,7 +28,7 @@ const router = useRouter()
 const networks = ref(getNetworks())
 
 const columns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'lastScanned', label: 'Last Scanned', width: '14%', truncate: true },
   { key: 'endpoint', label: 'Endpoint', width: '18%', mono: true, truncate: true },
   { key: 'targetType', label: 'Target Type', width: '14%', truncate: true},

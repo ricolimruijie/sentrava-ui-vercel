@@ -21,7 +21,7 @@ const MAX_KEYS = 100
 const tableRef = ref(null)
 
 const allColumns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'name', label: 'Name', width: '14%', dim: true, truncate: true },
   { key: 'trackingId', label: 'Tracking ID', width: '18%', dim: true, truncate: true },
   { key: 'key', label: 'Key', width: '16%', dim: true, truncate: true },

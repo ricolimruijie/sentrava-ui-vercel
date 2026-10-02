@@ -112,7 +112,7 @@ const networks = ref(emptyData.value ? [] : [
 ])
 
 const networkColumnsSingle = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'endpoint', label: 'Endpoint', width: '13%', mono: true, truncate: true},
   { key: 'endpointType', label: 'Endpoint Type', width: '15%', truncate: true},
   { key: 'owner', label: 'Asset Owner', width: '21%', truncate: true},
@@ -122,7 +122,7 @@ const networkColumnsSingle = [
   { key: 'actions', label: 'Action', width: '32px', align: 'center' },
 ]
 const networkColumnsCidr = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'endpoint', label: 'Endpoint', width: '16%', mono: true, truncate: true},
   { key: 'endpointType', label: 'Endpoint Type', width: '17%', truncate: true},
   { key: 'owner', label: 'Asset Owner', width: '25%', truncate: true},
@@ -180,7 +180,7 @@ const sourceCodes = ref(emptyData.value ? [] : [
   { id: 13, repoOwner: 'protergo-fintech', repoName: 'legacy-crm', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Fintech Solutions', lastScanned: '10 May 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Scanning' },
 ])
 const sourceCodeColumns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'repoOwner', label: 'Repository', width: '16%', truncate: true},
   { key: 'gitProvider', label: 'Git Provider', width: '11%', truncate: true},
   { key: 'owner', label: 'Asset Owner', width: '21%', truncate: true},
@@ -291,7 +291,7 @@ function submitRegisterSource() {
 }
 
 const columns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'domain', label: 'Domain', width: '28%', truncate: true},
   { key: 'owner', label: 'Asset Owner', width: '26%', truncate: true},
   { key: 'lastScanned', label: 'Last Scanned', width: '18%', truncate: true},
@@ -300,7 +300,7 @@ const columns = [
 ]
 
 const webappColumns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'appName', label: 'App Name', width: '18%', truncate: true},
   { key: 'owner', label: 'Asset Owner', width: '22%', truncate: true},
   { key: 'lastScanned', label: 'Last Scanned', width: '15%', truncate: true},
@@ -337,7 +337,7 @@ const tagsData = ref(emptyData.value ? [] : [
   { id: 9, name: 'CDN', color: '#12967d', bg: '#def7f0', usedBy: 1 },
 ])
 const tagsColumns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'name', label: 'Tag Name', width: '44%', truncate: true},
   { key: 'usedBy', label: 'Used By', width: '36%', align: 'center' },
   { key: 'actions', label: 'Action', width: '32px', align: 'center' },

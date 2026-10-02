@@ -15,7 +15,7 @@ const { data, loading } = useFetch(() => getProbes())
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'name', label: 'Integration Name', width: '24%', bold: true, mono: true, truncate: true},
   { key: 'lastSeen', label: 'Last Checked', width: '22%', dim: true, truncate: true},
   { key: 'monitoring', label: 'Connection Monitoring', width: '32%' },

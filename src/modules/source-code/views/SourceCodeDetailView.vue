@@ -204,7 +204,7 @@ const tableRef = ref(null)
 
 const columns = [
   { key: 'check', label: '', width: '48px', align: 'center' },
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'name', label: 'Vulnerability name', width: '42%', truncate: true },
   { key: 'line', label: 'Code Line', width: '100px', align: 'center', dim: true },
   { key: 'lastModified', label: 'Last modified', width: '120px', dim: true, truncate: true},

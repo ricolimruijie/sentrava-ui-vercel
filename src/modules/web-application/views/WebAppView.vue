@@ -28,7 +28,7 @@ const router = useRouter()
 const apps = ref(getWebApps())
 
 const columns = [
-  { key: '__index', label: '#', width: '24px', dim: true },
+  { key: '__index', label: 'No', width: '52px', dim: true },
   { key: 'lastScanned', label: 'Last scanned', width: '11%', truncate: true },
   { key: 'name', label: 'Application name', width: '15%', truncate: true },
   { key: 'target', label: 'Target', width: '16%', truncate: true },
