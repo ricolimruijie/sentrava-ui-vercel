@@ -69,7 +69,7 @@ function validUntil(iso) {
                 <template v-if="row.additional">
                   <span class="quota-row__pill"><IconPlus :size="14" /> {{ row.additional }} <b>per month</b></span>
                   <span v-if="row.validity" class="quota-row__valid">
-                    <IconCalendarEvent :size="17" /> Valid until {{ validUntil(row.validity) }}
+                    <IconCalendarEvent :size="15" /> Valid until {{ validUntil(row.validity) }}
                   </span>
                 </template>
                 <span v-else class="quota-row__none">No additional quota</span>

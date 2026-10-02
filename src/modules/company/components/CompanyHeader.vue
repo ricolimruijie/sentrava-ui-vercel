@@ -11,7 +11,7 @@ import {
   IconBuildingSkyscraper, IconChartBar, IconUsers, IconFileText, IconChevronRight, IconChevronLeft, IconPower, IconDotsVertical, IconPencil, IconUserPlus, IconSitemap, IconTrash, IconX, IconCheck, IconLock, IconCalendar, IconWorld, IconNetwork, IconBrowser, IconCode, IconPlug,
 } from '@tabler/icons-vue'
 
-const { can } = useRole()
+const { can, isSuperAdmin } = useRole()
 
 // Company header — title, meta row and the liquid ⋮ actions menu with all of
 // its modals. Shared by the Company page and a sub company's members page.
@@ -649,9 +649,10 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
           </div>
           <div class="company-header__meta">
             <span><IconBuildingSkyscraper :size="14" /> {{ company?.type }}</span>
-            <span><IconChartBar :size="14" /> {{ company?.quota }} quota</span>
+            <!-- Quota and contract type are commercial details: only the super admin sees them. -->
+            <span v-if="isSuperAdmin"><IconChartBar :size="14" /> {{ company?.quota }} quota</span>
             <span><IconUsers :size="14" /> {{ userCount }} users</span>
-            <span><IconFileText :size="14" /> {{ company?.contractType }}</span>
+            <span v-if="isSuperAdmin"><IconFileText :size="14" /> {{ company?.contractType }}</span>
           </div>
         </div>
       </div>
