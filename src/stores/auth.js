@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-import { login as loginRequest } from '@/modules/auth/services/authService'
+import { login as loginRequest, verifyTwoFactor as verifyRequest, setTwoFactorEnabled } from '@/modules/auth/services/authService'
 import { ROLES } from '@/constants'
 import { emptyData } from '@/utils/dataMode'
 import { sessionStatus } from '@/modules/auth/utils/session'
@@ -24,14 +24,27 @@ export const useAuthStore = defineStore('auth', () => {
   // Demo accounts flagged `dataMode: 'empty'` see every page without data.
   watch(user, (u) => { emptyData.value = u?.dataMode === 'empty' }, { immediate: true })
 
-  // `dataMode: 'empty'` (demo only) signs in with every page shown without data, for any role.
-  async function login(email, password, { dataMode } = {}) {
-    const res = await loginRequest(email, password, dataMode)
+  function startSession(res) {
     token.value = res.token
     user.value  = res.user
     loginAt.value = lastActivityAt.value = Date.now()
     localStorage.setItem('sentra_token', res.token)
     localStorage.removeItem(LOGOUT_REASON_KEY)
+  }
+
+  // `dataMode: 'empty'` (demo only) signs in with every page shown without data, for any role.
+  // Resolves { twoFactorRequired: true, challengeId, email } — with no session yet — when the account
+  // has two-factor authentication on; the login page then collects the code and calls verifyTwoFactor.
+  async function login(email, password, { dataMode } = {}) {
+    const res = await loginRequest(email, password, dataMode)
+    if (res.twoFactorRequired) return { twoFactorRequired: true, challengeId: res.challengeId, email: res.email }
+    startSession(res)
+    return { twoFactorRequired: false }
+  }
+
+  // Second login step: the 6-digit code (authenticator app, or the one emailed) opens the session.
+  async function verifyTwoFactor(challengeId, code) {
+    startSession(await verifyRequest(challengeId, code))
   }
 
   // Record user activity (the idle timer restarts).
@@ -58,6 +71,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
   function setTwoFactor(enabled) {
     user.value = { ...user.value, twoFAEnabled: enabled }
+    // Tell the backend so the next login asks for (or skips) the code.
+    setTwoFactorEnabled(user.value.email, enabled).catch(() => { /* not critical in mock mode */ })
   }
 
   // `reason` ('idle' | 'expired') is shown on the login page.
@@ -95,7 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
     checkSession()
   }
 
-  return { user, token, loginAt, lastActivityAt, isAuthenticated, role, isSuperAdmin, companies, twoFAEnabled, login, touch, checkSession, updateProfile, setTwoFactor, logout, hydrateFromStorage }
+  return { user, token, loginAt, lastActivityAt, isAuthenticated, role, isSuperAdmin, companies, twoFAEnabled, login, verifyTwoFactor, touch, checkSession, updateProfile, setTwoFactor, logout, hydrateFromStorage }
 }, {
   persist: {
     pick: ['user', 'token', 'loginAt', 'lastActivityAt'],

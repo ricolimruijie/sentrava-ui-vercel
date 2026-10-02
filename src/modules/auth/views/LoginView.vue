@@ -4,6 +4,10 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore, LOGOUT_REASON_KEY } from '@/stores/auth'
 import { SESSION_MESSAGES } from '@/modules/auth/utils/session'
 import GlassField from '@/components/common/GlassField.vue'
+import OtpInput from '@/components/common/OtpInput.vue'
+import { sendTwoFactorEmail } from '@/modules/auth/services/authService'
+import { maskEmail } from '@/utils/helpers'
+import { useResendCooldown } from '@/composables/useResendCooldown'
 import AuthLayout from '@/modules/auth/views/AuthLayout.vue'
 import logoIcon from '@/assets/sentrava-logo-icon.svg'
 
@@ -30,6 +34,15 @@ const done = ref(false)
 const shakeKey = ref(0)
 let timer
 
+// Two-factor step (shown after the password was accepted for an account with 2FA on):
+// 'credentials' → 'code' (authenticator app) ⇄ 'email' (code sent to the user's email).
+const step = ref('credentials')
+const challenge = ref(null) // { challengeId, email }
+const code = ref('')
+const resentNotice = ref(false)
+const cooldown = useResendCooldown(60)
+const maskedEmail = computed(() => maskEmail(challenge.value?.email))
+
 // Say why the user landed here when the session ended on its own (idle / expired).
 {
   let reason = route.query.reason
@@ -40,6 +53,7 @@ let timer
 
 const isSplit = computed(() => layout === 'split')
 const btnLabel = computed(() => (busy.value ? 'Logging in…' : done.value ? 'Logged in' : 'Log in'))
+const verifyLabel = computed(() => (busy.value ? 'Verifying…' : done.value ? 'Logged in' : 'Verify'))
 
 function clearError(field) { errors[field] = ''; errors.form = ''; done.value = false }
 
@@ -55,17 +69,73 @@ async function onSubmit() {
   if (!validate()) { shakeKey.value++; return }
   busy.value = true
   try {
-    await auth.login(email.value.trim(), password.value, { dataMode: noData.value ? 'empty' : undefined })
+    const res = await auth.login(email.value.trim(), password.value, { dataMode: noData.value ? 'empty' : undefined })
     busy.value = false
-    done.value = true
-    // Let the "Logged in" state show before leaving the page.
-    timer = setTimeout(() => router.push(route.query.redirect ?? '/dashboard'), 650)
+    if (res.twoFactorRequired) {
+      challenge.value = res
+      code.value = ''
+      step.value = 'code'
+      return
+    }
+    finishLogin()
   } catch (e) {
     busy.value = false
     errors.form = e?.message ?? 'Invalid credentials. Please try again.'
     shakeKey.value++
   }
 }
+
+// Let the "Logged in" state show before leaving the page.
+function finishLogin() {
+  done.value = true
+  timer = setTimeout(() => router.push(route.query.redirect ?? '/dashboard'), 650)
+}
+
+function backToLogin(message = '') {
+  step.value = 'credentials'
+  challenge.value = null
+  code.value = ''
+  password.value = ''
+  cooldown.stop()
+  resentNotice.value = false
+  errors.form = typeof message === 'string' ? message : ''
+}
+
+async function onVerify() {
+  if (busy.value || done.value) return
+  errors.form = ''
+  if (code.value.length !== 6) { errors.form = 'Enter the 6-digit code.'; shakeKey.value++; return }
+  busy.value = true
+  try {
+    await auth.verifyTwoFactor(challenge.value.challengeId, code.value)
+    busy.value = false
+    finishLogin()
+  } catch (e) {
+    busy.value = false
+    // A locked account or an expired sign-in can't be retried here: back to the password step.
+    if (e?.code === 'ACCOUNT_LOCKED' || e?.code === 'CHALLENGE_EXPIRED') { backToLogin(e.message); return }
+    errors.form = e?.message ?? 'Invalid verification code'
+    code.value = ''
+    shakeKey.value++
+  }
+}
+
+async function sendEmailCode({ resend = false } = {}) {
+  if (resend && !cooldown.ready.value) return
+  try {
+    await sendTwoFactorEmail(challenge.value.challengeId)
+  } catch (e) {
+    backToLogin(e?.message ?? 'This sign-in has expired. Please log in again.')
+    return
+  }
+  code.value = ''
+  errors.form = ''
+  cooldown.start()
+  resentNotice.value = resend
+  if (resend) setTimeout(() => { resentNotice.value = false }, 2500)
+}
+async function useEmail() { step.value = 'email'; await sendEmailCode() }
+function useApp() { step.value = 'code'; code.value = ''; errors.form = ''; cooldown.stop(); resentNotice.value = false }
 
 function forgotPassword() {
   // Carry over whatever email was typed so the next page starts filled in.
@@ -92,14 +162,19 @@ onBeforeUnmount(() => clearTimeout(timer))
   <AuthLayout :layout="layout" :motion="motion">
       <div class="card">
         <header class="head rise" style="--d: 80ms">
-          <span v-if="!isSplit" class="brand"><img :src="logoIcon" class="brand__logo" width="28" height="28" alt="" aria-hidden="true" />SENTRAVA</span>
+          <div class="head__top">
+            <span v-if="!isSplit" class="brand"><img :src="logoIcon" class="brand__logo" width="28" height="28" alt="" aria-hidden="true" />SENTRAVA</span>
+            <button v-if="step !== 'credentials'" type="button" class="back" @click="backToLogin"><span class="icon icon--sm">arrow_back</span>Back to log in</button>
+          </div>
+          <template v-if="step === 'credentials'">
           <h1 class="title">Stay ahead of every threat</h1>
           <p class="subtitle">
             Log in to SENTRAVA to see <strong class="hl">every asset</strong>, <strong class="hl">every risk</strong>, and <strong class="hl">what to mitigate next</strong> across your <strong class="hl hl--dark">environment</strong>.
           </p>
+          </template>
         </header>
 
-        <form class="form rise" style="--d: 160ms" novalidate @submit.prevent="onSubmit">
+        <form v-if="step === 'credentials'" class="form rise" style="--d: 160ms" novalidate @submit.prevent="onSubmit">
           <div :key="'e' + (errors.email ? shakeKey : 0)" class="fld" :class="{ 'fld--shake': errors.email }">
             <GlassField
               v-model="email"
@@ -152,7 +227,45 @@ onBeforeUnmount(() => clearTimeout(timer))
           </div>
         </form>
 
-        <p class="terms rise" style="--d: 240ms">
+        <!-- Two-factor step -->
+        <form v-else class="form rise" novalidate @submit.prevent="onVerify">
+          <div class="tfa">
+            <h2 class="tfa__title">{{ step === 'code' ? 'Two-factor authentication' : 'Check your email' }}</h2>
+            <p class="tfa__desc">
+              {{ step === 'code'
+                ? 'Enter the 6-digit code shown in your authenticator app.'
+                : `We sent a 6-digit code to ${maskedEmail}. Enter it below.` }}
+            </p>
+          </div>
+
+          <div :key="'c' + (errors.form ? shakeKey : 0)" class="fld" :class="{ 'fld--shake': errors.form }">
+            <OtpInput :key="step" v-model="code" autofocus @enter="onVerify" />
+          </div>
+
+          <span v-if="errors.form" class="error" role="alert"><span class="icon icon--sm">error</span>{{ errors.form }}</span>
+
+          <button type="submit" class="submit submit--sm" :class="{ 'is-done': done }" :disabled="busy || done">
+            <span v-if="busy" class="icon spin">progress_activity</span>
+            <span v-else-if="done" class="icon">check</span>
+            {{ verifyLabel }}
+          </button>
+
+          <p v-if="step === 'code'" class="tfa__alt">
+            Don't have access to your Authenticator app,
+            <button type="button" class="tfa__link" @click="useEmail">click here</button>
+          </p>
+          <template v-else>
+            <p class="tfa__alt">
+              Didn't get the email?
+              <button type="button" class="tfa__link" :disabled="!cooldown.ready.value" @click="sendEmailCode({ resend: true })">{{ cooldown.ready.value ? 'Resend code' : `Resend code in ${cooldown.label.value}` }}</button>
+            </p>
+            <p v-if="resentNotice" class="tfa__sent" role="status">A new code has been sent to {{ maskedEmail }}.</p>
+            <button type="button" class="tfa__plain" @click="useApp"><span class="icon icon--sm">arrow_back</span>Use your Authenticator app instead</button>
+          </template>
+          <p v-if="IS_STATIC" class="tfa__demo">Demo: the code is 123456</p>
+        </form>
+
+        <p v-if="step === 'credentials'" class="terms rise" style="--d: 240ms">
           By continuing, you agree to SENTRAVA's <a href="#" class="link">Terms</a> and <a href="#" class="link">Privacy Policy</a>.
         </p>
       </div>

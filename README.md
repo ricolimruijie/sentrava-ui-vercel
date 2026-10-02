@@ -54,6 +54,8 @@ Any other email or a wrong password → `Invalid credentials` from the mock hand
 
 **Security rules in the mock (PRD 2.2):** 5 consecutive failed logins for an email lock it for 30 minutes (even the right password is refused meanwhile; a success resets the counter; tracked in `localStorage`, key `sentra_login_attempts` — delete it to unlock while demoing). A signed-in session ends after 15 minutes without activity or after 8 hours regardless of activity (`src/modules/auth/utils/session.js`, enforced by `useSessionGuard`), and the login page says why. Multi-device login can only be enforced by a real backend.
 
+**Two-factor sign-in (mock):** all three demo accounts have 2FA on. After the password is accepted the API answers `{ twoFactorRequired, challengeId }` with no session; the login page then asks for the 6-digit code (`POST /auth/2fa/verify`) and only that creates the session. "Don't have access to your Authenticator app, click here" switches to a code sent to the user's email (`POST /auth/2fa/email-code`, 60 s resend cooldown). The demo code is `123456` for both; wrong codes count toward the same 5-strike lockout. Turning 2FA off/on in Settings is remembered per email (`localStorage` key `sentra_mock_2fa`), so the next login skips or asks for the code.
+
 The Quick demo card also has a **Show every page with no data** switch (see
 [No-data demo mode](#no-data-demo-mode)). A **Forgot password** page
 (`/forgot-password`) is mocked and always succeeds.

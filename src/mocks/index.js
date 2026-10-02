@@ -65,6 +65,14 @@ registerMock(/^\/notifications$/, () => (emptyData.value ? [] : notificationsMoc
 registerMock(/\/auth\/forgot-password/, () => ({ ok: true }))
 const lockout = createLockoutTracker(window.localStorage)
 const DEMO_PASSWORD = 'demo'
+// Demo only: every 6-digit code check (authenticator app or email) accepts this one code.
+const DEMO_2FA_CODE = '123456'
+const TWO_FA_KEY = 'sentra_mock_2fa' // { [email]: boolean } — what the user chose in Settings
+const challenges = new Map() // challengeId -> { user, dataMode }
+
+const readJson = (key) => { try { return JSON.parse(window.localStorage.getItem(key) ?? '{}') ?? {} } catch { return {} } }
+const normEmail = (email) => String(email ?? '').trim().toLowerCase()
+
 registerMock(/\/auth\/login/, (_, cfg) => {
   const { email, password, dataMode } = cfg.data ?? {}
   // PRD 2.2: 5 consecutive failures lock the account for 30 minutes; even the right password is refused meanwhile.
@@ -75,13 +83,49 @@ registerMock(/\/auth\/login/, (_, cfg) => {
     'admin@acme.com':       { id: 'u1', name: 'Alex Johnson', role: 'admin',       email: 'admin@acme.com',       companies: [{ id: 'c1', name: 'Acme Corporation' }], twoFAEnabled: true },
     'member@acme.com':      { id: 'u3', name: 'James Park',   role: 'member',      email: 'member@acme.com',      companies: [{ id: 'c1', name: 'Acme Corporation' }], twoFAEnabled: true },
   }
-  const user = roleMappings[String(email ?? '').trim().toLowerCase()]
-  if (!user || password !== DEMO_PASSWORD) {
+  const found = roleMappings[normEmail(email)]
+  if (!found || password !== DEMO_PASSWORD) {
     const after = lockout.recordFailure(email)
     const message = after.locked ? lockedMessage(after.retryAfterMs) : 'Invalid credentials'
     return Promise.reject({ message, code: after.locked ? 'ACCOUNT_LOCKED' : 'INVALID_CREDENTIALS' })
   }
-  lockout.recordSuccess(email)
+  const chosen = readJson(TWO_FA_KEY)[found.email]
+  const user = { ...found, twoFAEnabled: chosen ?? found.twoFAEnabled }
   // Any role can be signed in "with no data" (see utils/dataMode.js) to review empty states.
-  return { token: 'mock-jwt-token', user: dataMode === 'empty' ? { ...user, dataMode: 'empty' } : user }
+  const session = { token: 'mock-jwt-token', user: dataMode === 'empty' ? { ...user, dataMode: 'empty' } : user }
+  if (user.twoFAEnabled) {
+    // Password was right, but no session yet: the 6-digit code is still needed. The failure counter is
+    // only reset once the code is accepted too.
+    const challengeId = `ch_${Math.random().toString(36).slice(2, 10)}`
+    challenges.set(challengeId, session)
+    return { twoFactorRequired: true, challengeId, email: user.email }
+  }
+  lockout.recordSuccess(email)
+  return session
+})
+
+// Second login step. Wrong codes count toward the same lockout as wrong passwords.
+registerMock(/\/auth\/2fa\/verify/, (_, cfg) => {
+  const { challengeId, code } = cfg.data ?? {}
+  const session = challenges.get(challengeId)
+  if (!session) return Promise.reject({ message: 'This sign-in has expired. Please log in again.', code: 'CHALLENGE_EXPIRED' })
+  const email = session.user.email
+  const lock = lockout.status(email)
+  if (lock.locked) { challenges.delete(challengeId); return Promise.reject({ message: lockedMessage(lock.retryAfterMs), code: 'ACCOUNT_LOCKED' }) }
+  if (code !== DEMO_2FA_CODE) {
+    const after = lockout.recordFailure(email)
+    if (after.locked) challenges.delete(challengeId)
+    return Promise.reject({ message: after.locked ? lockedMessage(after.retryAfterMs) : 'Invalid verification code', code: after.locked ? 'ACCOUNT_LOCKED' : 'INVALID_CODE' })
+  }
+  challenges.delete(challengeId)
+  lockout.recordSuccess(email)
+  return session
+})
+registerMock(/\/auth\/2fa\/email-code/, (_, cfg) => (challenges.has(cfg.data?.challengeId)
+  ? { ok: true }
+  : Promise.reject({ message: 'This sign-in has expired. Please log in again.', code: 'CHALLENGE_EXPIRED' })))
+registerMock(/\/auth\/2fa$/, (_, cfg) => {
+  const { email, enabled } = cfg.data ?? {}
+  window.localStorage.setItem(TWO_FA_KEY, JSON.stringify({ ...readJson(TWO_FA_KEY), [normEmail(email)]: !!enabled }))
+  return { ok: true }
 })
