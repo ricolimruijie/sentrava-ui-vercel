@@ -28,15 +28,15 @@ const router = useRouter()
 const apps = ref(getWebApps())
 
 const columns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'lastScanned', label: 'Last scanned', width: '11%', truncate: true },
-  { key: 'name', label: 'Application name', width: '15%', truncate: true },
-  { key: 'target', label: 'Target', width: '16%', truncate: true },
-  { key: 'owner', label: 'Asset owner', width: '13%', truncate: true },
-  { key: 'scanType', label: 'Scan type', width: '11%', truncate: true },
-  { key: 'tags', label: 'Multi-Tags', width: '14%' },
-  { key: 'status', label: 'Scanning status', width: '10%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '32px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'lastScanned', label: 'Last scanned', width: '154px', truncate: true   },
+  { key: 'name', label: 'Application name', truncate: true  },
+  { key: 'target', label: 'Target', truncate: true  },
+  { key: 'owner', label: 'Asset owner', truncate: true  },
+  { key: 'scanType', label: 'Scan type', width: '136px', truncate: true   },
+  { key: 'tags', label: 'Multi-Tags'  },
+  { key: 'status', label: 'Scanning status', width: '138px', align: 'center'   },
+  { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 // Same palette as SourceCodeView so tags render identically.
@@ -485,7 +485,7 @@ onMounted(() => {
           <span
             v-for="t in row.tags.slice(0, 2)"
             :key="t.label"
-            class="dv-tag"
+            :title="t.label" class="dv-tag"
             :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }"
           >{{ t.label }}</span>
           <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>

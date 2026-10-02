@@ -150,6 +150,17 @@ PRD section 11, in `src/modules/notifications/`. The bell in the navbar (on ever
 - In static mode the backend is mocked in `src/mocks/notifications/` (seeded history in `localStorage`, key `sentra_mock_notifications`; delete it to reseed). A few real actions create notifications through `utils/notifyMock.js`: creating a ticket (N-TK-01), closing one (N-TK-04), deleting an API key (N-CD-03) and inviting a user (N-UM-01). In live mode the backend must create them.
 - The PRD doesn't assign re-validation notifications (N-RV-*) to a tab, so they only appear under All.
 
+## Tables
+
+Every table is the shared `components/common/DataTable.vue` (25 tables), except the two small cards on the dashboard (Ticket feed, Top vulnerabilities), which follow the same rules in their own CSS. Rules (guarded by `components/common/tableRules.test.js`):
+
+- **Fixed-format columns** (dates, status, severity, counts, IDs, badges) have an explicit px `width`, sized to their widest value *or* header, and never change when the window resizes. **Text-heavy columns** (names, targets, URLs, owners, tags, descriptions) have **no** width: they share what is left equally.
+- Special columns are set by `kind`, not by a width: `index` (row number, titled **No**, 52px; 64px on the audit log and report log, which can pass 999 rows and whose numbering continues across pages), `check` (row checkbox, 48px) and `action` (the button column, 76px: wide enough for the "ACTION" header).
+- `table-layout: fixed`, one cell padding everywhere (14px each side). Anything longer than its column is cut off with "…" on one line, with the full text in a tooltip; inside nested content (tags, avatar + name, related domains) only the text is cut, so badges, `+N` counters and buttons stay visible.
+- Headers are never cut: they wrap onto at most two lines, so widths are sized for that. Row numbers use tabular digits.
+- On a narrow screen the table scrolls sideways inside its card (text columns never go below 130px) instead of squashing.
+- When you add a column: give it a px width only if its values are short and predictable (measure the longest value and the header), otherwise leave the width off.
+
 ## Roles
 
 Exactly three roles: `super_admin`, `admin`, `member` (`ROLES` in `src/constants`). The current UI is the super_admin version; per-role looks and restrictions are the next phase. Rules in place so far:

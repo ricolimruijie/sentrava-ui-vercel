@@ -26,7 +26,7 @@ const route = useRoute()
 const router = useRouter()
 
 const tabs = [
-  { key: 'overview', label: 'Overview' },
+  { key: 'overview', label: 'Overview'  },
   { key: 'list',      label: 'Sub company' },
   { key: 'audit',      label: 'Audit log' },
   { key: 'probe',      label: 'Integration' },
@@ -85,12 +85,12 @@ watch(() => route.query.tab, (val) => {
 const tableRef = ref(null)
 
 const allColumns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'name', label: 'Name', width: '25%' },
-  { key: 'email', label: 'Email Address', width: '23%', dim: true, truncate: true},
-  { key: 'company', label: 'Company', width: '27%', dim: true, truncate: true},
-  { key: 'role', label: 'Role', width: '12%', align: 'center' },
-  { key: 'action', label: 'Action', width: '32px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'name', label: 'Name'  },
+  { key: 'email', label: 'Email Address', dim: true, truncate: true },
+  { key: 'company', label: 'Company', dim: true, truncate: true },
+  { key: 'role', label: 'Role', width: '134px', align: 'center'   },
+  { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 // The action column only holds actions this role may not use.
 const columns = computed(() => allColumns.filter((c) => c.key !== 'action' || can('manage_company')))

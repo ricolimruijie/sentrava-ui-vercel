@@ -28,14 +28,14 @@ const router = useRouter()
 const domains = ref(getDomains())
 
 const columns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'lastScanned', label: 'Last Scanned', width: '12%', truncate: true },
-  { key: 'endpoint', label: 'Domain', width: '18%', truncate: true },
-  { key: 'registeredCount', label: 'Registered endpoint', width: '14%', align: 'center' },
-  { key: 'owner', label: 'Asset owner', width: '20%', truncate: true },
-  { key: 'scanType', label: 'Scan type', width: '14%', truncate: true},
-  { key: 'status', label: 'Scanning status', width: '12%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '76px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true   },
+  { key: 'endpoint', label: 'Domain', truncate: true  },
+  { key: 'registeredCount', label: 'Registered endpoint', width: '105px', align: 'center'   },
+  { key: 'owner', label: 'Asset owner', truncate: true  },
+  { key: 'scanType', label: 'Scan type', width: '136px', truncate: true  },
+  { key: 'status', label: 'Scanning status', width: '138px', align: 'center'   },
+  { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 const statusMeta = {

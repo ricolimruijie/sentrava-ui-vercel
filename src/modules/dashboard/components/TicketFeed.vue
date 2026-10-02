@@ -54,8 +54,8 @@ function goTicket(item) {
             <tr v-if="loading"><td colspan="4" class="ttable__empty">Loading…</td></tr>
             <tr v-for="item in visibleItems" :key="item.id">
               <td class="ttable__date">{{ formatShortDate(item.date) }}</td>
-              <td class="ttable__name">{{ item.name }}</td>
-              <td class="ttable__cat">{{ item.label }}</td>
+              <td class="ttable__name" :title="item.name">{{ item.name }}</td>
+              <td class="ttable__cat" :title="item.label">{{ item.label }}</td>
               <td class="ttable__status">
                 <span class="status-pill" :class="item.status === 'resolved' ? 'resolved' : 'open'">
                   {{ item.status === 'resolved' ? 'Resolved' : 'Open' }}
@@ -169,73 +169,40 @@ function goTicket(item) {
   font-size: 13px;
   table-layout: fixed;
 
+  // Same rules as every other table (see DataTable): 14px cell padding, fixed-format columns have an
+  // explicit px width, text columns (name, category) share the rest and are cut off with "...".
   th {
     text-align: left;
-    padding: 6px 8px;
+    padding: 6px 14px;
     font-size: var(--text-xs);
     font-weight: 600;
+    line-height: 1.3;
     color: var(--color-text-muted);
     border-bottom: 1px solid var(--color-border);
-    white-space: nowrap;
+    // Headers wrap (two lines at most) instead of being cut off.
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
   }
 
   td {
-    padding: 9px 8px;
+    padding: 9px 14px;
     border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
     font-weight: 500;
     color: var(--glacia-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   tr:last-child td { border-bottom: none; }
 
   tr:hover td { background: var(--color-bg); }
 
-  // Every column except the arrow button shares the same width.
-  &__date,
-  &__name,
-  &__cat,
-  &__status {
-    width: 23%;
-  }
-
-  &__date {
-    white-space: nowrap;
-  }
-
-  &__cat {
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  &__name {
-    color: var(--glacia-ink);
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  &__status {
-    text-align: center;
-  }
-
-  td.ttable__status,
-  th.ttable__status {
-    padding-left: 14px;
-    text-align: center;
-  }
-
-  &__arrow {
-    width: 8%;
-    padding-right: 0;
-  }
-
-  td.ttable__arrow {
-    padding-left: 24px;
-  }
+  &__date { width: 150px; }
+  &__status { width: 113px; text-align: center; }
+  &__arrow { width: 58px; }
 
   &__empty {
     text-align: center;

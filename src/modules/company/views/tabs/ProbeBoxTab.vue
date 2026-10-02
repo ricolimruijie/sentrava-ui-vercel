@@ -15,12 +15,12 @@ const { data, loading } = useFetch(() => getProbes())
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'name', label: 'Integration Name', width: '24%', bold: true, mono: true, truncate: true},
-  { key: 'lastSeen', label: 'Last Checked', width: '22%', dim: true, truncate: true},
-  { key: 'monitoring', label: 'Connection Monitoring', width: '32%' },
-  { key: 'status', label: 'Status', width: '12%', align: 'center' },
-  { key: 'action', label: 'Action', width: '76px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'name', label: 'Integration Name', bold: true, mono: true, truncate: true },
+  { key: 'lastSeen', label: 'Last Checked', width: '229px', dim: true, truncate: true  },
+  { key: 'monitoring', label: 'Connection Monitoring', width: '166px'   },
+  { key: 'status', label: 'Status', width: '146px', align: 'center'   },
+  { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 const statusMeta = {

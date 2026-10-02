@@ -15,11 +15,11 @@ const { data, loading } = useFetch(() => getAuditLog())
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'dateTime', label: 'Date and Time', width: '17%', truncate: true},
-  { key: 'actor', label: 'Actor', width: '22%' },
-  { key: 'action', label: 'Activity', width: '16%', truncate: true},
-  { key: 'detail', label: 'Detail', width: '35%', dim: true, truncate: true },
+  { key: '__index', label: 'No', kind: 'index', width: '64px', dim: true  },
+  { key: 'dateTime', label: 'Date and Time', width: '196px', truncate: true  },
+  { key: 'actor', label: 'Actor'  },
+  { key: 'action', label: 'Activity', truncate: true },
+  { key: 'detail', label: 'Detail', dim: true, truncate: true  },
 ]
 
 // Same day-month-year style as the Last Scanned column ("14 July 2026"),
@@ -64,8 +64,8 @@ const showDownload = ref(false)
 const downloadGroups = computed(() => {
   const uniq = (key) => [...new Set((data.value ?? []).map((e) => e[key]))].map((v) => ({ value: v, label: v }))
   return [
-    { key: 'action', label: 'Activity', options: uniq('action') },
-    { key: 'actor', label: 'Actor', options: uniq('actor') },
+    { key: 'action', label: 'Activity', options: uniq('action')  },
+    { key: 'actor', label: 'Actor', options: uniq('actor')  },
   ]
 })
 

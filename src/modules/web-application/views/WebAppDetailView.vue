@@ -77,11 +77,11 @@ function toggleTargetDetailModal(e) {
 function closeTargetDetailModal() { showTargetDetailModal.value = false }
 
 const severityCards = [
-  { key: 'critical', label: 'Critical', bg: '#FBE3E3', bar: '#DC2626' },
-  { key: 'high', label: 'High', bg: '#FDEEE3', bar: '#EA580C' },
-  { key: 'medium', label: 'Medium', bg: '#FEF6DC', bar: '#EAB308' },
-  { key: 'low', label: 'Low', bg: '#E7F7ED', bar: '#16A34A' },
-  { key: 'info', label: 'Info', bg: '#E5F3FC', bar: '#0EA5E9' },
+  { key: 'critical', label: 'Critical', bg: '#FBE3E3', bar: '#DC2626'  },
+  { key: 'high', label: 'High', bg: '#FDEEE3', bar: '#EA580C'  },
+  { key: 'medium', label: 'Medium', bg: '#FEF6DC', bar: '#EAB308'  },
+  { key: 'low', label: 'Low', bg: '#E7F7ED', bar: '#16A34A'  },
+  { key: 'info', label: 'Info', bg: '#E5F3FC', bar: '#0EA5E9'  },
 ]
 const severityCounts = computed(() => {
   const counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 }
@@ -217,13 +217,13 @@ function toggleCheckAll() {
 const tableRef = ref(null)
 
 const columns = [
-  { key: 'check', label: '', width: '48px', align: 'center' },
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'name', label: 'Vulnerability Name', width: '30%', truncate: true },
-  { key: 'lastModified', label: 'Last Modified', width: '130px', dim: true, truncate: true},
-  { key: 'severity', label: 'Severity', width: '100px', align: 'center' },
-  { key: 'cycle', label: 'Validation Cycle', width: '150px', align: 'center' },
-  { key: 'action', label: 'Actions', width: '70px', align: 'center' },
+  { key: 'check', label: '', kind: 'check', align: 'center'  },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'name', label: 'Vulnerability Name', truncate: true  },
+  { key: 'lastModified', label: 'Last Modified', width: '150px', dim: true, truncate: true  },
+  { key: 'severity', label: 'Severity', width: '97px', align: 'center'   },
+  { key: 'cycle', label: 'Validation Cycle', width: '130px', align: 'center'   },
+  { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 function rowClass(row) {

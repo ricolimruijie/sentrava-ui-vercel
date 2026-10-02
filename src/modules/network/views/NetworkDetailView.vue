@@ -128,13 +128,13 @@ const filtered = computed(() => {
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: 'No', width: '52px', dim: true, mono: true },
-  { key: 'endpoint', label: 'Endpoint', width: '17%', mono: true, truncate: true },
-  { key: 'owner', label: 'Asset Owner', width: '22%', truncate: true },
-  { key: 'totalSeverity', label: 'Total Findings', width: '140px', align: 'center' },
-  { key: 'tags', label: 'Multi-Tags', width: '22%' },
-  { key: 'status', label: 'Scanning Status', width: '150px', align: 'center' },
-  { key: 'view', label: 'Action', width: '76px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true, mono: true  },
+  { key: 'endpoint', label: 'Endpoint', mono: true, truncate: true  },
+  { key: 'owner', label: 'Asset Owner', truncate: true  },
+  { key: 'totalSeverity', label: 'Total Findings', width: '89px', align: 'center'   },
+  { key: 'tags', label: 'Multi-Tags'  },
+  { key: 'status', label: 'Scanning Status', width: '138px', align: 'center'   },
+  { key: 'view', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 // ── Endpoint row menu (CIDR layout) ────────────────────────────────────────
@@ -277,13 +277,13 @@ const epFiltered = computed(() => {
 })
 
 const epColumns = [
-  { key: 'check', label: '', width: '32px', align: 'center', compact: true },
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'name', label: 'Vulnerability Name', width: '36%', truncate: true },
-  { key: 'lastModified', label: 'Last Modified', width: '120px', dim: true },
-  { key: 'severity', label: 'Severity', width: '96px', align: 'center' },
-  { key: 'validation', label: 'Validation Cycle', width: '150px', align: 'center' },
-  { key: 'action', label: 'Action', width: '70px', align: 'center' },
+  { key: 'check', label: '', kind: 'check', align: 'center'  },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'name', label: 'Vulnerability Name', truncate: true  },
+  { key: 'lastModified', label: 'Last Modified', width: '150px', dim: true   },
+  { key: 'severity', label: 'Severity', width: '97px', align: 'center'   },
+  { key: 'validation', label: 'Validation Cycle', width: '134px', align: 'center'   },
+  { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 const epChecked = ref([])
@@ -352,11 +352,11 @@ const vulnSeverityOptions = [
 ]
 
 const severityCards = [
-  { key: 'critical', label: 'Critical', bg: '#FBE3E3', bar: '#DC2626' },
-  { key: 'high', label: 'High', bg: '#FDEEE3', bar: '#EA580C' },
-  { key: 'medium', label: 'Medium', bg: '#FEF6DC', bar: '#EAB308' },
-  { key: 'low', label: 'Low', bg: '#E7F7ED', bar: '#16A34A' },
-  { key: 'info', label: 'Info', bg: '#E5F3FC', bar: '#0EA5E9' },
+  { key: 'critical', label: 'Critical', bg: '#FBE3E3', bar: '#DC2626'  },
+  { key: 'high', label: 'High', bg: '#FDEEE3', bar: '#EA580C'  },
+  { key: 'medium', label: 'Medium', bg: '#FEF6DC', bar: '#EAB308'  },
+  { key: 'low', label: 'Low', bg: '#E7F7ED', bar: '#16A34A'  },
+  { key: 'info', label: 'Info', bg: '#E5F3FC', bar: '#0EA5E9'  },
 ]
 const severityCounts = computed(() => {
   const counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 }
@@ -391,13 +391,13 @@ const filteredVulns = computed(() => {
 })
 
 const vulnColumns = [
-  { key: 'check', label: '', width: '32px', align: 'center', compact: true },
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'name', label: 'Vulnerability Name', width: '36%', truncate: true },
-  { key: 'lastModified', label: 'Last Modified', width: '120px', dim: true },
-  { key: 'severity', label: 'Severity', width: '96px', align: 'center' },
-  { key: 'validation', label: 'Validation Cycle', width: '150px', align: 'center' },
-  { key: 'action', label: 'Action', width: '70px', align: 'center' },
+  { key: 'check', label: '', kind: 'check', align: 'center'  },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'name', label: 'Vulnerability Name', truncate: true  },
+  { key: 'lastModified', label: 'Last Modified', width: '150px', dim: true   },
+  { key: 'severity', label: 'Severity', width: '97px', align: 'center'   },
+  { key: 'validation', label: 'Validation Cycle', width: '134px', align: 'center'   },
+  { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 const vulnChecked = ref([])
@@ -641,7 +641,7 @@ const delTlScanLabel = computed(() => {
             <span
               v-for="t in row.tags.slice(0, 2)"
               :key="t.label"
-              class="dv-tag"
+              :title="t.label" class="dv-tag"
               :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }"
             >{{ t.label }}</span>
             <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>

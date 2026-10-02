@@ -28,14 +28,14 @@ const router = useRouter()
 const networks = ref(getNetworks())
 
 const columns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'lastScanned', label: 'Last Scanned', width: '14%', truncate: true },
-  { key: 'endpoint', label: 'Endpoint', width: '18%', mono: true, truncate: true },
-  { key: 'targetType', label: 'Target Type', width: '14%', truncate: true},
-  { key: 'registeredCount', label: 'Total Endpoint', width: '13%', align: 'center' },
-  { key: 'scanType', label: 'Scan Type', width: '16%', truncate: true},
-  { key: 'status', label: 'Scanning Status', width: '13%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '32px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true   },
+  { key: 'endpoint', label: 'Endpoint', mono: true, truncate: true  },
+  { key: 'targetType', label: 'Target Type', width: '84px', truncate: true  },
+  { key: 'registeredCount', label: 'Total Endpoint', width: '93px', align: 'center'   },
+  { key: 'scanType', label: 'Scan Type', width: '136px', truncate: true  },
+  { key: 'status', label: 'Scanning Status', width: '138px', align: 'center'   },
+  { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 const statusMeta = {

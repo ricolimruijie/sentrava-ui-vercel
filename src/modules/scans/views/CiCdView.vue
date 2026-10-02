@@ -18,13 +18,13 @@ const { data, loading } = useFetch(() => getScanHistory())
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'dateTime', label: 'Date and Time', width: '20%', dim: true, truncate: true },
-  { key: 'repository', label: 'Repository', width: '24%', dim: true, truncate: true},
-  { key: 'branch', label: 'Branch', width: '20%', dim: true, truncate: true},
-  { key: 'scanId', label: 'Scan ID', width: '12%', dim: true, truncate: true },
-  { key: 'status', label: 'Scanning status', width: '15%', align: 'center' },
-  { key: 'action', label: 'Action', width: '76px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '64px', dim: true  },
+  { key: 'dateTime', label: 'Date and Time', width: '192px', dim: true, truncate: true   },
+  { key: 'repository', label: 'Repository', dim: true, truncate: true },
+  { key: 'branch', label: 'Branch', dim: true, truncate: true },
+  { key: 'scanId', label: 'Scan ID', width: '75px', dim: true, truncate: true   },
+  { key: 'status', label: 'Scanning status', width: '146px', align: 'center'   },
+  { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 const statusMeta = {

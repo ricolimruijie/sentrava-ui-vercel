@@ -18,12 +18,12 @@ const { data, loading } = useFetch(() => getCompanyList())
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'name', label: 'Company Name', width: '40%', bold: true, truncate: true},
-  { key: 'type', label: 'Type', width: '18%', dim: true, truncate: true},
-  { key: 'users', label: 'Users', width: '12%', align: 'center' },
-  { key: 'status', label: 'Status', width: '18%', align: 'center' },
-  { key: 'action', label: 'Action', width: '32px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'name', label: 'Company Name', bold: true, truncate: true },
+  { key: 'type', label: 'Type', width: '124px', dim: true, truncate: true  },
+  { key: 'users', label: 'Users', width: '70px', align: 'center'   },
+  { key: 'status', label: 'Status', width: '146px', align: 'center'   },
+  { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 const statusMeta = {

@@ -21,14 +21,14 @@ const MAX_KEYS = 100
 const tableRef = ref(null)
 
 const allColumns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'name', label: 'Name', width: '14%', dim: true, truncate: true },
-  { key: 'trackingId', label: 'Tracking ID', width: '18%', dim: true, truncate: true },
-  { key: 'key', label: 'Key', width: '16%', dim: true, truncate: true },
-  { key: 'created', label: 'Created', width: '12%', dim: true, truncate: true},
-  { key: 'lastUsed', label: 'Last used', width: '12%', dim: true, truncate: true},
-  { key: 'requests', label: 'API Request', width: '10%', align: 'center', dim: true },
-  { key: 'action', label: 'Action', width: '90px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'name', label: 'Name', dim: true, truncate: true  },
+  { key: 'trackingId', label: 'Tracking ID', dim: true, truncate: true },
+  { key: 'key', label: 'Key', dim: true, truncate: true },
+  { key: 'created', label: 'Created', width: '158px', dim: true, truncate: true  },
+  { key: 'lastUsed', label: 'Last used', width: '158px', dim: true, truncate: true  },
+  { key: 'requests', label: 'API Request', width: '87px', align: 'center', dim: true   },
+  { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 // The action column only holds actions this role may not use.
 const columns = computed(() => allColumns.filter((c) => c.key !== 'action' || can('manage_api_keys')))

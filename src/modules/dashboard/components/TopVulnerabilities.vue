@@ -68,23 +68,23 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
               <th>Asset</th>
               <th>Service</th>
               <th class="text-center vtable__sev">Severity</th>
-              <th class="text-center">Vulnerability Cycle</th>
+              <th class="text-center vtable__cycle">Vulnerability Cycle</th>
               <th class="vtable__arrow"></th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loading"><td colspan="6" class="vtable__empty">Loading…</td></tr>
             <tr v-for="item in filteredItems" :key="item.id" class="vtable__row">
-              <td class="vtable__name">{{ item.name }}</td>
-              <td class="vtable__asset">{{ item.affectedAsset }}</td>
-              <td class="vtable__svc">{{ item.services }}</td>
+              <td class="vtable__name" :title="item.name">{{ item.name }}</td>
+              <td class="vtable__asset" :title="item.affectedAsset">{{ item.affectedAsset }}</td>
+              <td class="vtable__svc" :title="item.services">{{ item.services }}</td>
                 <td class="text-center vtable__sev">
                   <span
                     class="sev-badge"
                     :style="{ background: s(item.severity).bg, color: s(item.severity).color }"
                   >{{ s(item.severity).label }}</span>
                 </td>
-                <td class="text-center">
+                <td class="text-center vtable__cycle">
                   <span
                     class="cycle-pill"
                     :style="{ background: c(item.cycle).bg, color: c(item.cycle).color }"
@@ -177,6 +177,10 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  // Same rules as every other table (see DataTable): fixed layout, 14px cell padding, fixed-format
+  // columns (severity, cycle, arrow) have an explicit px width, text columns share the rest and are
+  // cut off with "...".
+  table-layout: fixed;
 
   thead tr {
     position: sticky;
@@ -186,12 +190,16 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
 
   th {
     text-align: left;
-    padding: 6px 8px;
+    padding: 6px 14px;
     font-size: var(--text-xs);
     font-weight: 600;
+    line-height: 1.3;
     color: var(--color-text-muted);
     border-bottom: 1px solid var(--color-border);
-    white-space: nowrap;
+    // Headers wrap (two lines at most) instead of being cut off.
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
   }
 
   td {
@@ -200,6 +208,9 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
     vertical-align: middle;
     color: var(--glacia-ink);
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__row:last-child td { border-bottom: none; }
@@ -211,29 +222,9 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
     color: var(--glacia-ink-dim);
   }
 
-  &__name {
-    font-weight: 500;
-    max-width: 240px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__asset {
-    white-space: nowrap;
-  }
-
-  &__svc {
-    white-space: nowrap;
-  }
-
-  &__arrow {
-    width: 40px;
-  }
-
-  &__sev {
-    width: 140px;
-  }
+  &__sev { width: 97px; }
+  &__cycle { width: 134px; }
+  &__arrow { width: 58px; }
 }
 
 .vtable th.text-center { text-align: center; }

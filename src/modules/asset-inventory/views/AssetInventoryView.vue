@@ -15,11 +15,11 @@ import { IconDotsVertical, IconPlus, IconWorld, IconBrowser, IconNetwork, IconCo
 const { can } = useRole()
 
 const tabs = [
-  { key: 'domain', label: 'Domain', icon: IconWorld },
-  { key: 'webapp', label: 'URL', icon: IconBrowser },
-  { key: 'network', label: 'Network', icon: IconNetwork },
-  { key: 'source', label: 'Repository', icon: IconCode },
-  { key: 'tags', label: 'Tags', icon: IconTag },
+  { key: 'domain', label: 'Domain', icon: IconWorld  },
+  { key: 'webapp', label: 'URL', icon: IconBrowser  },
+  { key: 'network', label: 'Network', icon: IconNetwork  },
+  { key: 'source', label: 'Repository', icon: IconCode  },
+  { key: 'tags', label: 'Tags', icon: IconTag  },
 ]
 
 // Lets other pages (e.g. the Source Code register-repository flow) deep-link
@@ -112,23 +112,23 @@ const networks = ref(emptyData.value ? [] : [
 ])
 
 const networkColumnsSingle = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'endpoint', label: 'Endpoint', width: '13%', mono: true, truncate: true},
-  { key: 'endpointType', label: 'Endpoint Type', width: '15%', truncate: true},
-  { key: 'owner', label: 'Asset Owner', width: '21%', truncate: true},
-  { key: 'lastScanned', label: 'Last Scanned', width: '12%', truncate: true},
-  { key: 'tags', label: 'Multi-Tags', width: '14%' },
-  { key: 'status', label: 'Scanner Status', width: '15%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '32px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'endpoint', label: 'Endpoint', mono: true, truncate: true },
+  { key: 'endpointType', label: 'Endpoint Type', width: '93px', truncate: true  },
+  { key: 'owner', label: 'Asset Owner', truncate: true },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true  },
+  { key: 'tags', label: 'Multi-Tags'  },
+  { key: 'status', label: 'Scanner Status', width: '138px', align: 'center'   },
+  { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 const networkColumnsCidr = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'endpoint', label: 'Endpoint', width: '16%', mono: true, truncate: true},
-  { key: 'endpointType', label: 'Endpoint Type', width: '17%', truncate: true},
-  { key: 'owner', label: 'Asset Owner', width: '25%', truncate: true},
-  { key: 'lastScanned', label: 'Last Scanned', width: '14%', truncate: true},
-  { key: 'status', label: 'Scanner Status', width: '17%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '32px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'endpoint', label: 'Endpoint', mono: true, truncate: true },
+  { key: 'endpointType', label: 'Endpoint Type', width: '93px', truncate: true  },
+  { key: 'owner', label: 'Asset Owner', truncate: true },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true  },
+  { key: 'status', label: 'Scanner Status', width: '138px', align: 'center'   },
+  { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 const networkKind = ref('single') // 'single' | 'cidr'
@@ -180,14 +180,14 @@ const sourceCodes = ref(emptyData.value ? [] : [
   { id: 13, repoOwner: 'protergo-fintech', repoName: 'legacy-crm', gitProvider: 'GitHub', visibility: 'Private', owner: 'Protergo Fintech Solutions', lastScanned: '10 May 2026', tags: [{ label: 'VPN', colorId: 8 }, { label: 'Dev', colorId: 3 }], status: 'Scanning' },
 ])
 const sourceCodeColumns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'repoOwner', label: 'Repository', width: '16%', truncate: true},
-  { key: 'gitProvider', label: 'Git Provider', width: '11%', truncate: true},
-  { key: 'owner', label: 'Asset Owner', width: '21%', truncate: true},
-  { key: 'lastScanned', label: 'Last Scanned', width: '12%', truncate: true},
-  { key: 'tags', label: 'Multi-Tags', width: '13%' },
-  { key: 'status', label: 'Scanner Status', width: '13%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '70px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'repoOwner', label: 'Repository', truncate: true },
+  { key: 'gitProvider', label: 'Git Provider', width: '91px', truncate: true  },
+  { key: 'owner', label: 'Asset Owner', truncate: true },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true  },
+  { key: 'tags', label: 'Multi-Tags'  },
+  { key: 'status', label: 'Scanner Status', width: '138px', align: 'center'   },
+  { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 const filteredSourceCodes = computed(() => {
   let list = sourceCodes.value
@@ -291,22 +291,22 @@ function submitRegisterSource() {
 }
 
 const columns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'domain', label: 'Domain', width: '28%', truncate: true},
-  { key: 'owner', label: 'Asset Owner', width: '26%', truncate: true},
-  { key: 'lastScanned', label: 'Last Scanned', width: '18%', truncate: true},
-  { key: 'status', label: 'Scanner Status', width: '16%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '32px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'domain', label: 'Domain', truncate: true },
+  { key: 'owner', label: 'Asset Owner', truncate: true },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true  },
+  { key: 'status', label: 'Scanner Status', width: '138px', align: 'center'   },
+  { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 const webappColumns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'appName', label: 'App Name', width: '18%', truncate: true},
-  { key: 'owner', label: 'Asset Owner', width: '22%', truncate: true},
-  { key: 'lastScanned', label: 'Last Scanned', width: '15%', truncate: true},
-  { key: 'tags', label: 'Multi-Tags', width: '17%' },
-  { key: 'status', label: 'Scanner Status', width: '15%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '32px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'appName', label: 'App Name', truncate: true },
+  { key: 'owner', label: 'Asset Owner', truncate: true },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true  },
+  { key: 'tags', label: 'Multi-Tags'  },
+  { key: 'status', label: 'Scanner Status', width: '138px', align: 'center'   },
+  { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 const ownerOptions = [
@@ -337,10 +337,10 @@ const tagsData = ref(emptyData.value ? [] : [
   { id: 9, name: 'CDN', color: '#12967d', bg: '#def7f0', usedBy: 1 },
 ])
 const tagsColumns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'name', label: 'Tag Name', width: '44%', truncate: true},
-  { key: 'usedBy', label: 'Used By', width: '36%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '32px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'name', label: 'Tag Name', truncate: true },
+  { key: 'usedBy', label: 'Used By', align: 'center'  },
+  { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 const filteredTags = computed(() => tagsData.value)
 function stripTagLabel(row, label) {
@@ -1517,7 +1517,7 @@ function onNetworkRegistered(row) {
     >
       <template #cell-tags="{ row }">
         <div class="cell-tags">
-          <span v-for="t in row.tags.slice(0, 2)" :key="t.label" class="dv-tag" :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }">{{ t.label }}</span>
+          <span v-for="t in row.tags.slice(0, 2)" :key="t.label" :title="t.label" class="dv-tag" :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }">{{ t.label }}</span>
           <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
           <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event)">Add tag</button>
         </div>
@@ -1547,7 +1547,7 @@ function onNetworkRegistered(row) {
     >
       <template #cell-tags="{ row }">
         <div class="cell-tags">
-          <span v-for="t in row.tags.slice(0, 2)" :key="t.label" class="dv-tag" :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }">{{ t.label }}</span>
+          <span v-for="t in row.tags.slice(0, 2)" :key="t.label" :title="t.label" class="dv-tag" :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }">{{ t.label }}</span>
           <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
           <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event)">Add tag</button>
         </div>
@@ -1577,7 +1577,7 @@ function onNetworkRegistered(row) {
     >
       <template #cell-tags="{ row }">
         <div class="cell-tags">
-          <span v-for="t in row.tags.slice(0, 2)" :key="t.label" class="dv-tag" :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }">{{ t.label }}</span>
+          <span v-for="t in row.tags.slice(0, 2)" :key="t.label" :title="t.label" class="dv-tag" :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }">{{ t.label }}</span>
           <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
           <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event, 'source')">Add tag</button>
         </div>

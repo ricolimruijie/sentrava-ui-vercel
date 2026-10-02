@@ -71,13 +71,13 @@ function createTicket({ name, category, description }) {
 const tableRef = ref(null)
 
 const columns = [
-  { key: '__index', label: 'No',            width: '52px',  dim: true, align: 'left' },
-  { key: 'date',     label: 'Submission Date', width: '15%', padLeft: '4px', truncate: true },
-  { key: 'name',     label: 'Ticket Name', width: '28%' },
-  { key: 'category', label: 'Issue Category', width: '18%', truncate: true },
-  { key: 'ticketId', label: 'Ticket ID',  width: '17%', truncate: true },
-  { key: 'status',   label: 'Ticket Status', width: '12%', align: 'center' },
-  { key: 'action',   label: 'Action',     width: '30px',  align: 'center', compact: true },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true, align: 'left' },
+  { key: 'date', label: 'Submission Date', width: '150px'  },
+  { key: 'name', label: 'Ticket Name' },
+  { key: 'category', label: 'Issue Category' },
+  { key: 'ticketId', label: 'Ticket ID', width: '167px'  },
+  { key: 'status', label: 'Ticket Status', width: '113px', align: 'center'  },
+  { key: 'action', label: 'Action', kind: 'action', align: 'center' },
 ]
 
 const statusMeta = {

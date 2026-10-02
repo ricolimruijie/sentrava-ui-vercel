@@ -27,15 +27,15 @@ const router = useRouter()
 const repos = ref(getSourceCodeRepos())
 
 const columns = [
-  { key: '__index', label: 'No', width: '52px', dim: true },
-  { key: 'lastScanned', label: 'Last Scanned', width: '11%', truncate: true },
-  { key: 'repo', label: 'Repository', width: '14%', truncate: true },
-  { key: 'branch', label: 'Branch', width: '7%', truncate: true},
-  { key: 'owner', label: 'Asset Owner', width: '16%', truncate: true },
-  { key: 'scanType', label: 'Scan Type', width: '12%' },
-  { key: 'tags', label: 'Multi-Tags', width: '18%' },
-  { key: 'status', label: 'Scanning status', width: '12%', align: 'center' },
-  { key: 'actions', label: 'Action', width: '70px', align: 'center' },
+  { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true   },
+  { key: 'repo', label: 'Repository', truncate: true  },
+  { key: 'branch', label: 'Branch', truncate: true },
+  { key: 'owner', label: 'Asset Owner', truncate: true  },
+  { key: 'scanType', label: 'Scan Type', width: '136px'   },
+  { key: 'tags', label: 'Multi-Tags'  },
+  { key: 'status', label: 'Scanning status', width: '138px', align: 'center'   },
+  { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 // Same palette as AssetInventoryView so tags render identically.
@@ -457,7 +457,7 @@ onMounted(() => {
           <span
             v-for="t in row.tags.slice(0, 2)"
             :key="t.label"
-            class="dv-tag"
+            :title="t.label" class="dv-tag"
             :style="{ background: tagColors[t.colorId].bg, color: tagColors[t.colorId].fg }"
           >{{ t.label }}</span>
           <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
