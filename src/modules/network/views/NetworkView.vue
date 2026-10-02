@@ -412,8 +412,8 @@ onMounted(() => {
 
     <div class="network__controls">
       <div class="network__filters">
-        <FilterDropdown v-model="targetTypeFilter" :options="targetTypeOptions" placeholder="Target Type" />
         <FilterDropdown v-model="scanTypeFilter" :options="scanTypeOptions" placeholder="Scan Type" />
+        <FilterDropdown v-model="targetTypeFilter" :options="targetTypeOptions" placeholder="Target Type" />
         <FilterDropdown v-model="statusFilter" :options="statusOptions" placeholder="Scanning Status" />
       </div>
       <SearchInput v-model="search" placeholder="Search" />
