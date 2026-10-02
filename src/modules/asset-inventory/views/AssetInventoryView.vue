@@ -10,6 +10,7 @@ import FilterDropdown from '@/components/common/FilterDropdown.vue'
 import SearchInput from '@/components/common/SearchInput.vue'
 import GlassField from '@/components/common/GlassField.vue'
 import { emptyData } from '@/utils/dataMode'
+import { formatShortDate } from '@/utils/helpers'
 import { IconDotsVertical, IconPlus, IconWorld, IconBrowser, IconNetwork, IconCode, IconTag, IconChevronDown, IconX, IconCheck, IconArrowUpRight, IconRefresh, IconTrash, IconSitemap, IconCircleDot, IconArrowsLeftRight, IconPencil, IconArrowRight, IconPalette, IconSearch } from '@tabler/icons-vue'
 
 const { can } = useRole()
@@ -1492,6 +1493,9 @@ function onNetworkRegistered(row) {
       :loading="false"
       empty-text="No assets found." :empty-icon="IconWorld"
     >
+      <template #cell-lastScanned="{ row }">
+        <span class="ticket-name__title">{{ formatShortDate(row.lastScanned) }}</span>
+      </template>
       <template #cell-status="{ row }">
         <span
           class="status-pill"
@@ -1521,6 +1525,9 @@ function onNetworkRegistered(row) {
           <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
           <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event)">Add tag</button>
         </div>
+      </template>
+      <template #cell-lastScanned="{ row }">
+        <span class="ticket-name__title">{{ formatShortDate(row.lastScanned) }}</span>
       </template>
       <template #cell-status="{ row }">
         <span
@@ -1552,6 +1559,9 @@ function onNetworkRegistered(row) {
           <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event)">Add tag</button>
         </div>
       </template>
+      <template #cell-lastScanned="{ row }">
+        <span class="ticket-name__title">{{ formatShortDate(row.lastScanned) }}</span>
+      </template>
       <template #cell-status="{ row }">
         <span
           class="status-pill"
@@ -1581,6 +1591,9 @@ function onNetworkRegistered(row) {
           <span v-if="row.tags.length > 2" class="tag-more">+{{ row.tags.length - 2 }}</span>
           <button v-if="!row.tags.length" type="button" class="tag-add" @click.stop="openTagPopover(row, $event, 'source')">Add tag</button>
         </div>
+      </template>
+      <template #cell-lastScanned="{ row }">
+        <span class="ticket-name__title">{{ formatShortDate(row.lastScanned) }}</span>
       </template>
       <template #cell-status="{ row }">
         <span
