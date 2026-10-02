@@ -323,17 +323,18 @@
 
   &__grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 10px;
     animation: menu-body-fade 0.3s ease 0.26s both;
   }
 
   &__card {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 6px;
-    padding: 14px 8px;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 8px;
     border: 1px solid var(--glacia-glass-border);
     border-radius: 12px;
     background: none;

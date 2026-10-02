@@ -15,7 +15,6 @@ import {
   IconChevronDown,
   IconChevronRight,
   IconSettings,
-  IconUserCircle,
   IconChevronsLeft,
   IconChevronsRight,
   IconPlus,
@@ -71,10 +70,9 @@ function handleClickOutside(e) {
 onMounted(()  => document.addEventListener('mousedown', handleClickOutside))
 onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
-// Profile and Settings both open the Settings page (Profile jumps to its Profile section).
-function openSettings(section) {
+function openSettings() {
   showMenu.value = false
-  router.push({ path: '/settings', query: section ? { section } : {} })
+  router.push('/settings')
 }
 
 function logout() {
@@ -257,11 +255,6 @@ function openCreateCompany() {
 
             <!-- Actions -->
             <div class="user-menu__grid">
-              <button class="user-menu__card" @click="openSettings('profile')">
-                <IconUserCircle :size="20" />
-                <span>Profile</span>
-              </button>
-
               <button class="user-menu__card" @click="openSettings()">
                 <IconSettings :size="20" />
                 <span>Settings</span>
