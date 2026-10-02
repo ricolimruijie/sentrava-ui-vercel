@@ -77,10 +77,10 @@
 .head__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .head__top .brand { margin-bottom: 0; }
 /* Same hover as "View all" in the dashboard Ticket Feed: an underline draws in from the left. */
-.back, .tfa__link, .tfa__plain { background-color: transparent; background-image: linear-gradient(currentColor, currentColor); background-size: 0% 2px; background-repeat: no-repeat; background-position: left calc(100% - 2px); transition: background-size .25s ease, color .15s ease; }
-.back:hover, .tfa__link:hover:not(:disabled), .tfa__plain:hover { background-size: 100% 2px; }
-.back { display: inline-flex; align-items: center; gap: 4px; margin-right: -2px; padding: 4px 2px 6px; border: 0; font: inherit; font-size: 13px; font-weight: 600; color: var(--text-2); cursor: pointer; }
-.back:hover { color: var(--text-1); }
+.tfa__back, .tfa__link, .tfa__plain { background-color: transparent; background-image: linear-gradient(currentColor, currentColor); background-size: 0% 2px; background-repeat: no-repeat; background-position: left calc(100% - 2px); transition: background-size .25s ease, color .15s ease; }
+.tfa__back:hover, .tfa__link:hover:not(:disabled), .tfa__plain:hover { background-size: 100% 2px; }
+.tfa__back { display: inline-flex; align-items: center; gap: 4px; margin-right: -2px; padding: 4px 2px 6px; border: 0; font: inherit; font-size: 13px; font-weight: 600; color: var(--text-2); cursor: pointer; }
+.tfa__back:hover { color: var(--text-1); }
 .form > .submit--sm { align-self: center; height: 40px; min-width: 160px; padding: 0 26px; margin-top: 0; font-size: 13.5px; }
 .login--centered .form :deep(.otp) { gap: 8px; }
 .login--centered .form :deep(.otp__digit) { width: 46px; height: 52px; font-size: 20px; }

@@ -164,7 +164,7 @@ onBeforeUnmount(() => clearTimeout(timer))
         <header class="head rise" style="--d: 80ms">
           <div class="head__top">
             <span v-if="!isSplit" class="brand"><img :src="logoIcon" class="brand__logo" width="28" height="28" alt="" aria-hidden="true" />SENTRAVA</span>
-            <button v-if="step !== 'credentials'" type="button" class="back" @click="backToLogin"><span class="icon icon--sm">arrow_back</span>Back to log in</button>
+            <button v-if="step !== 'credentials'" type="button" class="tfa__back" @click="backToLogin"><span class="icon icon--sm">arrow_back</span>Back to log in</button>
           </div>
           <template v-if="step === 'credentials'">
           <h1 class="title">Stay ahead of every threat</h1>
