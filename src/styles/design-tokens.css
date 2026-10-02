@@ -37,8 +37,10 @@
   --ink-2: #475569;
   --ink-3: #5c6470;
   --red-soft: #fff5f5;
+  --red-wash: #ffe6e9; /* the pinker middle of red-tinted headers (e.g. vulnerability details) */
   --green-soft: #e8f5e9;
   --blue-soft: #eaf1fc;
+  --blue-ink: #1f4a7d; /* text on blue-soft */
   --tint: 15, 23, 42;        /* rgb of subtle hover/border/track tints */
   --glass-rgb: 255, 255, 255; /* rgb of white glass fills and highlights */
   color-scheme: light;
@@ -71,8 +73,10 @@ html.dark {
   --ink-2: #c3ccdb;
   --ink-3: #a9b4c6;
   --red-soft: rgba(255, 37, 41, 0.1);
+  --red-wash: rgba(255, 37, 41, 0.16);
   --green-soft: rgba(34, 197, 94, 0.13);
   --blue-soft: rgba(96, 165, 250, 0.15);
+  --blue-ink: #93c5fd;
   --tint: 255, 255, 255;
   --glass-rgb: 46, 58, 92;
   color-scheme: dark;
