@@ -169,23 +169,23 @@ $w-collapsed:  64px;
   &__header {
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 6px;
     padding: 18px 10px 24px;
     flex-shrink: 0;
     overflow: hidden;
   }
 
-  // Centred on the same vertical line as the nav icons (x = 31.5px) in both states; the
-  // margins keep the wordmark exactly where it was.
+  // Centred on the same vertical line as the nav icons (x = 31.5px) in both states (the negative left
+  // margin); the wordmark sits 6px from the icon, same as on the login page.
   &__logo-icon {
     display: block;
     flex-shrink: 0;
-    margin: 0 3.5px 0 -3.5px;
+    margin: 0 0 0 -3.5px;
   }
 
   &__logo-text {
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 14.5px;
+    font-size: 17px; // same size as the SENTRAVA text on the login page
     font-weight: 800;
     letter-spacing: 0.13em;
     text-transform: uppercase;

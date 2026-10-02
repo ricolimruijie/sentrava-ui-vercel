@@ -2,19 +2,22 @@
 import { ref, computed, onMounted } from 'vue'
 
 // Six separate digit boxes (typing moves forward, Backspace/arrows move back and forth, paste fills all).
-// v-model is the digits typed so far as a string; `enter` fires on Enter.
+// v-model is the digits typed so far as a string; `enter` fires on Enter and `complete` as soon as the user
+// has typed or pasted the last digit (so the parent can verify without a button press).
 const props = defineProps({
   modelValue: { type: String, default: '' },
   length: { type: Number, default: 6 },
   autofocus: { type: Boolean, default: false },
 })
-const emit = defineEmits(['update:modelValue', 'enter'])
+const emit = defineEmits(['update:modelValue', 'enter', 'complete'])
 
 const inputs = ref([])
 const digits = computed(() => Array.from({ length: props.length }, (_, i) => props.modelValue[i] ?? ''))
 
 function set(list) {
-  emit('update:modelValue', list.join('').slice(0, props.length))
+  const v = list.join('').slice(0, props.length)
+  emit('update:modelValue', v)
+  if (v.length === props.length) emit('complete', v)
 }
 function focusAt(i) {
   inputs.value[Math.max(0, Math.min(i, props.length - 1))]?.focus()
@@ -46,6 +49,7 @@ function onPaste(e) {
   e.preventDefault()
   emit('update:modelValue', v)
   focusAt(v.length)
+  if (v.length === props.length) emit('complete', v)
 }
 
 onMounted(() => { if (props.autofocus) focusAt(0) })

@@ -239,7 +239,7 @@ onBeforeUnmount(() => clearTimeout(timer))
           </div>
 
           <div :key="'c' + (errors.form ? shakeKey : 0)" class="fld" :class="{ 'fld--shake': errors.form }">
-            <OtpInput :key="step" v-model="code" autofocus @enter="onVerify" />
+            <OtpInput :key="step" v-model="code" autofocus @enter="onVerify" @complete="onVerify" />
           </div>
 
           <span v-if="errors.form" class="error" role="alert"><span class="icon icon--sm">error</span>{{ errors.form }}</span>

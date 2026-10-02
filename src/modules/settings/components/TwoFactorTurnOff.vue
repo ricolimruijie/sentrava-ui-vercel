@@ -91,7 +91,7 @@ onUnmounted(() => clearTimeout(timer))
           : `We sent a 6-digit code to ${maskedEmail}. Enter it below.` }}
       </p>
       <div class="tf__otp">
-        <OtpInput :key="step" v-model="code" autofocus @enter="submit" />
+        <OtpInput :key="step" v-model="code" autofocus @enter="submit" @complete="submit" />
       </div>
       <p v-if="step === 'code'" class="tf__alt">
         Don't have access to your Authenticator app,

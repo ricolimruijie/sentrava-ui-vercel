@@ -88,7 +88,7 @@ onUnmounted(() => clearTimeout(timer))
     <h3 class="tfa__h">Get verification code</h3>
     <p class="tfa__desc">Enter the six-digit code that you see in the app.</p>
     <div class="tfa-box">
-    <OtpInput v-model="code" autofocus @enter="submit" />
+    <OtpInput v-model="code" autofocus @enter="submit" @complete="submit" />
   </div>
 
   <div class="tfa__actions">
