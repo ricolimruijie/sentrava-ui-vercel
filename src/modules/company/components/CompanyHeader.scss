@@ -100,8 +100,8 @@
 .lm-btn {
   position: relative;
   z-index: 2;
-  width: 38px;
-  height: 38px;
+  width: 26px;
+  height: 26px;
   border: 0;
   border-radius: 999px;
   cursor: pointer;
@@ -122,8 +122,8 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 308px;
-  height: 166px;
+  width: 272px;
+  height: 134px;
   pointer-events: none;
   filter: url(#lm-goo) drop-shadow(0 18px 24px rgba(16, 24, 32, 0.18));
 }
@@ -132,40 +132,40 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 38px;
-  height: 38px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--glacia-red);
 }
 
 .lm-shape,
 .lm-list {
-  width: 264px;
-  transform-origin: -13px 19px; // = button centre
+  width: 232px;
+  transform-origin: -7px 13px; // = button centre (list left 20px, button 26px)
 }
 
 .lm-shape {
   position: absolute;
-  left: 32px;
+  left: 20px;
   top: 0;
-  height: 160px; // 3 × 48px items + 2 × 8px padding
-  border-radius: 20px;
+  height: 126px; // 3 × 38px items + 2 × 6px padding
+  border-radius: 16px;
   background: var(--surface);
 }
 
 .lm-list {
   position: absolute;
-  left: 32px;
+  left: 20px;
   top: 0;
   z-index: 1;
   box-sizing: border-box;
-  padding: 8px;
+  padding: 6px;
   display: flex;
   flex-direction: column;
   // Solid backing identical to the flyout — the goo shape alone can't be
   // trusted to cover the list in every browser's filter region.
   background: var(--surface);
-  border-radius: 20px;
+  border-radius: 16px;
 }
 
 .lm:not(.is-open):not(.is-closing) .lm-goo > .lm-shape,
@@ -193,14 +193,14 @@
 .lm-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-height: 48px;
-  padding: 8px 14px 8px 11px;
+  gap: 10px;
+  min-height: 38px;
+  padding: 6px 12px 6px 10px;
   border: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   background: none;
   font-family: 'Manrope', 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--glacia-ink);
   text-align: left;
@@ -211,6 +211,8 @@
   &:hover {
     background: rgba(var(--tint), 0.05);
   }
+
+  svg { flex-shrink: 0; }
 
   span:nth-child(2) {
     flex: 1;
@@ -244,8 +246,8 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 220px;
-  padding: 8px;
+  min-width: 190px;
+  padding: 6px;
   background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
   border-radius: 14px;

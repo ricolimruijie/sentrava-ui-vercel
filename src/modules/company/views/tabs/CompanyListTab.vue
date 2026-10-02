@@ -143,7 +143,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       </template>
       <template #cell-action="{ row }">
         <button type="button" class="action-btn" aria-label="Actions" @click.stop="toggleMenu(row, $event)">
-          <IconDotsVertical :size="16" />
+          <IconDotsVertical :size="12" />
         </button>
       </template>
     </DataTable>
@@ -207,8 +207,8 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 }
 
 .action-btn {
-  width: 30px;
-  height: 30px;
+  width: 22px;
+  height: 22px;
   border-radius: var(--glacia-radius-sm);
   background: none;
   border: none;

@@ -600,46 +600,46 @@ onUnmounted(() => document.removeEventListener('keydown', handleLiquidKeydown))
                 :aria-expanded="liquidOpen"
                 @click="toggleLiquidMenu"
               >
-                <IconDotsVertical :size="18" />
+                <IconDotsVertical :size="14" />
               </button>
               <div class="lm-list" role="menu">
                 <button type="button" class="lm-item" role="menuitem" @click="startActivationDate">
-                  <IconPower :size="18" />
+                  <IconPower :size="16" />
                   <span>Start activation date</span>
                 </button>
                 <button type="button" class="lm-item" role="menuitem" @click="openQuotaInfo">
-                  <IconFileText :size="18" />
+                  <IconFileText :size="16" />
                   <span>Quota information</span>
                 </button>
                 <div class="lm-row">
                   <button type="button" class="lm-item" role="menuitem" @click.stop="configSubOpen = !configSubOpen">
-                    <IconSitemap :size="18" />
+                    <IconSitemap :size="16" />
                     <span>Company configuration</span>
-                    <IconChevronRight :size="16" class="lm-chev" />
+                    <IconChevronRight :size="14" class="lm-chev" />
                   </button>
                   <div v-if="configSubOpen" class="lm-submenu">
                     <button type="button" class="lm-item" role="menuitem" @click="editCompanyName">
-                      <IconPencil :size="18" />
+                      <IconPencil :size="16" />
                       <span>Edit company name</span>
                     </button>
                     <button type="button" class="lm-item" role="menuitem" @click="addScanQuota">
-                      <IconChartBar :size="18" />
+                      <IconChartBar :size="16" />
                       <span>Add scan quota</span>
                     </button>
                     <button type="button" class="lm-item" role="menuitem" @click="inviteUser">
-                      <IconUserPlus :size="18" />
+                      <IconUserPlus :size="16" />
                       <span>Invite user</span>
                     </button>
                     <button type="button" class="lm-item" role="menuitem" @click="addIntegration">
-                      <IconPlug :size="18" />
+                      <IconPlug :size="16" />
                       <span>Add integration</span>
                     </button>
                     <button v-if="allowCreateSubCompany" type="button" class="lm-item" role="menuitem" @click="createSubCompany">
-                      <IconSitemap :size="18" />
+                      <IconSitemap :size="16" />
                       <span>Create sub company</span>
                     </button>
                     <button type="button" class="lm-item lm-item--danger" role="menuitem" @click="deleteCompany">
-                      <IconTrash :size="18" />
+                      <IconTrash :size="16" />
                       <span>Delete company</span>
                     </button>
                   </div>
