@@ -1,0 +1,178 @@
+// Same shell, buttons and animation as the Create Ticket modal.
+// Inline on the Settings page. Buttons and typography match the Create Ticket modal.
+.tfa {
+  &__title {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--glacia-ink);
+    margin: 0;
+  }
+
+  &__h {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--glacia-ink);
+    margin: 26px 0 0;
+  }
+
+  &__desc {
+    margin: 6px 0 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--glacia-ink-dim);
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 26px;
+  }
+}
+
+.tfa-box {
+  margin-top: 14px;
+  padding: 22px;
+  border-radius: 16px;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+}
+
+.tfa-scan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.tfa-qr {
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.tfa-secret {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 220px;
+
+  &__label {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--glacia-ink);
+  }
+
+  &__key {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--hairline);
+    background: var(--surface-3);
+    color: var(--glacia-ink-dim);
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    user-select: all;
+    overflow-wrap: anywhere;
+  }
+}
+
+.tfa-copy {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 37, 41, 0.1);
+  color: var(--glacia-red);
+  font-family: 'Manrope', 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.13s;
+
+  &:hover { background: rgba(255, 37, 41, 0.16); }
+
+  &--done { background: rgba(22, 163, 74, 0.12); color: #16a34a; }
+
+  &__spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 37, 41, 0.25);
+    border-top-color: var(--glacia-red);
+    animation: tfa-spin 0.7s linear infinite;
+  }
+}
+
+.modal-btn {
+  min-width: 120px;
+  height: 42px;
+  padding: 0 24px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Manrope', 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.13s, opacity 0.13s;
+
+  &--cancel {
+    background: rgba(220, 38, 38, 0.06);
+    color: var(--glacia-sev-critical);
+
+    &:hover:not(:disabled) { background: rgba(220, 38, 38, 0.12); }
+    &:disabled { opacity: 0.5; cursor: default; }
+  }
+
+  &--save {
+    background: #ff2e3a;
+    color: #fff;
+    box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
+
+    &:not(:disabled):not(.modal-btn--saved):hover { background: #e6212c; }
+  }
+
+  &--saved {
+    background: #16a34a;
+    box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.4);
+  }
+
+  &--create {
+    background: rgba(255, 46, 58, 0.14);
+    color: #7f1d1d;
+    cursor: default;
+  }
+
+  &__spinner {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid rgba(var(--glass-rgb), 0.4);
+    border-top-color: #fff;
+    animation: tfa-spin 0.7s linear infinite;
+  }
+
+  &__check { animation: tfa-pop 0.4s ease; }
+}
+
+@keyframes tfa-spin { to { transform: rotate(360deg); } }
+@keyframes tfa-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}

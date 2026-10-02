@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   formatNumber, formatDate, formatShortDate, severityLabel,
-  formatDateLong, formatLongDateTime24, formatDayMonthYear, formatDayMonthTime, timeAgo,
+  formatDateLong, formatLongDateTime24, formatDayMonthYear, formatDayMonthTime, timeAgo, maskEmail,
 } from './helpers'
 
 describe('helpers', () => {
@@ -9,6 +9,12 @@ describe('helpers', () => {
     expect(formatNumber(999)).toBe('999')
     expect(formatNumber(1500)).toBe('1.5K')
     expect(formatNumber(2_000_000)).toBe('2.0M')
+  })
+
+  it('maskEmail keeps the first letter and the domain', () => {
+    expect(maskEmail('admin@acme.com')).toBe('a****@acme.com')
+    expect(maskEmail('al@acme.com')).toBe('a***@acme.com')
+    expect(maskEmail('')).toBe('your email address')
   })
 
   it('formatDate uses a short US date', () => expect(formatDate('2026-03-05T12:00:00')).toBe('Mar 5, 2026'))

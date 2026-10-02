@@ -104,3 +104,9 @@ export function timeAgo(iso, now = Date.now()) {
   if (days < 7) return plural(days, 'day')
   return formatDate(iso)
 }
+
+// "alex@acme.com" -> "a***@acme.com" (shown where a code was sent, without revealing the whole address)
+export function maskEmail(email) {
+  const [name = '', domain = ''] = String(email ?? '').split('@')
+  return name && domain ? `${name[0]}${'*'.repeat(Math.max(name.length - 1, 3))}@${domain}` : 'your email address'
+}

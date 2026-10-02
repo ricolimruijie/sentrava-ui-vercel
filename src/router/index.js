@@ -115,7 +115,7 @@ const appRoutes = [
       crumbs: [],
       // The active section lives in ?section= so the breadcrumb shows it.
       tabQuery: 'section',
-      tabLabels: { profile: 'Profile', 'two-factor': 'Two-factor authentication' },
+      tabLabels: { profile: 'Profile', password: 'Change password', 'two-factor': 'Two-factor authentication' },
     },
   },
   {

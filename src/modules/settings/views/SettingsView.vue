@@ -1,8 +1,9 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { IconUserCircle, IconShieldLock } from '@tabler/icons-vue'
+import { IconUserCircle, IconShieldLock, IconKey } from '@tabler/icons-vue'
 import ProfileSection from '@/modules/settings/components/ProfileSection.vue'
+import PasswordSection from '@/modules/settings/components/PasswordSection.vue'
 import TwoFactorSection from '@/modules/settings/components/TwoFactorSection.vue'
 
 // Settings — open to every role. The active section lives in `?section=` so the
@@ -12,6 +13,7 @@ const router = useRouter()
 
 const sections = [
   { key: 'profile',    label: 'Profile',                      icon: IconUserCircle },
+  { key: 'password',   label: 'Change password',              icon: IconKey },
   { key: 'two-factor', label: 'Two-factor authentication',    icon: IconShieldLock },
 ]
 
@@ -47,6 +49,7 @@ function select(key) {
 
       <section class="settings__content card">
         <ProfileSection v-if="active === 'profile'" />
+        <PasswordSection v-else-if="active === 'password'" />
         <TwoFactorSection v-else />
       </section>
     </div>
@@ -82,7 +85,6 @@ function select(key) {
 
   &__content {
     padding: 28px 30px 30px;
-    min-height: 360px;
   }
 }
 

@@ -11,6 +11,7 @@ const props = defineProps({
   modelValue: { type: [String, Number, Array, null], default: '' },
   multiple: { type: Boolean, default: false }, // select only: modelValue is an array; options render as checkboxes
   type: { type: String, default: 'text' }, // 'text' | 'select' | 'textarea'
+  revealable: { type: Boolean, default: false }, // password fields: show an eye button that reveals/hides the text (same icons as the login page)
   inputType: { type: String, default: 'text' }, // native <input> type, e.g. 'password', 'email' — ignored for 'select'/'textarea'
   label: { type: String, required: true },
   placeholder: { type: String, default: '' },
@@ -26,6 +27,8 @@ const emit = defineEmits(['update:modelValue', 'enter'])
 
 const id = 'gf-' + Math.random().toString(36).slice(2, 8)
 const focused = ref(false)
+const revealed = ref(false)
+const nativeType = computed(() => (props.revealable && props.inputType === 'password' && revealed.value ? 'text' : props.inputType))
 const open = ref(false)
 const touched = ref(false)
 const shaking = ref(false)
@@ -215,7 +218,7 @@ function onKey(e) {
         <input
           :id="id"
           class="gf__input"
-          :type="inputType"
+          :type="nativeType"
           :value="modelValue"
           :maxlength="maxlength"
           :placeholder="placeholder"
@@ -226,6 +229,14 @@ function onKey(e) {
           @keyup.enter="emit('enter')"
         />
         <span v-if="maxlength" class="gf__count">{{ (modelValue || '').length }}/{{ maxlength }}</span>
+        <button
+          v-if="revealable && inputType === 'password'"
+          type="button"
+          class="gf__eye"
+          :aria-label="revealed ? 'Hide password' : 'Show password'"
+          @mousedown.prevent
+          @click="revealed = !revealed"
+        >{{ revealed ? 'visibility' : 'visibility_off' }}</button>
       </div>
 
       <!-- Select -->
