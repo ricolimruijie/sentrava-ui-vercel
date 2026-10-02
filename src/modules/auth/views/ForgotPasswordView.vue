@@ -146,7 +146,9 @@ onBeforeUnmount(() => clearTimeout(timer))
 <style scoped src="./auth.css"></style>
 <style scoped>
 /* Forgot-password-only pieces (shared look lives in auth.css). */
-.back { display: inline-flex; align-items: center; justify-content: center; gap: 6px; align-self: center; font-size: 13px; }
+/* Same hover as the "Forgot Password" link on the login page: an underline draws in from the left. */
+.back { display: inline-flex; align-items: center; justify-content: center; gap: 6px; align-self: center; padding: 4px 2px 6px; font-size: 13px; text-decoration: none; background-image: linear-gradient(currentColor, currentColor); background-size: 0% 2px; background-repeat: no-repeat; background-position: left calc(100% - 2px); transition: background-size .25s ease, color .15s ease; }
+.link.back:hover { background-size: 100% 2px; text-decoration: none; color: var(--coral-700); }
 .sent { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 8px 0 2px; text-align: center; }
 .sent__icon { width: 56px; height: 56px; border-radius: 50%; background: var(--success); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 14px 28px -14px rgba(31,203,139,.8); }
 .sent__title { margin: 4px 0 0; font-size: 17px; font-weight: 800; color: var(--text-1); }
