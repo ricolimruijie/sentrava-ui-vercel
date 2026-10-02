@@ -105,8 +105,9 @@ onUnmounted(() => {
   box-shadow: 0 2px 6px -2px rgba(16, 24, 32, 0.08);
   transition: background 0.18s ease, padding 0.22s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
 }
-.dd:not(.has-value) .dd__trigger:hover {
-  background: rgba(255, 37, 41, 0.06);
+// Hover (with or without a chosen value): a light neutral tint, the same one the options use.
+.dd__trigger:hover {
+  background: rgba(var(--tint), 0.045);
   border-color: var(--hairline-strong);
 }
 .dd.has-value .dd__trigger {
@@ -222,6 +223,7 @@ onUnmounted(() => {
   transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.15s ease;
 
   &:hover {
+    background: rgba(var(--tint), 0.06);
     transform: scale(1.015);
     box-shadow: 0 4px 12px -4px rgba(16, 24, 32, 0.14);
   }
