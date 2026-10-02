@@ -1065,7 +1065,7 @@ const delTlScanLabel = computed(() => {
       @download="downloadReport"
     />
 
-    <VulnerabilityDetailModal v-model="showFindingModal" :item="selectedFinding" summary-strip :auto-upload="findingAutoUpload" :upload-only="findingAutoUpload" hide-likelihood show-qod hide-line-of-code hide-finding-type show-validation-cycle show-solution-type hide-port-ref />
+    <VulnerabilityDetailModal v-model="showFindingModal" :item="selectedFinding" summary-strip hide-code-snippet :auto-upload="findingAutoUpload" :upload-only="findingAutoUpload" hide-likelihood show-qod hide-line-of-code hide-finding-type show-validation-cycle show-solution-type hide-port-ref />
     <Teleport to="body">
       <Transition name="target-panel-fade">
         <div v-if="showTargetDetailModal" class="target-modal" :style="{ top: `${targetDetailPos.top}px`, left: `${targetDetailPos.left}px` }">
