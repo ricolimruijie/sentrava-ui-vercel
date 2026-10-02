@@ -72,11 +72,11 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true, align: 'left' },
-  { key: 'date', label: 'Submission Date', width: '150px'  },
-  { key: 'name', label: 'Ticket Name' },
-  { key: 'category', label: 'Issue Category' },
-  { key: 'ticketId', label: 'Ticket ID', width: '167px'  },
-  { key: 'status', label: 'Ticket Status', width: '113px', align: 'center'  },
+  { key: 'date', label: 'Submission Date', width: '150px' },
+  { key: 'name', label: 'Ticket Name', min: 130, max: 280 },
+  { key: 'category', label: 'Issue Category', min: 135, max: 250 },
+  { key: 'ticketId', label: 'Ticket ID', width: '167px' },
+  { key: 'status', label: 'Ticket Status', width: '125px', align: 'center' },
   { key: 'action', label: 'Action', kind: 'action', align: 'center' },
 ]
 

@@ -19,11 +19,11 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: 'No', kind: 'index', width: '64px', dim: true  },
-  { key: 'dateTime', label: 'Date and Time', width: '192px', dim: true, truncate: true   },
-  { key: 'repository', label: 'Repository', dim: true, truncate: true },
-  { key: 'branch', label: 'Branch', dim: true, truncate: true },
-  { key: 'scanId', label: 'Scan ID', width: '75px', dim: true, truncate: true   },
-  { key: 'status', label: 'Scanning status', width: '146px', align: 'center'   },
+  { key: 'dateTime', label: 'Date and Time', width: '192px', dim: true, truncate: true },
+  { key: 'repository', label: 'Repository', min: 130, max: 280, dim: true, truncate: true },
+  { key: 'branch', label: 'Branch', min: 130, max: 200, dim: true, truncate: true },
+  { key: 'scanId', label: 'Scan ID', width: '80px', dim: true, truncate: true },
+  { key: 'status', label: 'Scanning status', width: '146px', align: 'center' },
   { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 

@@ -22,12 +22,12 @@ const tableRef = ref(null)
 
 const allColumns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'name', label: 'Name', dim: true, truncate: true  },
-  { key: 'trackingId', label: 'Tracking ID', dim: true, truncate: true },
-  { key: 'key', label: 'Key', dim: true, truncate: true },
-  { key: 'created', label: 'Created', width: '158px', dim: true, truncate: true  },
-  { key: 'lastUsed', label: 'Last used', width: '158px', dim: true, truncate: true  },
-  { key: 'requests', label: 'API Request', width: '87px', align: 'center', dim: true   },
+  { key: 'name', label: 'Name', min: 130, max: 280, dim: true, truncate: true },
+  { key: 'trackingId', label: 'Tracking ID', min: 130, max: 300, dim: true, truncate: true },
+  { key: 'key', label: 'Key', min: 130, max: 260, dim: true, truncate: true },
+  { key: 'created', label: 'Created', width: '158px', dim: true, truncate: true },
+  { key: 'lastUsed', label: 'Last used', width: '158px', dim: true, truncate: true },
+  { key: 'requests', label: 'API Request', width: '110px', align: 'center', dim: true },
   { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 // The action column only holds actions this role may not use.

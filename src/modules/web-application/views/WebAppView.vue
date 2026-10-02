@@ -29,13 +29,13 @@ const apps = ref(getWebApps())
 
 const columns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'lastScanned', label: 'Last scanned', width: '154px', truncate: true   },
-  { key: 'name', label: 'Application name', truncate: true  },
-  { key: 'target', label: 'Target', truncate: true  },
-  { key: 'owner', label: 'Asset owner', truncate: true  },
-  { key: 'scanType', label: 'Scan type', width: '136px', truncate: true   },
-  { key: 'tags', label: 'Multi-Tags'  },
-  { key: 'status', label: 'Scanning status', width: '138px', align: 'center'   },
+  { key: 'lastScanned', label: 'Last scanned', width: '154px', truncate: true },
+  { key: 'name', label: 'Application name', min: 151, max: 280, truncate: true },
+  { key: 'target', label: 'Target', min: 130, max: 440, truncate: true },
+  { key: 'owner', label: 'Asset owner', min: 130, max: 260, truncate: true },
+  { key: 'scanType', label: 'Scan type', width: '136px', truncate: true },
+  { key: 'tags', label: 'Multi-Tags', min: 130, max: 260 },
+  { key: 'status', label: 'Scanning status', width: '146px', align: 'center' },
   { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 

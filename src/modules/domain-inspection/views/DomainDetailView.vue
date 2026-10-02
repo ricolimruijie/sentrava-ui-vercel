@@ -160,11 +160,11 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true, mono: true  },
-  { key: 'ip', label: 'Endpoint', mono: true, truncate: true  },
-  { key: 'relatedDomain', label: 'Related Domain', truncate: true  },
-  { key: 'totalSeverity', label: 'Total Findings', width: '89px', align: 'center'   },
-  { key: 'tags', label: 'Multi-Tags'  },
-  { key: 'status', label: 'Scanning Status', width: '138px', align: 'center'   },
+  { key: 'ip', label: 'Endpoint', min: 130, max: 440, mono: true, truncate: true },
+  { key: 'relatedDomain', label: 'Related Domain', min: 138, max: 320, truncate: true },
+  { key: 'totalSeverity', label: 'Total Findings', width: '131px', align: 'center' },
+  { key: 'tags', label: 'Multi-Tags', min: 130, max: 260 },
+  { key: 'status', label: 'Scanning Status', width: '146px', align: 'center' },
   { key: 'view', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
@@ -318,11 +318,11 @@ const drStatusFilter = ref(null)
 const drSearch = ref('')
 const drColumns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'ip', label: 'Endpoint', mono: true, truncate: true  },
-  { key: 'relatedDomain', label: 'Related Domain', truncate: true  },
-  { key: 'tags', label: 'Multi-Tags'  },
-  { key: 'totalSeverity', label: 'Total Findings', width: '89px', align: 'center'   },
-  { key: 'status', label: 'Scanning Status', width: '138px', align: 'center'   },
+  { key: 'ip', label: 'Endpoint', min: 130, max: 440, mono: true, truncate: true },
+  { key: 'relatedDomain', label: 'Related Domain', min: 138, max: 320, truncate: true },
+  { key: 'tags', label: 'Multi-Tags', min: 130, max: 260 },
+  { key: 'totalSeverity', label: 'Total Findings', width: '131px', align: 'center' },
+  { key: 'status', label: 'Scanning Status', width: '146px', align: 'center' },
   { key: 'view', label: 'Action', kind: 'action', align: 'center'  },
 ]
 // Display copies: the reputation scan is still queued for every endpoint, so
@@ -350,10 +350,10 @@ const epFiltered = computed(() => {
 const epColumns = [
   { key: 'check', label: '', kind: 'check', align: 'center'  },
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'name', label: 'Vulnerability Name', truncate: true  },
-  { key: 'lastModified', label: 'Last Modified', width: '150px', dim: true   },
-  { key: 'severity', label: 'Severity', width: '97px', align: 'center'   },
-  { key: 'validation', label: 'Validation Cycle', width: '134px', align: 'center'   },
+  { key: 'name', label: 'Vulnerability Name', min: 167, max: 420, truncate: true },
+  { key: 'lastModified', label: 'Last Modified', width: '150px', dim: true },
+  { key: 'severity', label: 'Severity', width: '97px', align: 'center' },
+  { key: 'validation', label: 'Validation Cycle', width: '147px', align: 'center' },
   { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
@@ -464,10 +464,10 @@ const filteredVulns = computed(() => {
 const vulnColumns = [
   { key: 'check', label: '', kind: 'check', align: 'center'  },
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'name', label: 'Vulnerability Name', truncate: true  },
-  { key: 'lastModified', label: 'Last Modified', width: '150px', dim: true   },
-  { key: 'severity', label: 'Severity', width: '97px', align: 'center'   },
-  { key: 'validation', label: 'Validation Cycle', width: '134px', align: 'center'   },
+  { key: 'name', label: 'Vulnerability Name', min: 167, max: 420, truncate: true },
+  { key: 'lastModified', label: 'Last Modified', width: '150px', dim: true },
+  { key: 'severity', label: 'Severity', width: '97px', align: 'center' },
+  { key: 'validation', label: 'Validation Cycle', width: '147px', align: 'center' },
   { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 

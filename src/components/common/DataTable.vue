@@ -1,21 +1,24 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { usePagination } from '@/composables/usePagination'
+import { useColumnWidths } from '@/composables/useColumnWidths'
 import TablePagination from '@/components/common/TablePagination.vue'
 import { IconInbox } from '@tabler/icons-vue'
 
 const props = defineProps({
-  // [{ key, label, kind?, width?, align?: 'left'|'center'|'right', mono?, truncate?, bold?, dim? }]
+  // [{ key, label, kind?, width?, min?, max?, align?: 'left'|'center'|'right', mono?, truncate?, bold?, dim? }]
   //
-  // Two kinds of columns (see the table rules in the README):
-  //  - Fixed-format columns (dates, status, severity, counts, IDs, No, Action ...) have an explicit
-  //    px `width` sized to their widest content, and never change with the window.
-  //  - Text-heavy columns (names, targets, descriptions ...) have NO width: they split whatever is left
-  //    equally, and anything longer than its column is cut off with an ellipsis (full text in a tooltip).
-  // `kind` marks the three special columns whose width is set here, not by the caller:
-  //  'index' (row number, 52px; pass a wider px width only if the table can reach 1000+ rows),
-  //  'check' (row checkbox, 48px) and 'action' (the button(s) column, 76px).
-  // key === '__index' renders the row number (1-based, across pages, zero-padded to 2 digits: 01, 02…).
+  // Column types (see README › Tables and components/common/tableLayout.js):
+  //  - fixed-format (dates, status, severity, counts, IDs ...): a px `width` = widest header or data + padding.
+  //    They hold that width and grow evenly only when there is leftover space after the text columns hit `max`.
+  //  - text-heavy (names, targets, descriptions ...): no `width`; `min` (header + padding) and `max` (widest
+  //    realistic value) in px. They share the leftover equally up to `max`; longer text is cut with "..." and a
+  //    tooltip.
+  //  - `kind` marks the three special columns that never change width: 'index' (row number, 52px; pass a wider px
+  //    width only if the table can reach 1000+ rows), 'check' (row checkbox, 48px) and 'action' (76px, wide enough
+  //    for the "ACTION" header).
+  // Headers always stay on one line and are never cut off. key === '__index' renders the row number (1-based,
+  // across pages, zero-padded to 2 digits: 01, 02...).
   columns: { type: Array, required: true },
   items: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
@@ -49,34 +52,36 @@ function keyFor(row, i) {
 
 const INDEX_W = 52     // "No" header + up to 3 digits
 const CHECK_W = 48     // 18px checkbox + padding
-const ACTION_W = 76    // wide enough for the "ACTION" header (47px) + padding; the 30px button fits easily
-const TEXT_MIN_W = 130 // narrowest a text-heavy column may get before the table scrolls sideways (fits the longest header word, "VULNERABILITY")
+const ACTION_W = 76    // wide enough for the "ACTION" header on one line (47px) + padding
+const TEXT_MIN_W = 130 // default minimum / maximum for a text column that does not declare its own
+const TEXT_MAX_W = 280
 
 const kindOf = (col) => col.kind ?? (col.key === '__index' ? 'index' : null)
 
-// Column widths live only on <colgroup><col> (the CSS-authoritative source for table-layout:fixed).
-// Text-heavy columns return null so they share the leftover space equally.
-function colWidth(col) {
+// One spec per column for the allocator: { kind, base, max? } (see tableLayout.js).
+const specs = computed(() => props.columns.map((col) => {
   const kind = kindOf(col)
   if (kind === 'index') {
     const px = /^(\d+)px$/.exec(col.width ?? '')
-    return px && Number(px[1]) > INDEX_W ? col.width : `${INDEX_W}px`
+    return { kind, base: px && Number(px[1]) > INDEX_W ? Number(px[1]) : INDEX_W }
   }
-  if (kind === 'check') return `${CHECK_W}px`
-  if (kind === 'action') return `${ACTION_W}px`
-  return col.width || null
-}
+  if (kind === 'check') return { kind, base: CHECK_W }
+  if (kind === 'action') return { kind, base: ACTION_W }
+  const px = /^(\d+)px$/.exec(col.width ?? '')
+  if (px) return { kind: 'fixed', base: Number(px[1]) }
+  const base = col.min ?? TEXT_MIN_W
+  return { kind: 'text', base, max: Math.max(col.max ?? TEXT_MAX_W, base) }
+}))
 
-// The table never squeezes its text columns below TEXT_MIN_W: on a narrow screen it scrolls
-// sideways inside its wrapper instead. (This is a minimum for the whole table, not a column width.)
-const minTableWidth = computed(() => {
-  let total = 0
-  for (const col of props.columns) {
-    const w = colWidth(col)
-    total += w ? parseInt(w, 10) : TEXT_MIN_W
-  }
-  return total
-})
+// The table is as wide as its card; the leftover space is handed out by allocateColumns(). Column widths
+// never depend on the data in the cells. When even the base widths don't fit, the table scrolls sideways.
+const wrapRef = ref(null)
+const { widths, minWidth } = useColumnWidths(wrapRef, () => specs.value)
+function colStyle(i) {
+  if (widths.value) return { width: `${widths.value[i]}px` }
+  const s = specs.value[i]
+  return s.kind === 'text' ? null : { width: `${s.base}px` } // before the first measurement
+}
 
 // Alignment is the only per-column style: cell padding is the same everywhere (14px each side).
 function cellStyle(col) {
@@ -108,10 +113,10 @@ defineExpose({ pagination })
 
 <template>
   <div class="data-table">
-    <div class="data-table__wrap">
-      <table class="vtable" :style="{ minWidth: `${minTableWidth}px` }">
+    <div ref="wrapRef" class="data-table__wrap">
+      <table class="vtable" :style="{ minWidth: `${minWidth}px` }">
         <colgroup>
-          <col v-for="col in columns" :key="col.key" :style="colWidth(col) ? { width: colWidth(col) } : null" />
+          <col v-for="(col, i) in columns" :key="col.key" :style="colStyle(i)" />
         </colgroup>
         <thead>
           <tr>
@@ -199,19 +204,13 @@ defineExpose({ pagination })
     line-height: 1.3;
     color: var(--glacia-ink-dim);
     vertical-align: middle;
+    white-space: nowrap;
+    overflow: visible;
   }
 
-  // Headers are never cut off with "...": they wrap onto a second line (the column widths are sized
-  // so two lines are always enough). Whole words only.
-  &__th-text {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-    white-space: normal;
-    overflow-wrap: normal;
-    word-break: normal;
-  }
+  // Headers stay on one line and are never cut off: the column widths are sized from the header text, so
+  // there is always room (no wrapping, no "...").
+  &__th-text { white-space: nowrap; }
 
   // Anything longer than its column is cut off on a single line with "...".
   td {

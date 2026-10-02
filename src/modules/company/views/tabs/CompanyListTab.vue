@@ -19,10 +19,10 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'name', label: 'Company Name', bold: true, truncate: true },
-  { key: 'type', label: 'Type', width: '124px', dim: true, truncate: true  },
-  { key: 'users', label: 'Users', width: '70px', align: 'center'   },
-  { key: 'status', label: 'Status', width: '146px', align: 'center'   },
+  { key: 'name', label: 'Company Name', min: 132, max: 280, bold: true, truncate: true },
+  { key: 'type', label: 'Type', width: '124px', dim: true, truncate: true },
+  { key: 'users', label: 'Users', width: '70px', align: 'center' },
+  { key: 'status', label: 'Status', width: '146px', align: 'center' },
   { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 

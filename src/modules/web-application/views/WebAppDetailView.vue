@@ -219,10 +219,10 @@ const tableRef = ref(null)
 const columns = [
   { key: 'check', label: '', kind: 'check', align: 'center'  },
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'name', label: 'Vulnerability Name', truncate: true  },
-  { key: 'lastModified', label: 'Last Modified', width: '150px', dim: true, truncate: true  },
-  { key: 'severity', label: 'Severity', width: '97px', align: 'center'   },
-  { key: 'cycle', label: 'Validation Cycle', width: '130px', align: 'center'   },
+  { key: 'name', label: 'Vulnerability Name', min: 167, max: 420, truncate: true },
+  { key: 'lastModified', label: 'Last Modified', width: '150px', dim: true, truncate: true },
+  { key: 'severity', label: 'Severity', width: '97px', align: 'center' },
+  { key: 'cycle', label: 'Validation Cycle', width: '147px', align: 'center' },
   { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 

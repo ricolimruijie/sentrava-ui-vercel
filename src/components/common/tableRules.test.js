@@ -12,8 +12,19 @@ function vueFiles(dir) {
 }
 const files = vueFiles('src').filter((f) => readFileSync(f, 'utf8').includes('<DataTable'))
 const COLUMN = /^\s*\{ key: '([^']+)', label: '([^']*)'(.*)\},?\s*$/
-const columns = files.flatMap((f) => readFileSync(f, 'utf8').split('\n').map((l, i) => ({ f, line: i + 1, m: COLUMN.exec(l), text: l })).filter((x) => x.m)
-  .map((x) => ({ file: f, line: x.line, key: x.m[1], label: x.m[2], rest: x.m[3] })))
+const ARRAY_START = /^const \w*[Cc]olumns\w* = \[/
+// Only the objects inside `const …Columns = [ … ]` are table columns (other lists have { key, label } too).
+const columns = files.flatMap((f) => {
+  let inside = false
+  const found = []
+  readFileSync(f, 'utf8').split('\n').forEach((text, i) => {
+    if (ARRAY_START.test(text)) { inside = true; return }
+    if (inside && text.startsWith(']')) { inside = false; return }
+    const m = inside ? COLUMN.exec(text) : null
+    if (m) found.push({ file: f, line: i + 1, key: m[1], label: m[2], rest: m[3] })
+  })
+  return found
+})
 
 describe('table column definitions', () => {
   it('finds the tables', () => {
@@ -44,6 +55,20 @@ describe('table column definitions', () => {
   it('sizes columns only with px widths', () => {
     const bad = columns.filter((c) => /width: '/.test(c.rest) && !/width: '\d+px'/.test(c.rest))
     expect(bad.map((c) => `${c.file}:${c.line} ${c.label}`)).toEqual([])
+  })
+  // Every real table column is either fixed-format (px width), a special kind (No / checkbox / Action), or a
+  // text column that declares its minimum (header + padding) and its maximum (widest realistic value).
+  it('every text column declares a min and a max, and fixed columns never do', () => {
+    const real = columns
+    const bad = []
+    for (const c of real) {
+      const kind = /kind: '/.test(c.rest), width = /width: '\d+px'/.test(c.rest), min = /min: \d+/.test(c.rest), max = /max: \d+/.test(c.rest)
+      if (kind && (min || max)) bad.push(`${c.file}:${c.line} ${c.label}: a special column has min/max`)
+      else if (width && !kind && (min || max)) bad.push(`${c.file}:${c.line} ${c.label}: fixed column also has min/max`)
+      else if (!kind && !width && !(min && max)) bad.push(`${c.file}:${c.line} ${c.label}: text column needs min and max`)
+      else if (min && max) { const a = Number(/min: (\d+)/.exec(c.rest)[1]), b = Number(/max: (\d+)/.exec(c.rest)[1]); if (a < 130 && c.label) bad.push(`${c.file}:${c.line} ${c.label}: min ${a} is below the 130px floor`); if (b < a) bad.push(`${c.file}:${c.line} ${c.label}: max ${b} < min ${a}`) }
+    }
+    expect(bad).toEqual([])
   })
   it('uses the shared DataTable for every table except the two dashboard cards', () => {
     const raw = files.length

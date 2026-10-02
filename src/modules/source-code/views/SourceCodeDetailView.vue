@@ -205,10 +205,10 @@ const tableRef = ref(null)
 const columns = [
   { key: 'check', label: '', kind: 'check', align: 'center'  },
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'name', label: 'Vulnerability name', truncate: true  },
-  { key: 'line', label: 'Code Line', width: '89px', align: 'center', dim: true   },
-  { key: 'lastModified', label: 'Last modified', width: '150px', dim: true, truncate: true  },
-  { key: 'severity', label: 'Severity', width: '97px', align: 'center'   },
+  { key: 'name', label: 'Vulnerability name', min: 167, max: 420, truncate: true },
+  { key: 'line', label: 'Code Line', width: '95px', align: 'center', dim: true },
+  { key: 'lastModified', label: 'Last modified', width: '150px', dim: true, truncate: true },
+  { key: 'severity', label: 'Severity', width: '97px', align: 'center' },
   { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 

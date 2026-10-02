@@ -2,11 +2,27 @@
 import { computed, ref } from 'vue'
 import { IconChevronRight, IconShieldSearch } from '@tabler/icons-vue'
 import VulnerabilityDetailModal from '@/components/common/VulnerabilityDetailModal.vue'
+import { useColumnWidths } from '@/composables/useColumnWidths'
 
 const props = defineProps({
   items:   { type: Array,   default: () => [] },
   loading: { type: Boolean, default: false },
 })
+
+// Column widths follow the same rules as every table (components/common/tableLayout.js): Severity and
+// Vulnerability Cycle are fixed-format, the three text columns are capped at a realistic long value, the
+// arrow column is constant.
+const wrapRef = ref(null)
+const COLS = [
+  { kind: 'text', base: 130, max: 280 },
+  { kind: 'text', base: 130, max: 260 },
+  { kind: 'text', base: 130, max: 260 },
+  { kind: 'fixed', base: 97 },
+  { kind: 'fixed', base: 148 },
+  { kind: 'action', base: 58 },
+]
+const { widths, minWidth } = useColumnWidths(wrapRef, () => COLS)
+const colStyle = (i) => (widths.value ? { width: `${widths.value[i]}px` } : COLS[i].kind === 'text' ? null : { width: `${COLS[i].base}px` })
 
 const filteredItems = computed(() => {
   const rank = { critical: 0, high: 1 }
@@ -60,8 +76,9 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
         <span class="vuln__empty-text">No vulnerabilities found</span>
       </div>
 
-      <div v-else class="vuln__wrap">
-        <table class="vtable">
+      <div v-else ref="wrapRef" class="vuln__wrap">
+        <table class="vtable" :style="{ minWidth: `${minWidth}px` }">
+          <colgroup><col v-for="(c, i) in COLS" :key="i" :style="colStyle(i)" /></colgroup>
           <thead>
             <tr>
               <th>Vulnerability</th>
@@ -196,10 +213,9 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
     line-height: 1.3;
     color: var(--color-text-muted);
     border-bottom: 1px solid var(--color-border);
-    // Headers wrap (two lines at most) instead of being cut off.
-    white-space: normal;
-    overflow-wrap: normal;
-    word-break: normal;
+    // Headers stay on one line and are never cut off.
+    white-space: nowrap;
+    overflow: visible;
   }
 
   td {
@@ -222,9 +238,6 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
     color: var(--glacia-ink-dim);
   }
 
-  &__sev { width: 97px; }
-  &__cycle { width: 134px; }
-  &__arrow { width: 58px; }
 }
 
 .vtable th.text-center { text-align: center; }

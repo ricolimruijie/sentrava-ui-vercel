@@ -152,14 +152,18 @@ PRD section 11, in `src/modules/notifications/`. The bell in the navbar (on ever
 
 ## Tables
 
-Every table is the shared `components/common/DataTable.vue` (25 tables), except the two small cards on the dashboard (Ticket feed, Top vulnerabilities), which follow the same rules in their own CSS. Rules (guarded by `components/common/tableRules.test.js`):
+Every table is the shared `components/common/DataTable.vue` (25 tables), except the two small cards on the dashboard (Ticket feed, Top vulnerabilities), which use the same allocation (`composables/useColumnWidths.js`) in their own markup. The rules are guarded by `components/common/tableRules.test.js` and `tableLayout.test.js`.
 
-- **Fixed-format columns** (dates, status, severity, counts, IDs, badges) have an explicit px `width`, sized to their widest value *or* header, and never change when the window resizes. **Text-heavy columns** (names, targets, URLs, owners, tags, descriptions) have **no** width: they share what is left equally.
-- Special columns are set by `kind`, not by a width: `index` (row number, titled **No**, 52px; 64px on the audit log and report log, which can pass 999 rows and whose numbering continues across pages), `check` (row checkbox, 48px) and `action` (the button column, 76px: wide enough for the "ACTION" header).
-- `table-layout: fixed`, one cell padding everywhere (14px each side). Anything longer than its column is cut off with "…" on one line, with the full text in a tooltip; inside nested content (tags, avatar + name, related domains) only the text is cut, so badges, `+N` counters and buttons stay visible.
-- Headers are never cut: they wrap onto at most two lines, so widths are sized for that. Row numbers use tabular digits.
-- On a narrow screen the table scrolls sideways inside its card (text columns never go below 130px) instead of squashing.
-- When you add a column: give it a px width only if its values are short and predictable (measure the longest value and the header), otherwise leave the width off.
+**Column types** (declared in each table's `columns` array)
+- **Fixed-format** (dates, status, severity, counts, IDs, badges): a px `width` = the widest header *or* data, plus 14px padding each side.
+- **Text-heavy** (names, endpoints, URLs, owners, tags, descriptions): no `width`; a `min` (header + padding, never below 130px) and a `max` (the widest realistic value: 440px for Domain / Endpoint / Target, 420px for Vulnerability Name and Detail, 320px Related Domain, 300px Component and Tracking ID, 280px names and emails, 260px owners, tags and keys, 250px Issue Category, 220px Activity, 200px Branch).
+- **Special kinds** that never change width at any window size: `index` (the row number, titled **No**, 52px; 64px on the audit log and report log, which can pass 999 rows and whose numbering continues across pages), `check` (row checkbox, 48px) and `action` (76px, wide enough for the "ACTION" header).
+
+**Width allocation** (`components/common/tableLayout.js`, from the width of the card): every column starts at its base width; text columns then share the leftover equally, none past its `max`; whatever is still left is spread evenly over every column except No / checkbox / Action, so no single column holds a big empty area. If even the base widths don't fit, the table scrolls sideways inside its card. Widths depend only on the card width and the column definitions, never on the data in the cells.
+
+**Cells**: `table-layout: fixed`, one 14px padding everywhere, anything longer than its column is cut off with "…" on one line with the full text in a tooltip; inside nested content (tags, avatar + name, related domains) only the text is cut, so badges, `+N` counters and buttons stay visible. **Headers** always stay on one line and are never cut off (the widths are sized from the header text). Row numbers use tabular digits.
+
+When you add a column: give it a px `width` only if its values are short and predictable (measure the longest value and the header); otherwise give it a `min` and a `max` and no width.
 
 ## Roles
 

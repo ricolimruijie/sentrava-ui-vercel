@@ -28,13 +28,13 @@ const repos = ref(getSourceCodeRepos())
 
 const columns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true   },
-  { key: 'repo', label: 'Repository', truncate: true  },
-  { key: 'branch', label: 'Branch', truncate: true },
-  { key: 'owner', label: 'Asset Owner', truncate: true  },
-  { key: 'scanType', label: 'Scan Type', width: '136px'   },
-  { key: 'tags', label: 'Multi-Tags'  },
-  { key: 'status', label: 'Scanning status', width: '138px', align: 'center'   },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true },
+  { key: 'repo', label: 'Repository', min: 130, max: 280, truncate: true },
+  { key: 'branch', label: 'Branch', min: 130, max: 200, truncate: true },
+  { key: 'owner', label: 'Asset Owner', min: 130, max: 260, truncate: true },
+  { key: 'scanType', label: 'Scan Type', width: '136px' },
+  { key: 'tags', label: 'Multi-Tags', min: 130, max: 260 },
+  { key: 'status', label: 'Scanning status', width: '146px', align: 'center' },
   { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 

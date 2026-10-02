@@ -86,10 +86,10 @@ const tableRef = ref(null)
 
 const allColumns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'name', label: 'Name'  },
-  { key: 'email', label: 'Email Address', dim: true, truncate: true },
-  { key: 'company', label: 'Company', dim: true, truncate: true },
-  { key: 'role', label: 'Role', width: '134px', align: 'center'   },
+  { key: 'name', label: 'Name', min: 130, max: 280 },
+  { key: 'email', label: 'Email Address', min: 130, max: 280, dim: true, truncate: true },
+  { key: 'company', label: 'Company', min: 130, max: 260, dim: true, truncate: true },
+  { key: 'role', label: 'Role', width: '134px', align: 'center' },
   { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 // The action column only holds actions this role may not use.

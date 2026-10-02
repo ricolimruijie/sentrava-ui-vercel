@@ -1,9 +1,10 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { IconChevronRight, IconTicket } from '@tabler/icons-vue'
 import { pushFromDashboard } from '@/utils/navOrigin'
 import { formatShortDate } from '@/utils/helpers'
+import { useColumnWidths } from '@/composables/useColumnWidths'
 
 const router = useRouter()
 
@@ -14,6 +15,20 @@ const props = defineProps({
 
 // Only the 8 latest tickets (items arrive oldest-first).
 const visibleItems = computed(() => (props.items ?? []).slice(-8))
+
+// Column widths follow the same rules as every table (components/common/tableLayout.js): Date and Ticket
+// Status are fixed-format, Ticket Name and Category are text columns capped at a realistic long value, the
+// arrow column is constant.
+const wrapRef = ref(null)
+const COLS = [
+  { kind: 'fixed', base: 150 },
+  { kind: 'text', base: 130, max: 280 },
+  { kind: 'text', base: 130, max: 250 },
+  { kind: 'fixed', base: 113 },
+  { kind: 'action', base: 58 },
+]
+const { widths, minWidth } = useColumnWidths(wrapRef, () => COLS)
+const colStyle = (i) => (widths.value ? { width: `${widths.value[i]}px` } : COLS[i].kind === 'text' ? null : { width: `${COLS[i].base}px` })
 
 function goTickets() {
   pushFromDashboard(router, '/tickets')
@@ -39,8 +54,9 @@ function goTicket(item) {
         <span class="tickets__empty-text">No tickets</span>
       </div>
 
-      <div v-else class="tickets__wrap">
-        <table class="ttable">
+      <div v-else ref="wrapRef" class="tickets__wrap">
+        <table class="ttable" :style="{ minWidth: `${minWidth}px` }">
+          <colgroup><col v-for="(c, i) in COLS" :key="i" :style="colStyle(i)" /></colgroup>
           <thead>
             <tr>
               <th class="ttable__date">Date</th>
@@ -179,10 +195,9 @@ function goTicket(item) {
     line-height: 1.3;
     color: var(--color-text-muted);
     border-bottom: 1px solid var(--color-border);
-    // Headers wrap (two lines at most) instead of being cut off.
-    white-space: normal;
-    overflow-wrap: normal;
-    word-break: normal;
+    // Headers stay on one line and are never cut off.
+    white-space: nowrap;
+    overflow: visible;
   }
 
   td {
@@ -200,9 +215,7 @@ function goTicket(item) {
 
   tr:hover td { background: var(--color-bg); }
 
-  &__date { width: 150px; }
-  &__status { width: 113px; text-align: center; }
-  &__arrow { width: 58px; }
+  &__status { text-align: center; }
 
   &__empty {
     text-align: center;

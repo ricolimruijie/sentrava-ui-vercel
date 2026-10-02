@@ -16,10 +16,10 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'name', label: 'Integration Name', bold: true, mono: true, truncate: true },
-  { key: 'lastSeen', label: 'Last Checked', width: '229px', dim: true, truncate: true  },
-  { key: 'monitoring', label: 'Connection Monitoring', width: '166px'   },
-  { key: 'status', label: 'Status', width: '146px', align: 'center'   },
+  { key: 'name', label: 'Integration Name', min: 153, max: 280, bold: true, mono: true, truncate: true },
+  { key: 'lastSeen', label: 'Last Checked', width: '229px', dim: true, truncate: true },
+  { key: 'monitoring', label: 'Connection Monitoring', width: '195px' },
+  { key: 'status', label: 'Status', width: '146px', align: 'center' },
   { key: 'action', label: 'Action', kind: 'action', align: 'center'  },
 ]
 

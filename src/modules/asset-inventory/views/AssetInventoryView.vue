@@ -113,21 +113,21 @@ const networks = ref(emptyData.value ? [] : [
 
 const networkColumnsSingle = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'endpoint', label: 'Endpoint', mono: true, truncate: true },
-  { key: 'endpointType', label: 'Endpoint Type', width: '93px', truncate: true  },
-  { key: 'owner', label: 'Asset Owner', truncate: true },
-  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true  },
-  { key: 'tags', label: 'Multi-Tags'  },
-  { key: 'status', label: 'Scanner Status', width: '138px', align: 'center'   },
+  { key: 'endpoint', label: 'Endpoint', min: 130, max: 440, mono: true, truncate: true },
+  { key: 'endpointType', label: 'Endpoint Type', width: '128px', truncate: true },
+  { key: 'owner', label: 'Asset Owner', min: 130, max: 260, truncate: true },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true },
+  { key: 'tags', label: 'Multi-Tags', min: 130, max: 260 },
+  { key: 'status', label: 'Scanner Status', width: '140px', align: 'center' },
   { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 const networkColumnsCidr = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'endpoint', label: 'Endpoint', mono: true, truncate: true },
-  { key: 'endpointType', label: 'Endpoint Type', width: '93px', truncate: true  },
-  { key: 'owner', label: 'Asset Owner', truncate: true },
-  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true  },
-  { key: 'status', label: 'Scanner Status', width: '138px', align: 'center'   },
+  { key: 'endpoint', label: 'Endpoint', min: 130, max: 440, mono: true, truncate: true },
+  { key: 'endpointType', label: 'Endpoint Type', width: '128px', truncate: true },
+  { key: 'owner', label: 'Asset Owner', min: 130, max: 260, truncate: true },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true },
+  { key: 'status', label: 'Scanner Status', width: '140px', align: 'center' },
   { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
@@ -181,12 +181,12 @@ const sourceCodes = ref(emptyData.value ? [] : [
 ])
 const sourceCodeColumns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'repoOwner', label: 'Repository', truncate: true },
-  { key: 'gitProvider', label: 'Git Provider', width: '91px', truncate: true  },
-  { key: 'owner', label: 'Asset Owner', truncate: true },
-  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true  },
-  { key: 'tags', label: 'Multi-Tags'  },
-  { key: 'status', label: 'Scanner Status', width: '138px', align: 'center'   },
+  { key: 'repoOwner', label: 'Repository', min: 130, max: 280, truncate: true },
+  { key: 'gitProvider', label: 'Git Provider', width: '115px', truncate: true },
+  { key: 'owner', label: 'Asset Owner', min: 130, max: 260, truncate: true },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true },
+  { key: 'tags', label: 'Multi-Tags', min: 130, max: 260 },
+  { key: 'status', label: 'Scanner Status', width: '140px', align: 'center' },
   { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 const filteredSourceCodes = computed(() => {
@@ -292,20 +292,20 @@ function submitRegisterSource() {
 
 const columns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'domain', label: 'Domain', truncate: true },
-  { key: 'owner', label: 'Asset Owner', truncate: true },
-  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true  },
-  { key: 'status', label: 'Scanner Status', width: '138px', align: 'center'   },
+  { key: 'domain', label: 'Domain', min: 130, max: 440, truncate: true },
+  { key: 'owner', label: 'Asset Owner', min: 130, max: 260, truncate: true },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true },
+  { key: 'status', label: 'Scanner Status', width: '140px', align: 'center' },
   { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
 const webappColumns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'appName', label: 'App Name', truncate: true },
-  { key: 'owner', label: 'Asset Owner', truncate: true },
-  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true  },
-  { key: 'tags', label: 'Multi-Tags'  },
-  { key: 'status', label: 'Scanner Status', width: '138px', align: 'center'   },
+  { key: 'appName', label: 'App Name', min: 130, max: 280, truncate: true },
+  { key: 'owner', label: 'Asset Owner', min: 130, max: 260, truncate: true },
+  { key: 'lastScanned', label: 'Last Scanned', width: '154px', truncate: true },
+  { key: 'tags', label: 'Multi-Tags', min: 130, max: 260 },
+  { key: 'status', label: 'Scanner Status', width: '140px', align: 'center' },
   { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 
@@ -338,8 +338,8 @@ const tagsData = ref(emptyData.value ? [] : [
 ])
 const tagsColumns = [
   { key: '__index', label: 'No', kind: 'index', width: '52px', dim: true  },
-  { key: 'name', label: 'Tag Name', truncate: true },
-  { key: 'usedBy', label: 'Used By', align: 'center'  },
+  { key: 'name', label: 'Tag Name', min: 130, max: 280, truncate: true },
+  { key: 'usedBy', label: 'Used By', min: 130, max: 280, align: 'center' },
   { key: 'actions', label: 'Action', kind: 'action', align: 'center'  },
 ]
 const filteredTags = computed(() => tagsData.value)

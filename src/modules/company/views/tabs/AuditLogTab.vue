@@ -16,10 +16,10 @@ const tableRef = ref(null)
 
 const columns = [
   { key: '__index', label: 'No', kind: 'index', width: '64px', dim: true  },
-  { key: 'dateTime', label: 'Date and Time', width: '196px', truncate: true  },
-  { key: 'actor', label: 'Actor'  },
-  { key: 'action', label: 'Activity', truncate: true },
-  { key: 'detail', label: 'Detail', dim: true, truncate: true  },
+  { key: 'dateTime', label: 'Date and Time', width: '196px', truncate: true },
+  { key: 'actor', label: 'Actor', min: 130, max: 260 },
+  { key: 'action', label: 'Activity', min: 130, max: 220, truncate: true },
+  { key: 'detail', label: 'Detail', min: 130, max: 420, dim: true, truncate: true },
 ]
 
 // Same day-month-year style as the Last Scanned column ("14 July 2026"),
