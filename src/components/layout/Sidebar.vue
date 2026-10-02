@@ -3,6 +3,9 @@ import { ref, nextTick, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import logoIcon from '@/assets/sentrava-logo-icon.svg'
 import { navSections as sections } from '@/config/navSections'
+import { APP_VERSION, APP_NAME } from '@/config/appInfo'
+
+const year = new Date().getFullYear()
 
 const props = defineProps({
   collapsed: { type: Boolean, default: false },
@@ -137,6 +140,14 @@ watch(() => props.collapsed, () => setTimeout(movePill, 260))
         </router-link>
       </div>
     </nav>
+
+    <!-- ── Footer: version + copyright ───────────────────────────── -->
+    <footer class="sidebar__footer">
+      <span class="sidebar__version"><span v-if="!props.collapsed" class="sidebar__version-name">{{ APP_NAME }}</span> v{{ APP_VERSION }}</span>
+      <transition name="label-fade">
+        <span v-if="!props.collapsed" class="sidebar__copyright">© {{ year }} {{ APP_NAME }}. All rights reserved.</span>
+      </transition>
+    </footer>
   </aside>
 </template>
 
@@ -226,6 +237,38 @@ $w-collapsed:  64px;
     transition: top 0.28s cubic-bezier(0.3, 1.15, 0.5, 1), height 0.28s cubic-bezier(0.3, 1.15, 0.5, 1),
       opacity 0.15s ease;
   }
+
+  // ── Footer ──────────────────────────────────────────────────────
+  // Fixed height in both states so nothing above it moves when the sidebar opens or closes.
+  &__footer {
+    flex-shrink: 0;
+    // Reaches down to the sidebar's bottom edge (cancels its 24px padding) so the text is centred
+    // vertically between the divider line and the bottom of the sidebar.
+    height: 66px;
+    margin: 12px 0 -24px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    border-top: 1px solid var(--glacia-glass-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    overflow: hidden;
+    font-size: 10px;
+    line-height: 14px;
+    color: var(--glacia-ink-dim);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    user-select: none;
+  }
+
+  // Collapsed: just the version, centred under the icons (their centre line is x = 31.5px).
+  .sidebar--collapsed &__footer { align-items: center; padding-left: 0; padding-right: 0; }
+
+  &__version { font-weight: 700; }
+  // One line: the capitals fit the 190px content width only at this size.
+  &__copyright { font-size: 8.5px; letter-spacing: 0.02em; opacity: 0.8; }
 
   &__section {
     display: flex;
