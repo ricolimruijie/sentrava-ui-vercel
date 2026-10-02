@@ -12,7 +12,7 @@ report log and API keys, tickets, company management, and settings.
 ## Tech Stack
 
 - **App:** Vue 3 (`<script setup>`), vue-router 4, Pinia + `pinia-plugin-persistedstate`
-- **UI:** PrimeVue 4 (Aura preset, custom `SentraPreset` brand red `#FF2529`), PrimeIcons, Tabler Icons (`@tabler/icons-vue`), Chart.js + vue-chartjs
+- **UI:** PrimeVue 4 (Aura preset, custom `SentraPreset` brand red `#FF2529`), Tabler Icons (`@tabler/icons-vue`), Chart.js + vue-chartjs
 - **HTTP:** axios (`src/services/api/client.js`)
 - **Build:** Vite 6, SCSS (`sass`, modern-compiler), `@` → `./src`
 - **Quality:** ESLint 10 + eslint-plugin-vue (`eslint.config.js`), Vitest 5
@@ -66,10 +66,10 @@ src/
   App.vue                 # <Toast/> + <RouterView/>
   router/                 # index.js (guard + placeholders), auth.js, dashboard.js
   config/                 # navSections.js (sidebar + breadcrumbs), scanModules.js (dashboard scan modal registry)
-  constants/              # ROLES, ASSET_TYPES, SCAN_ENGINES, severity/status maps
+  constants/              # ROLES
   services/api/client.js  # the only HTTP client: axios + mock registry (get/post/put/patch/del)
   stores/                 # global Pinia stores: auth, company
-  composables/            # useFetch, usePagination, usePolling, useRole, useCompanyContext, useTheme, useScanTimeline
+  composables/            # useFetch, usePagination, useRole, useTheme, useScanTimeline, useSessionGuard
   utils/                  # helpers.js (formatters etc.), dataMode.js, navOrigin.js
   styles/                 # design-tokens.css, main.scss, _tokens.scss, _variables.scss
   mocks/                  # index.js (registerMock patterns) + per-feature sample data
@@ -124,8 +124,8 @@ Auth flow: `LoginView` → `auth.login()` → `POST /auth/login` → stores `tok
 - **Live mode:** axios client with `Authorization: Bearer <sentra_token>`, 15s timeout, `res.data` unwrap.
 - **Static mode:** `registerMock(/pattern/, handler)` registry with ~80–260ms fake latency. Patterns cover `/dashboard/client`, `/settings/api-keys`, `/company/info|members|list|audit-log|probes`, `/scans/history`, `/scans/history/:id/vulnerabilities`, `/auth/login`, `/auth/forgot-password`, `/notifications` (+ `/read-all`, `/:id/read`). Asset sample data lives in `src/mocks/assets/`.
 - `useFetch(fetchFn)` gives `{ data, loading, error, execute, refresh }` for view-level loading.
-- `constants/index.js`: `ROLES`, `ASSET_TYPES` (domain/network/webapp/source_code/url_crawl), `SCAN_ENGINES` (Greenbone/Nuclei/Semgrep/Katana), `SEVERITY` + colors, `STATUS` + colors, activity category colors/labels.
-- `helpers.js`: `formatNumber/Date/RelativeTime`, `greeting`, `severityColor/statusColor/activityColor/activityLabel`, `sleep`.
+- `constants/index.js`: `ROLES` (the three PRD roles).
+- `helpers.js`: number and date formatters (`formatNumber`, `formatDate`, `formatShortDate`, `timeAgo`, the named long/short date-time formats), `severityLabel`, `greeting`, `sleep`.
 
 ## Key Views
 
