@@ -4,10 +4,10 @@ Vue 3 + Vite frontend for centralized vulnerability assessment: dashboards,
 service pages (Domain, Network, Web App, Source Code), asset inventory, CI/CD
 report log and API keys, tickets, company management, and settings.
 
-> Status: active development. Everything built so far is the **super_admin**
-> experience; `admin` and `member` currently see the same UI apart from a few
-> gated actions (see [Roles](#roles)). `/scans/:section`, `/vulnerabilities`,
+> Status: active development, running on a mock backend (static mode). Role rules from the
+> PRD are implemented (see [Roles](#roles)). `/scans/:section`, `/vulnerabilities`,
 > `/reports` and `/credits` are still `Placeholder` stubs in `src/router/index.js`.
+> Current version: **1.3.0** (`src/config/appInfo.js`, shown at the bottom of the sidebar).
 
 ## Tech Stack
 
@@ -54,7 +54,7 @@ Any other email or a wrong password → `Invalid credentials` from the mock hand
 
 **Security rules in the mock (PRD 2.2):** 5 consecutive failed logins for an email lock it for 30 minutes (even the right password is refused meanwhile; a success resets the counter; tracked in `localStorage`, key `sentra_login_attempts` — delete it to unlock while demoing). A signed-in session ends after 15 minutes without activity or after 8 hours regardless of activity (`src/modules/auth/utils/session.js`, enforced by `useSessionGuard`), and the login page says why. Multi-device login can only be enforced by a real backend.
 
-**Two-factor sign-in (mock):** all three demo accounts have 2FA on. After the password is accepted the API answers `{ twoFactorRequired, challengeId }` with no session; the login page then asks for the 6-digit code (`POST /auth/2fa/verify`) and only that creates the session. "Don't have access to your Authenticator app, click here" switches to a code sent to the user's email (`POST /auth/2fa/email-code`, 60 s resend cooldown). The demo code is `123456` for both; wrong codes count toward the same 5-strike lockout. Turning 2FA off/on in Settings is remembered per email (`localStorage` key `sentra_mock_2fa`), so the next login skips or asks for the code.
+**Two-factor sign-in (mock):** all three demo accounts have 2FA on. After the password is accepted the API answers `{ twoFactorRequired, challengeId }` with no session; the login page then asks for the 6-digit code (`POST /auth/2fa/verify`) and only that creates the session. "Don't have access to your Authenticator app, click here" switches to a code sent to the user's email (`POST /auth/2fa/email-code`, 60 s resend cooldown). The demo code is `123456` for both; the form verifies as soon as the sixth digit is typed or pasted; wrong codes count toward the same 5-strike lockout. Turning 2FA off/on in Settings is remembered per email (`localStorage` key `sentra_mock_2fa`), so the next login skips or asks for the code.
 
 The Quick demo card also has a **Show every page with no data** switch (see
 [No-data demo mode](#no-data-demo-mode)). A **Forgot password** page
@@ -67,17 +67,19 @@ src/
   main.js                 # app boot: Pinia, router, PrimeVue theme, Toast, mock loader, auth hydrate
   App.vue                 # <Toast/> + <RouterView/>
   router/                 # index.js (guard + placeholders), auth.js, dashboard.js
-  config/                 # navSections.js (sidebar + breadcrumbs), scanModules.js (dashboard scan modal registry)
+  config/                 # navSections.js (sidebar + breadcrumbs), scanModules.js (dashboard scan modal registry),
+                          # appInfo.js (app name + version shown in the sidebar footer)
   constants/              # ROLES
   services/api/client.js  # the only HTTP client: axios + mock registry (get/post/put/patch/del)
-  stores/                 # global Pinia stores: auth, company
-  composables/            # useFetch, usePagination, useRole, useTheme, useScanTimeline, useSessionGuard
-  utils/                  # helpers.js (formatters etc.), dataMode.js, navOrigin.js
+  stores/                 # global Pinia store: auth (feature stores live in their module's store/)
+  composables/            # useFetch, usePagination, useRole, useTheme, useScanTimeline, useSessionGuard,
+                          # useColumnWidths (table layout), useResendCooldown ("Resend code" countdown)
+  utils/                  # helpers.js (formatters, maskEmail ...), dataMode.js, navOrigin.js, notifyMock.js
   styles/                 # design-tokens.css, main.scss, _tokens.scss, _variables.scss
   mocks/                  # index.js (registerMock patterns) + per-feature sample data
   components/
-    common/               # shared UI used by 2+ modules (DataTable, badges, dialogs, pickers, FindingsReportModal,
-                          # HoldToDeleteModal, ScanTimelineCard ...)
+    common/               # shared UI used by 2+ modules (DataTable, GlassField, FilterDropdown, OtpInput, badges,
+                          # dialogs, pickers, FindingsReportModal, HoldToDeleteModal, ScanTimelineCard ...)
     layout/               # AppLayout, Sidebar, AppNavbar
   modules/                # one folder per feature: views/ components/ services/ (store/ when needed)
     domain-inspection/    # Domain list + detail
@@ -86,10 +88,10 @@ src/
     source-code/          # Source Code list + detail
     asset-inventory/      # cross-module overview of all four
     scans/                # Report Log (CI/CD) + vulnerability overview
-    tickets/              # list, detail, create modal, tickets store
+    tickets/              # list, detail, create modal, tickets store, visibility rules (utils/)
     company/              # company page (tabs/), members, quota + integration modals
-    dashboard/            # Client/SuperAdmin dashboards + widgets (scan modal via config/scanModules.js)
-    settings/             # Settings (Profile, 2FA), API keys
+    dashboard/            # the dashboard (one layout for every role) + widgets (scan modal via config/scanModules.js)
+    settings/             # Settings (Profile, Change password, Two-factor authentication), API keys
     auth/                 # login, forgot password, lockout + session rules (utils/)
     notifications/        # bell + panel (components/), /notifications history page, store, catalogue (utils/)
 docs/design-references/   # design reference snippets (not part of the build)
@@ -110,21 +112,21 @@ styles in a sibling `Name.scss` (`<style scoped lang="scss" src="./Name.scss">`)
   - `/assets` → Asset Inventory
   - `/assets/domains|networks|webapps|source-code` → service list pages, each with an `/:id` detail page (Domain and Network details use `?view=` for Endpoint Findings / Domain Reputation)
   - `/scans/history` → Report Log (CI/CD runs); `/scans/history/:runId/vulnerabilities` → findings
-  - `/settings` → Settings (open to every role), section via `?section=profile|two-factor`
+  - `/settings` → Settings (open to every role), section via `?section=profile|password|two-factor`
   - `/settings/api-keys` → API key list/create/edit/revoke
   - `/companies` → Company page, tab via `?tab=` (`overview|list|audit|probe`), breadcrumb reflects tab; `/companies/:id` → sub company members
   - `/tickets` → ticket list; `/tickets/:id` → ticket detail
   - `/notifications` → full notification history (the bell's "View all")
 - Stubbed (`Placeholder`): `/scans/:section?`, `/vulnerabilities`, `/reports`, `/credits`.
 
-Auth flow: `LoginView` → `auth.login()` → `POST /auth/login` → stores `token`/`user`, writes `sentra_token` to localStorage, Pinia persisted as `auth`. Boot calls `hydrateFromStorage()` before first navigation. 401 interceptor clears token and redirects to `/login`. Role-specific UI is gated through `useRole()` only.
+Auth flow: `LoginView` → `auth.login()` → `POST /auth/login`. For an account without 2FA that returns the session; for an account with 2FA it returns `{ twoFactorRequired, challengeId }` and the login page collects the 6-digit code (`auth.verifyTwoFactor()` → `POST /auth/2fa/verify`) before any session exists. A session stores `token`/`user`, writes `sentra_token` to localStorage, Pinia persisted as `auth`. Boot calls `hydrateFromStorage()` before first navigation. 401 interceptor clears token and redirects to `/login`. Role-specific UI is gated through `useRole()` only.
 
 ## Data Layer
 
 `src/services/api/client.js` exports `request/get/post/put/patch/del`:
 
 - **Live mode:** axios client with `Authorization: Bearer <sentra_token>`, 15s timeout, `res.data` unwrap.
-- **Static mode:** `registerMock(/pattern/, handler)` registry with ~80–260ms fake latency. Patterns cover `/dashboard/client`, `/settings/api-keys`, `/company/info|members|list|audit-log|probes`, `/scans/history`, `/scans/history/:id/vulnerabilities`, `/auth/login`, `/auth/forgot-password`, `/notifications` (+ `/read-all`, `/:id/read`). Asset sample data lives in `src/mocks/assets/`.
+- **Static mode:** `registerMock(/pattern/, handler)` registry with ~80–260ms fake latency. Patterns cover `/dashboard/client`, `/settings/api-keys`, `/company/info|members|list|audit-log|probes`, `/scans/history`, `/scans/history/:id/vulnerabilities`, `/auth/login`, `/auth/2fa` (+ `/verify`, `/email-code`), `/auth/forgot-password`, `/notifications` (+ `/read-all`, `/:id/read`). Asset sample data lives in `src/mocks/assets/`.
 - `useFetch(fetchFn)` gives `{ data, loading, error, execute, refresh }` for view-level loading.
 - `constants/index.js`: `ROLES` (the three PRD roles).
 - `helpers.js`: number and date formatters (`formatNumber`, `formatDate`, `formatShortDate`, `timeAgo`, the named long/short date-time formats), `severityLabel`, `greeting`, `sleep`.
@@ -136,13 +138,26 @@ Auth flow: `LoginView` → `auth.login()` → `POST /auth/login` → stores `tok
 - **Scans:** Report Log (CI/CD runs) → per-run vulnerability overview with severity/status badges and detail modal.
 - **Tickets:** list, detail and create-ticket modal.
 - **Company:** tabbed management (overview, sub companies, audit log, integration/probe box), members page, quota and credential modals.
-- **Settings:** Profile and two-factor sections (persisted on the mock auth user), plus API keys CRUD with confirm/success/failure dialogs.
+- **Vulnerability details** (`components/common/VulnerabilityDetailModal.vue`): one modal for every finding, tuned per page by props. Code Snippet is hidden for Domain, Network, Web Application and the dashboard; Report Log also hides the "Proof and Verification" and "Log" groups.
+- **Settings:** Profile, Change password and Two-factor authentication (see [Settings & two-factor](#settings--two-factor)), plus API keys CRUD with confirm/success/failure dialogs. The navbar user menu has Settings and Log out.
+
+## Settings & two-factor
+
+`/settings` (every role) has three sections. **Profile** edits the name on the persisted auth user. **Change password** asks for the current password and a new one (8+ characters, upper and lower case, a number, different from the current) with a live checklist. **Two-factor authentication** is inline on the page:
+
+- *Set up:* asks for the account password first, then shows the QR code (a decorative placeholder in mock mode), the secret key with a Copy button and six digit boxes; the sixth digit completes the setup.
+- *Turn off:* asks for the password, then a 6-digit code from the authenticator app. "Don't have access to your Authenticator app, click here" switches to a code sent to the user's email (masked, 60 s resend cooldown).
+- Password fields have a show/hide eye (`GlassField` `revealable`); the six-digit input is the shared `components/common/OtpInput.vue`.
+
+Mock mode: the password is checked against `demo`; setup and turn-off accept any 6-digit code (the login step is stricter, see Demo login). A real backend must verify the password and codes and enforce the resend limit.
 
 ## Design System
 
 - PrimeVue Aura + `SentraPreset` (red primary scale), `darkModeSelector: '.dark'`, `prefix: 'p'`, `cssLayer: false`.
 - Global tokens in `design-tokens.css` (`--color-surface/bg/border/text-*`, `--color-primary*`, `--radius-card/sm`, `--shadow-card/lg`, `--text-*`); SCSS helpers in `_variables.scss` (`below($bp-lg)` etc.).
-- `AppLayout` glass style: fixed gradient blobs + sidebar/navbar/content shell, collapsible sidebar.
+- `AppLayout` glass style: fixed gradient blobs + sidebar/navbar/content shell, collapsible sidebar with a footer (name + version + copyright, version only when collapsed).
+- Dark mode: use the tokens (`--surface`, `--glacia-ink`, `--red-wash`, `--blue-ink`, `--blue-soft` ...) instead of hard-coded light colors, so text stays readable on both themes.
+- Filter dropdowns (`FilterDropdown`) and every other hover use a light neutral tint, not a colored one.
 
 ## Notifications
 
@@ -154,7 +169,7 @@ PRD section 11, in `src/modules/notifications/`. The bell in the navbar (on ever
 
 ## Tables
 
-Every table is the shared `components/common/DataTable.vue` (25 tables), except the two small cards on the dashboard (Ticket feed, Top vulnerabilities), which use the same allocation (`composables/useColumnWidths.js`) in their own markup. The rules are guarded by `components/common/tableRules.test.js` and `tableLayout.test.js`.
+Every table is the shared `components/common/DataTable.vue`, except the two small cards on the dashboard (Ticket feed, Top vulnerabilities), which use the same allocation (`composables/useColumnWidths.js`) in their own markup. The rules are guarded by `components/common/tableRules.test.js` and `tableLayout.test.js`.
 
 **Column types** (declared in each table's `columns` array)
 - **Fixed-format** (dates, status, severity, counts, IDs, badges): a px `width` = the widest header *or* data, plus 14px padding each side.
@@ -169,11 +184,17 @@ When you add a column: give it a px `width` only if its values are short and pre
 
 ## Roles
 
-Exactly three roles: `super_admin`, `admin`, `member` (`ROLES` in `src/constants`). The current UI is the super_admin version; per-role looks and restrictions are the next phase. Rules in place so far:
+Exactly three roles: `super_admin`, `admin`, `member` (`ROLES` in `src/constants`). The PRD (section 9.2) permission matrix lives in `useRole().can(action)`; anything not listed is open to every role.
 
-- **Create Ticket** is for admin and member only (`useRole().isClientRole`).
-- **Close Ticket** is super_admin only.
-- **Settings** is open to every role.
+| Action (`can(...)`) | Super Admin | Admin | Member |
+| --- | :-: | :-: | :-: |
+| `delete_asset`, `delete_scan` | yes | yes | no |
+| `manage_api_keys` (create, rename, revoke; everyone can view the list) | yes | yes | no |
+| `create_ticket` | no | yes | yes |
+| `close_ticket` | yes | no | no |
+| `manage_company` (create / edit / delete companies, invite and remove users, configuration, quota, activation, probe box credentials) | yes | no | no |
+
+Other role rules: Admin sees the tickets of their company and Member only their own (`modules/tickets/utils/visibility.js`); the Super Admin gets the company filter in the navbar; Admin and Member see every Company tab but not its admin actions; the company header's **quota and contract type** are shown to the Super Admin only; **Settings** is open to every role. The dashboard is one layout for every role.
 
 Check roles only through `useRole()` (`src/composables/useRole.js`), not ad-hoc.
 
