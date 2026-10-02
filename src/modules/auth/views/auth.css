@@ -81,7 +81,7 @@
 .tfa__back:hover, .tfa__link:hover:not(:disabled), .tfa__plain:hover { background-size: 100% 2px; }
 .tfa__back { display: inline-flex; align-items: center; gap: 4px; margin-right: -2px; padding: 4px 2px 6px; border: 0; font: inherit; font-size: 13px; font-weight: 600; color: var(--text-2); cursor: pointer; }
 .tfa__back:hover { color: var(--text-1); }
-.form > .submit--sm { align-self: center; height: 40px; min-width: 160px; padding: 0 26px; margin-top: 0; font-size: 13.5px; }
+.form > .submit--sm { align-self: center; width: fit-content; height: 40px; padding: 0 28px; margin-top: 0; font-size: 13.5px; }
 .login--centered .form :deep(.otp) { gap: 8px; }
 .login--centered .form :deep(.otp__digit) { width: 46px; height: 52px; font-size: 20px; }
 .tfa__title { margin: 0; font-size: 16px; font-weight: 700; color: var(--text-1); }
