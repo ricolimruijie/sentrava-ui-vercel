@@ -152,7 +152,7 @@ const severityOptions = [
 ]
 
 const severityPill = {
-  critical: { label: 'Critical', bg: 'var(--red-line)', color: '#9B1C1C' },
+  critical: { label: 'Critical', bg: 'var(--red-tint)', color: 'var(--red-deep)' },
   high: { label: 'High', bg: 'var(--red-tint)', color: 'var(--red-deep)' },
   medium: { label: 'Medium', bg: 'var(--amber-tint)', color: 'var(--amber-ink)' },
   low: { label: 'Low', bg: 'var(--green-tint)', color: 'var(--green-ink)' },

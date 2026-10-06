@@ -12,8 +12,8 @@ const props = defineProps({
 })
 
 const series = [
-  { key: 'critical', label: 'Critical', color: 'var(--red-deep)' },
-  { key: 'high',     label: 'High',     color: 'var(--glacia-sev-high)' },
+  { key: 'critical', label: 'Critical', color: '#B91C1C' },
+  { key: 'high',     label: 'High',     color: '#EA580C' },
   { key: 'medium',   label: 'Medium',   color: '#F5A623' },
   { key: 'low',      label: 'Low',      color: '#22C55E' },
   { key: 'info',     label: 'Info',     color: '#3B82C4' },
@@ -105,7 +105,7 @@ const chartOptions = {
     y: {
       beginAtZero: true,
       grid: { color: 'rgba(15, 23, 42, 0.06)' },
-      ticks: { color: '#94A3B8', font: { size: 11 }, maxTicksLimit: 5 },
+      ticks: { color: '#94A3B8', font: { size: 11 }, maxTicksLimit: 5, precision: 0 },
     },
   },
 }

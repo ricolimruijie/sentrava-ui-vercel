@@ -49,11 +49,11 @@
   --fs-xs: 11px; --fs-sm: 12px; --fs-md: 13px; --fs-lg: 14px; --fs-xl: 15px; --fs-2xl: 16px; --fs-3xl: 18px; --fs-4xl: 20px;
   --rd-xs: 6px; --rd-sm: 8px; --rd-md: 12px; --rd-lg: 16px; --rd-xl: 20px; --rd-2xl: 24px;
   /* Text-on-surface variants: same as the fixed colors in light mode, brightened in dark mode. */
-  --green-ink: var(--green);
+  --green-ink: #15803d; /* AA on --green-tint; --green (#16a34a) is for fills */
   --red-ink: var(--red);
   --blue-text: var(--blue);
-  --slate-ink: var(--slate);
-  --cyan-ink: var(--cyan);
+  --slate-ink: #475569; /* AA on light tints; --slate is for fills */
+  --cyan-ink: #0e7490; /* AA on --cyan-tint */
   --orange-tint: #fdeee3;
   --sky: #0ea5e9;
   --sky-tint: #e0f2fe;

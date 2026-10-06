@@ -402,3 +402,16 @@
   transform: translateY(-6px);
 }
 
+
+// Phones: keep only the page title on the left and the avatar on the right, so nothing overlaps.
+@media (max-width: 640px) {
+  .navbar {
+    padding: 0 12px;
+
+    &__username, &__chevron { display: none; }
+  }
+  .breadcrumb {
+    &__crumb, &__sep { display: none; }
+    &__current { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  }
+}

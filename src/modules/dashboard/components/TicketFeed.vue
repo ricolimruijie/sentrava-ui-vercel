@@ -235,7 +235,7 @@ function goTicket(item) {
 
   &.open {
     background: rgba(234, 88, 12, 0.12);
-    color: var(--glacia-sev-high);
+    color: var(--sev-high-ink);
   }
 
   &.resolved {

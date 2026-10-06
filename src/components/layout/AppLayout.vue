@@ -1,11 +1,19 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onBeforeUnmount } from 'vue'
 import Sidebar   from './Sidebar.vue'
 import AppNavbar from './AppNavbar.vue'
 import { useSessionGuard } from '@/composables/useSessionGuard'
+import { useEscapeToClose } from '@/composables/useEscapeToClose'
 
-const collapsed = ref(false)
+// On phone widths the open sidebar leaves no room for the page, so start collapsed and follow the screen
+// size; the toggle still works by hand.
+const phone = window.matchMedia('(max-width: 767px)')
+const collapsed = ref(phone.matches)
+const onPhoneChange = (e) => { collapsed.value = e.matches }
+phone.addEventListener('change', onPhoneChange)
+onBeforeUnmount(() => phone.removeEventListener('change', onPhoneChange))
 useSessionGuard()
+useEscapeToClose()
 </script>
 
 <template>

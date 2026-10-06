@@ -8,10 +8,10 @@ const props = defineProps({
 })
 
 const typeStyle = {
-  'Domain Inspection': { color: '#0369a1', bg: 'rgba(14,165,233,0.14)'  },
-  'Network':           { color: '#1d4ed8', bg: 'rgba(59,130,246,0.14)' },
-  'Web Application':   { color: '#059669', bg: 'rgba(5,150,105,0.14)'  },
-  'Source Code':       { color: '#c2410c', bg: 'rgba(234,88,12,0.14)'  },
+  'Domain Inspection': { color: 'var(--sky-ink)', bg: 'rgba(14,165,233,0.14)'  },
+  'Network':           { color: 'var(--blue-text)', bg: 'rgba(59,130,246,0.14)' },
+  'Web Application':   { color: 'var(--green-ink)', bg: 'rgba(5,150,105,0.14)'  },
+  'Source Code':       { color: 'var(--sev-high-ink)', bg: 'rgba(234,88,12,0.14)'  },
 }
 
 function ts(type) { return typeStyle[type] ?? { color: 'var(--slate-ink)', bg: 'rgba(100,116,139,0.14)' } }

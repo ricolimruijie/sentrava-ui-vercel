@@ -145,14 +145,11 @@ body {
 }
 
 // ── Dark mode: colored chips and cards ──────────────────────────────────────
-// Status/severity pills, tag chips/cards and severity cards take pastel fills
-// from data (inline styles) with dark text, so tokens can't reach them.
-// Inverting + rotating the hue back turns each pastel fill into a dark tint of
-// the same color and its text into a light one.
+// Status/severity pills now take their colors from tokens (--*-tint / --*-ink) that already have dark
+// values, so they need nothing here. Tag chips and cards still take stored pastel hex fills with dark
+// text (tag colors are saved with the tag), so those are inverted + hue-rotated back into dark tints.
 html.dark {
-  .status-pill, .sev-pill, .cycle-pill, .dv-tag, .tag-card, .severity-card,
-  .rep-radio__tag, .rep-card__tone, .rep-summary__tone, .rep-row__status,
-  .sa-quota-card__icon, .account-card__avatar--named {
+  .dv-tag, .tag-card, .account-card__avatar--named {
     filter: invert(0.92) hue-rotate(180deg);
   }
 }

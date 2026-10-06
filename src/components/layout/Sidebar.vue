@@ -267,8 +267,8 @@ $w-collapsed:  64px;
   .sidebar--collapsed &__footer { align-items: center; padding-left: 0; padding-right: 0; }
 
   &__version { font-weight: 700; }
-  // One line: the capitals fit the 190px content width only at this size.
-  &__copyright { font-size: var(--fs-xs); letter-spacing: 0.02em; opacity: 0.8; }
+  // Wraps to a second line: the capitals don't fit the 190px content width in one line at 11px.
+  &__copyright { font-size: var(--fs-xs); letter-spacing: 0.02em; opacity: 0.8; white-space: normal; }
 
   &__section {
     display: flex;
