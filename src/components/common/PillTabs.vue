@@ -77,7 +77,7 @@ watch(() => props.tabs.map((t) => t.label).join('|'), () => nextTick(movePill))
   }
 
   &--sm { padding: 4px; gap: 2px; }
-  &--sm &__item { padding: 7px 8px; font-size: 12px; }
+  &--sm &__item { padding: 7px 8px; font-size: var(--fs-sm); }
 
   &__pill {
     position: absolute;
@@ -103,7 +103,7 @@ watch(() => props.tabs.map((t) => t.label).join('|'), () => nextTick(movePill))
     border: none;
     background: transparent;
     color: var(--glacia-ink-dim);
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 600;
     font-family: 'Manrope', 'Inter', sans-serif;
     cursor: pointer;
@@ -123,13 +123,13 @@ watch(() => props.tabs.map((t) => t.label).join('|'), () => nextTick(movePill))
     min-width: 17px;
     height: 17px;
     padding: 0 5px;
-    border-radius: 9px;
+    border-radius: var(--rd-sm);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background: var(--glacia-red);
     color: #fff;
-    font-size: 10px;
+    font-size: var(--fs-xs);
     font-weight: 700;
     line-height: 1;
     box-shadow: 0 0 0 2px var(--surface);

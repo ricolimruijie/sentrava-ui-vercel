@@ -107,7 +107,7 @@ function save() {
 
   &__desc {
     margin: 4px 0 0;
-    font-size: 13.5px;
+    font-size: var(--fs-lg);
     color: var(--glacia-ink-dim);
   }
 }
@@ -119,7 +119,7 @@ function save() {
     gap: 14px;
     padding: 16px 18px;
     margin-bottom: 24px;
-    border-radius: 16px;
+    border-radius: var(--rd-lg);
     background: rgba(var(--glass-rgb), 0.55);
     border: 1px solid var(--glacia-glass-border);
   }
@@ -143,14 +143,14 @@ function save() {
 
   &__name {
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 16px;
+    font-size: var(--fs-2xl);
     font-weight: 800;
     color: var(--glacia-ink);
   }
 
   &__email {
     margin-top: 2px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -161,7 +161,7 @@ function save() {
     border-radius: var(--glacia-radius-pill);
     background: rgba(255, 37, 41, 0.1);
     color: var(--glacia-red);
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 700;
     white-space: nowrap;
   }
@@ -174,7 +174,7 @@ function save() {
 
   &__note {
     margin: 18px 0 0;
-    font-size: 12.5px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
@@ -193,7 +193,7 @@ function save() {
 
   &__label {
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 700;
     color: var(--glacia-ink);
   }
@@ -207,7 +207,7 @@ function save() {
     border: 1px solid rgba(var(--tint), 0.1);
     background: rgba(var(--tint), 0.04);
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     color: var(--glacia-ink-dim);
     overflow: hidden;
     white-space: nowrap;
@@ -224,7 +224,7 @@ function save() {
   background: var(--glacia-red);
   color: #fff;
   font-family: 'Manrope', 'Inter', sans-serif;
-  font-size: 13.5px;
+  font-size: var(--fs-lg);
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
@@ -234,9 +234,9 @@ function save() {
   box-shadow: 0 6px 20px rgba(255, 37, 41, 0.35);
   transition: background 0.15s, opacity 0.15s;
 
-  &:hover:not(:disabled) { background: #e01e22; }
+  &:hover:not(:disabled) { background: var(--red-hover); }
   &:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
-  &--saved { background: #16a34a !important; box-shadow: none; opacity: 1 !important; }
+  &--saved { background: var(--green) !important; box-shadow: none; opacity: 1 !important; }
 
   &__spinner {
     width: 16px;

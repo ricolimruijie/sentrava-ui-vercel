@@ -19,7 +19,7 @@
     gap: 10px;
     cursor: pointer;
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     color: var(--glacia-ink);
     text-align: left;
     transition: border-color 200ms ease, box-shadow 280ms ease;
@@ -57,7 +57,7 @@
 // ── Card ───────────────────────────────────────────────────────────────────
 .dt-card {
   background: var(--surface);
-  border-radius: 16px;
+  border-radius: var(--rd-lg);
   border: 0.5px solid var(--glacia-glass-border);
   box-shadow: 0 20px 44px -14px rgba(16, 24, 32, 0.28);
   font-family: 'Manrope', 'Inter', sans-serif;
@@ -91,18 +91,18 @@
   font-family: ui-monospace, 'SF Mono', Menlo, monospace;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #b91c1c;
-  background: #fff1f1;
+  color: var(--red-deep);
+  background: var(--red-soft);
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   display: inline-block;
   animation: dt-bump 0.2s ease;
 }
 
 // ── Calendar ───────────────────────────────────────────────────────────────
 .dt-section {
-  border: 1px solid #e8eef2;
-  border-radius: 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--rd-lg);
   padding: 14px 16px 16px;
   background: var(--surface-3);
 }
@@ -122,7 +122,7 @@
     width: 30px;
     height: 30px;
     border: 0;
-    border-radius: 8px;
+    border-radius: var(--rd-sm);
     background: transparent;
     color: var(--glacia-ink);
     cursor: pointer;
@@ -206,7 +206,7 @@
   z-index: 1;
 
   &--sun {
-    color: #e01e22;
+    color: var(--red-hover);
   }
 }
 
@@ -232,7 +232,7 @@
   transition: color 0.3s ease;
 
   &--selected {
-    color: #b91c1c;
+    color: var(--red-deep);
     font-weight: 700;
     animation: dt-pop 0.34s;
   }
@@ -253,8 +253,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border: 1px solid #e8eef2;
-  border-radius: 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--rd-lg);
   padding: 12px 16px 14px;
   background: var(--surface-3);
 }
@@ -273,14 +273,14 @@
     right: 0;
     top: 15px;
     height: 6px;
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
     background: var(--surface-3);
     overflow: hidden;
   }
 
   &__fill {
     height: 100%;
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
     background: var(--glacia-red);
     transition-property: width;
     transition-timing-function: cubic-bezier(0.3, 1.35, 0.5, 1);
@@ -336,7 +336,7 @@
     color: #fff;
     background: #0f172a;
     padding: 3px 8px;
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
   }
 }
 
@@ -346,7 +346,7 @@
   left: -14px;
   width: 28px;
   height: 28px;
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   background: var(--glacia-glass-fill-strong);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
@@ -371,7 +371,7 @@
     width: 8px;
     height: 8px;
     margin: -4px 0 0 -4px;
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
     background: var(--glacia-red);
   }
 }
@@ -405,9 +405,9 @@
 .dt-btn {
   height: 40px;
   padding: 0 18px;
-  border-radius: 12px;
+  border-radius: var(--rd-md);
   font-family: 'Manrope', 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: var(--fs-lg);
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s, box-shadow 0.15s;
@@ -425,7 +425,7 @@
     box-shadow: 0 6px 20px rgba(255, 37, 41, 0.35);
 
     &:hover {
-      background: #e01e22;
+      background: var(--red-hover);
     }
   }
 }

@@ -17,7 +17,7 @@ const COLS = [
   { kind: 'text', base: 130, max: 280 },
   { kind: 'text', base: 130, max: 260 },
   { kind: 'text', base: 130, max: 260 },
-  { kind: 'fixed', base: 97 },
+  { kind: 'fixed', base: 112 },
   { kind: 'fixed', base: 148 },
   { kind: 'action', base: 58 },
 ]
@@ -32,23 +32,21 @@ const filteredItems = computed(() => {
     .sort((a, b) => (rank[a.severity.toLowerCase()] ?? 2) - (rank[b.severity.toLowerCase()] ?? 2))
 })
 
-const sev = {
-  critical: { label: 'Critical', color: '#dc2626', bg: 'rgba(220,38,38,0.12)'  },
-  high:     { label: 'High',     color: '#ea580c', bg: 'rgba(234,88,12,0.12)'  },
-  medium:   { label: 'Medium',   color: '#ca8a04', bg: 'rgba(202,138,4,0.14)'  },
-  low:      { label: 'Low',      color: '#2563eb', bg: 'rgba(37,99,235,0.12)'  },
-  info:     { label: 'Info',     color: '#64748b', bg: 'rgba(100,116,139,0.12)' },
-}
+const sev = Object.fromEntries(['critical', 'high', 'medium', 'low', 'info'].map((k) => [k, {
+  label: k[0].toUpperCase() + k.slice(1),
+  color: `var(--sev-${k}-ink)`,
+  bg: `color-mix(in srgb, var(--glacia-sev-${k}) 13%, transparent)`,
+}]))
 
-function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: '#64748b', bg: 'rgba(100,116,139,0.12)' } }
+function s(k) { return sev[k?.toLowerCase()] ?? { label: k, color: 'var(--sev-info-ink)', bg: 'color-mix(in srgb, var(--glacia-sev-info) 13%, transparent)' } }
 
 // Same cycle semantics as the detail views (WebAppDetailView).
 const cyclePill = {
-  Active:           { bg: '#fee2e2', color: '#dc2626' },
-  Fixing:           { bg: '#fef3c7', color: '#b45309' },
-  Mitigated:        { bg: '#dcfce7', color: '#16a34a' },
-  Tolerated:        { bg: '#DFF3FC', color: '#1197C2' },
-  'False Positive': { bg: '#ECEEF0', color: '#5C6470' },
+  Active:           { bg: 'var(--red-tint)', color: 'var(--red-ink)' },
+  Fixing:           { bg: 'var(--amber-tint)', color: 'var(--amber-ink)' },
+  Mitigated:        { bg: 'var(--green-tint)', color: 'var(--green-ink)' },
+  Tolerated:        { bg: 'var(--cyan-tint)', color: 'var(--cyan-ink)' },
+  'False Positive': { bg: 'var(--surface-3)', color: 'var(--ink-3)' },
 }
 
 const showDetailModal = ref(false)
@@ -59,7 +57,7 @@ function openDetail(item) {
   showDetailModal.value = true
 }
 
-function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470' } }
+function c(cycle) { return cyclePill[cycle] ?? { bg: 'var(--surface-3)', color: 'var(--ink-3)' } }
 </script>
 
 <template>
@@ -150,7 +148,7 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
 
   &__caption {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
@@ -184,7 +182,7 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
   }
 
   &__empty-text {
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 600;
     color: var(--glacia-ink);
   }
@@ -193,7 +191,7 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
 .vtable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--fs-md);
   // Same rules as every other table (see DataTable): fixed layout, 14px cell padding, fixed-format
   // columns (severity, cycle, arrow) have an explicit px width, text columns share the rest and are
   // cut off with "...".
@@ -208,11 +206,11 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
   th {
     text-align: left;
     padding: 6px 14px;
-    font-size: var(--text-xs);
+    font-size: var(--fs-xs);
     font-weight: 600;
     line-height: 1.3;
-    color: var(--color-text-muted);
-    border-bottom: 1px solid var(--color-border);
+    color: var(--glacia-ink-dim);
+    border-bottom: 1px solid var(--glacia-glass-border);
     // Headers stay on one line and are never cut off.
     white-space: nowrap;
     overflow: visible;
@@ -230,7 +228,7 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
   }
 
   &__row:last-child td { border-bottom: none; }
-  &__row:hover td { background: var(--color-bg); }
+  &__row:hover td { background: var(--glacia-bg); }
 
   &__empty {
     text-align: center;
@@ -248,7 +246,7 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
   align-items: center;
   padding: 5px 14px;
   border-radius: var(--glacia-radius-pill);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -258,7 +256,7 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
   align-items: center;
   padding: 4px 12px;
   border-radius: var(--glacia-radius-pill);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -278,6 +276,6 @@ function c(cycle) { return cyclePill[cycle] ?? { bg: '#ECEEF0', color: '#5C6470'
   box-shadow: 0 2px 8px rgba(255, 37, 41, 0.35);
   transition: background 0.15s;
 
-  &:hover { background: #e01e22; }
+  &:hover { background: var(--red-hover); }
 }
 </style>

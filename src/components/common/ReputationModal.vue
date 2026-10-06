@@ -23,9 +23,9 @@ const score = computed(() => (total.value ? Math.round((passedCount.value / tota
 const noun = computed(() => (props.title.startsWith('IP') ? 'IP address' : 'domain'))
 
 const tone = computed(() => {
-  if (score.value >= 80) return { label: 'Strong', color: '#63C892', bg: '#E8F7EF', fg: '#2F7D57' }
-  if (score.value >= 50) return { label: 'Fair', color: '#F2B84B', bg: '#FDF3DC', fg: '#A26A00' }
-  return { label: 'Weak', color: '#E5645F', bg: '#FDE8E8', fg: '#B42323' }
+  if (score.value >= 80) return { label: 'Strong', color: '#63C892', bg: 'var(--green-tint)', fg: 'var(--green-ink)' }
+  if (score.value >= 50) return { label: 'Fair', color: '#F2B84B', bg: 'var(--amber-tint)', fg: 'var(--amber-ink)' }
+  return { label: 'Weak', color: '#E5645F', bg: 'var(--red-tint)', fg: 'var(--red-deep)' }
 })
 
 const summary = computed(() => {

@@ -35,6 +35,7 @@ import {
   IconClock,
   IconShieldSearch,
 } from '@tabler/icons-vue'
+import { TAG_COLORS } from '@/config/tagPalette'
 
 // Load this page's data before it renders (the page is shown inside <Suspense>).
 await preloadSourceCodeDetail()
@@ -50,14 +51,7 @@ const repo = computed(() => {
 })
 
 // Same palette as SourceCodeView/AssetInventoryView so tags render identically.
-const tagColors = [
-  { swatch: '#F26D6D', bg: '#FDE8E8', fg: '#E03131' }, { swatch: '#F2994A', bg: '#FDEEE0', fg: '#E8590C' },
-  { swatch: '#F2C94C', bg: '#FCF3D6', fg: '#A67C00' }, { swatch: '#A8BD3A', bg: '#F1F5D6', fg: '#6B8E00' },
-  { swatch: '#4CAF6D', bg: '#E3F5E8', fg: '#2F9E52' }, { swatch: '#3DBFA8', bg: '#DEF7F0', fg: '#12967D' },
-  { swatch: '#3DC6F2', bg: '#DFF3FC', fg: '#1197C2' }, { swatch: '#7C93F0', bg: '#E6E9FC', fg: '#5C6BC0' },
-  { swatch: '#E896BB', bg: '#FBE6F0', fg: '#C2255C' }, { swatch: '#B69AE8', bg: '#F0E6FB', fg: '#7C3FC4' },
-  { swatch: '#9AA5B1', bg: '#ECEEF0', fg: '#5C6470' },
-]
+const tagColors = TAG_COLORS
 
 // ── Target Details panel (View detail) ───────────────────────────────────────
 // Anchored popover under the "View detail" button, not a centered modal.
@@ -80,11 +74,11 @@ function toggleTargetDetailModal(e) {
 function closeTargetDetailModal() { showTargetDetailModal.value = false }
 
 const severityCards = [
-  { key: 'critical', label: 'Critical', bg: '#FBE3E3', bar: '#DC2626'  },
-  { key: 'high', label: 'High', bg: '#FDEEE3', bar: '#EA580C'  },
-  { key: 'medium', label: 'Medium', bg: '#FEF6DC', bar: '#EAB308'  },
-  { key: 'low', label: 'Low', bg: '#E7F7ED', bar: '#16A34A'  },
-  { key: 'info', label: 'Info', bg: '#E5F3FC', bar: '#0EA5E9'  },
+  { key: 'critical', label: 'Critical', bg: 'var(--red-tint)', bar: 'var(--red)'  },
+  { key: 'high', label: 'High', bg: 'var(--orange-tint)', bar: 'var(--glacia-sev-high)'  },
+  { key: 'medium', label: 'Medium', bg: 'var(--amber-tint)', bar: 'var(--glacia-sev-medium)'  },
+  { key: 'low', label: 'Low', bg: 'var(--green-tint)', bar: 'var(--green)'  },
+  { key: 'info', label: 'Info', bg: 'var(--sky-tint)', bar: 'var(--sky)'  },
 ]
 const severityCounts = computed(() => {
   const counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 }
@@ -158,11 +152,11 @@ const severityOptions = [
 ]
 
 const severityPill = {
-  critical: { label: 'Critical', bg: '#F9D0D0', color: '#9B1C1C' },
-  high: { label: 'High', bg: '#FDE8E8', color: '#C81E1E' },
-  medium: { label: 'Medium', bg: '#FEF3C7', color: '#B45309' },
-  low: { label: 'Low', bg: '#E3F5E8', color: '#2F9E52' },
-  info: { label: 'Info', bg: '#DFF3FC', color: '#1197C2' },
+  critical: { label: 'Critical', bg: 'var(--red-line)', color: '#9B1C1C' },
+  high: { label: 'High', bg: 'var(--red-tint)', color: 'var(--red-deep)' },
+  medium: { label: 'Medium', bg: 'var(--amber-tint)', color: 'var(--amber-ink)' },
+  low: { label: 'Low', bg: 'var(--green-tint)', color: 'var(--green-ink)' },
+  info: { label: 'Info', bg: 'var(--cyan-tint)', color: 'var(--cyan-ink)' },
 }
 
 // Highest severity first, always — independent of whatever order the

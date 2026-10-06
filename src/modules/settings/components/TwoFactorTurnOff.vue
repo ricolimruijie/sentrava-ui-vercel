@@ -130,15 +130,15 @@ onUnmounted(() => clearTimeout(timer))
 .tf__sent {
   margin: 8px 0 0;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 600;
-  color: #16a34a;
+  color: var(--green-ink);
 }
 
 .tf__alt {
   margin: 16px 0 0;
   text-align: center;
-  font-size: 13.5px;
+  font-size: var(--fs-lg);
   color: var(--glacia-ink-dim);
 }
 
@@ -150,7 +150,7 @@ onUnmounted(() => clearTimeout(timer))
   padding: 0 2px 2px;
   border: 0;
   font-family: 'Manrope', 'Inter', sans-serif;
-  font-size: 13.5px;
+  font-size: var(--fs-lg);
   font-weight: 700;
   color: var(--glacia-red);
   cursor: pointer;
@@ -162,7 +162,7 @@ onUnmounted(() => clearTimeout(timer))
   background-position: left calc(100% - 2px);
   transition: background-size 0.25s ease, color 0.15s ease;
 
-  &:hover:not(:disabled) { background-size: 100% 2px; color: #e01e22; }
+  &:hover:not(:disabled) { background-size: 100% 2px; color: var(--red-hover); }
   &:disabled { opacity: 0.6; cursor: default; }
 
   &--inline { display: inline; margin: 0; font-size: inherit; }

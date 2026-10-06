@@ -5,7 +5,7 @@
   --glacia-bg-elevated: #EEF1FA;
   --glacia-red: #ff2529;
   --glacia-ink: #0F172A;
-  --glacia-ink-dim: #64748B;
+  --glacia-ink-dim: #526070; /* AA (>=4.5:1) on --glacia-bg and glass */
 
   --glacia-glass-fill: rgba(255,255,255,0.60);
   --glacia-glass-fill-strong: rgba(255,255,255,0.80);
@@ -26,6 +26,47 @@
   --glacia-sev-medium: #ca8a04;
   --glacia-sev-low: #2563eb;
   --glacia-sev-info: #64748b;
+  /* Text-safe severity inks (AA on their own tint); dark mode reuses the bright colors above. */
+  --sev-critical-ink: #b91c1c;
+  --sev-high-ink: #c2410c;
+  --sev-medium-ink: #92400e;
+  --sev-low-ink: #1d4ed8;
+  --sev-info-ink: #475569;
+  /* Fixed palette (same in light and dark) — the literals components used to repeat. */
+  --green: #16a34a;
+  --green-tint: #dcfce7;
+  --red: #dc2626;
+  --red-deep: #b91c1c;
+  --red-hover: #e01e22;
+  --red-tint: #fee2e2;
+  --blue: #2563eb;
+  --slate: #64748b;
+  --amber-ink: #b45309;
+  --amber-tint: #fef3c7;
+  --cyan: #1197c2;
+  --cyan-tint: #dff3fc;
+  /* Type scale (px) and radius scale — components snap to these steps instead of ad hoc values. */
+  --fs-xs: 11px; --fs-sm: 12px; --fs-md: 13px; --fs-lg: 14px; --fs-xl: 15px; --fs-2xl: 16px; --fs-3xl: 18px; --fs-4xl: 20px;
+  --rd-xs: 6px; --rd-sm: 8px; --rd-md: 12px; --rd-lg: 16px; --rd-xl: 20px; --rd-2xl: 24px;
+  /* Text-on-surface variants: same as the fixed colors in light mode, brightened in dark mode. */
+  --green-ink: var(--green);
+  --red-ink: var(--red);
+  --blue-text: var(--blue);
+  --slate-ink: var(--slate);
+  --cyan-ink: var(--cyan);
+  --orange-tint: #fdeee3;
+  --sky: #0ea5e9;
+  --sky-tint: #e0f2fe;
+  --sky-ink: #0c4a6e;
+  --violet-tint: #f3e8ff;
+  --violet-ink: #6b21a8;
+  --teal-tint: #f0fdfa;
+  --red-line: #f9d0d0;
+  /* Spacing */
+  --gap-sm: 12px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--glacia-red);
 
   /* Surfaces & lines that used to be hard-coded in components (light values
      are the original colors; html.dark below swaps them). */
@@ -64,6 +105,29 @@ html.dark {
   --glacia-sev-medium: #eab308;
   --glacia-sev-low: #60a5fa;
   --glacia-sev-info: #94a3b8;
+  --green-ink: #4ade80;
+  --red-ink: #f87171;
+  --blue-text: #60a5fa;
+  --slate-ink: #94a3b8;
+  --cyan-ink: #38bdf8;
+  --red-deep: #fca5a5;
+  --amber-ink: #fbbf24;
+  --green-tint: rgba(74, 222, 128, 0.14);
+  --red-tint: rgba(248, 113, 113, 0.16);
+  --amber-tint: rgba(251, 191, 36, 0.14);
+  --cyan-tint: rgba(56, 189, 248, 0.14);
+  --orange-tint: rgba(251, 146, 60, 0.14);
+  --sky-tint: rgba(56, 189, 248, 0.14);
+  --sky-ink: #7dd3fc;
+  --violet-tint: rgba(192, 132, 252, 0.16);
+  --violet-ink: #d8b4fe;
+  --teal-tint: rgba(45, 212, 191, 0.12);
+  --red-line: rgba(248, 113, 113, 0.3);
+  --sev-critical-ink: var(--glacia-sev-critical);
+  --sev-high-ink: var(--glacia-sev-high);
+  --sev-medium-ink: var(--glacia-sev-medium);
+  --sev-low-ink: var(--glacia-sev-low);
+  --sev-info-ink: var(--glacia-sev-info);
 
   --surface: #172036;
   --surface-2: #1b2540;
@@ -137,3 +201,9 @@ html.dark {
 .badge--low .dot { background: var(--glacia-sev-low); }
 .badge--info { color: var(--glacia-sev-info); background: rgba(100,116,139,0.08); }
 .badge--info .dot { background: var(--glacia-sev-info); }
+
+/* Global keyboard focus ring — components that remove the outline must not lose this. */
+:where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--glacia-red);
+  outline-offset: 2px;
+}

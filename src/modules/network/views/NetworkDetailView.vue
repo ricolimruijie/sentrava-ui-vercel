@@ -37,6 +37,7 @@ import {
   IconNetwork,
   IconShieldSearch,
 } from '@tabler/icons-vue'
+import { TAG_COLORS } from '@/config/tagPalette'
 
 // Load this page's data before it renders (the page is shown inside <Suspense>).
 await preloadNetworkDetail()
@@ -55,22 +56,15 @@ const network = computed(() => {
 // the vulnerability findings for that host.
 const isCidr = computed(() => network.value.targetType === 'CIDR')
 
-const tagColors = [
-  { swatch: '#F26D6D', bg: '#FDE8E8', fg: '#E03131' }, { swatch: '#F2994A', bg: '#FDEEE0', fg: '#E8590C' },
-  { swatch: '#F2C94C', bg: '#FCF3D6', fg: '#A67C00' }, { swatch: '#A8BD3A', bg: '#F1F5D6', fg: '#6B8E00' },
-  { swatch: '#4CAF6D', bg: '#E3F5E8', fg: '#2F9E52' }, { swatch: '#3DBFA8', bg: '#DEF7F0', fg: '#12967D' },
-  { swatch: '#3DC6F2', bg: '#DFF3FC', fg: '#1197C2' }, { swatch: '#7C93F0', bg: '#E6E9FC', fg: '#5C6BC0' },
-  { swatch: '#E896BB', bg: '#FBE6F0', fg: '#C2255C' }, { swatch: '#B69AE8', bg: '#F0E6FB', fg: '#7C3FC4' },
-  { swatch: '#9AA5B1', bg: '#ECEEF0', fg: '#5C6470' },
-]
+const tagColors = TAG_COLORS
 
 const scanStatusPill = {
-  Completed: { bg: '#E3F5E8', color: '#2F9E52' },
-  Queue: { bg: '#e0f2fe', color: '#0c4a6e' },
-  Scanning: { bg: '#fef3c7', color: '#F79009' },
-  Failed: { bg: '#fee2e2', color: '#dc2626' },
-  Waiting: { bg: '#f3e8ff', color: '#6b21a8' },
-  NotStarted: { bg: '#ECEEF0', color: '#5C6470' },
+  Completed: { bg: 'var(--green-tint)', color: 'var(--green-ink)' },
+  Queue: { bg: 'var(--sky-tint)', color: 'var(--sky-ink)' },
+  Scanning: { bg: 'var(--amber-tint)', color: 'var(--amber-ink)' },
+  Failed: { bg: 'var(--red-tint)', color: 'var(--red-ink)' },
+  Waiting: { bg: 'var(--violet-tint)', color: 'var(--violet-ink)' },
+  NotStarted: { bg: 'var(--surface-3)', color: 'var(--ink-3)' },
 }
 
 // ── Scan timeline (shared: useScanTimeline + <ScanTimelineCard>) ──
@@ -352,11 +346,11 @@ const vulnSeverityOptions = [
 ]
 
 const severityCards = [
-  { key: 'critical', label: 'Critical', bg: '#FBE3E3', bar: '#DC2626'  },
-  { key: 'high', label: 'High', bg: '#FDEEE3', bar: '#EA580C'  },
-  { key: 'medium', label: 'Medium', bg: '#FEF6DC', bar: '#EAB308'  },
-  { key: 'low', label: 'Low', bg: '#E7F7ED', bar: '#16A34A'  },
-  { key: 'info', label: 'Info', bg: '#E5F3FC', bar: '#0EA5E9'  },
+  { key: 'critical', label: 'Critical', bg: 'var(--red-tint)', bar: 'var(--red)'  },
+  { key: 'high', label: 'High', bg: 'var(--orange-tint)', bar: 'var(--glacia-sev-high)'  },
+  { key: 'medium', label: 'Medium', bg: 'var(--amber-tint)', bar: 'var(--glacia-sev-medium)'  },
+  { key: 'low', label: 'Low', bg: 'var(--green-tint)', bar: 'var(--green)'  },
+  { key: 'info', label: 'Info', bg: 'var(--sky-tint)', bar: 'var(--sky)'  },
 ]
 const severityCounts = computed(() => {
   const counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0 }
@@ -365,21 +359,21 @@ const severityCounts = computed(() => {
 })
 
 const sevPill = {
-  high: { label: 'High', bg: '#FDE8E8', color: '#C81E1E' },
-  medium: { label: 'Medium', bg: '#FEF3C7', color: '#B45309' },
-  low: { label: 'Low', bg: '#E3F5E8', color: '#2F9E52' },
-  info: { label: 'Info', bg: '#DFF3FC', color: '#1197C2' },
+  high: { label: 'High', bg: 'var(--red-tint)', color: 'var(--red-deep)' },
+  medium: { label: 'Medium', bg: 'var(--amber-tint)', color: 'var(--amber-ink)' },
+  low: { label: 'Low', bg: 'var(--green-tint)', color: 'var(--green-ink)' },
+  info: { label: 'Info', bg: 'var(--cyan-tint)', color: 'var(--cyan-ink)' },
 }
 
 // Same validation palette as WebAppDetailView so Queue/Resolved/etc. get
 // their color the moment Revalidate (or any cycle action) sets them.
 const validationPill = {
-  Unresolved: { bg: '#ECEEF0', color: '#5C6470' },
-  'Check result': { bg: '#fee2e2', color: '#dc2626' },
-  Queue:      { bg: '#DFF3FC', color: '#1197C2' },
-  Scanning:   { bg: '#fef3c7', color: '#b45309' },
-  Failed:     { bg: '#fee2e2', color: '#dc2626' },
-  Resolved:   { bg: '#dcfce7', color: '#16a34a' },
+  Unresolved: { bg: 'var(--surface-3)', color: 'var(--ink-3)' },
+  'Check result': { bg: 'var(--red-tint)', color: 'var(--red-ink)' },
+  Queue:      { bg: 'var(--cyan-tint)', color: 'var(--cyan-ink)' },
+  Scanning:   { bg: 'var(--amber-tint)', color: 'var(--amber-ink)' },
+  Failed:     { bg: 'var(--red-tint)', color: 'var(--red-ink)' },
+  Resolved:   { bg: 'var(--green-tint)', color: 'var(--green-ink)' },
 }
 
 const filteredVulns = computed(() => {

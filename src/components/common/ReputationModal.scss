@@ -19,7 +19,7 @@
   max-width: 640px;
   max-height: 80vh;
   background: var(--surface);
-  border-radius: 20px;
+  border-radius: var(--rd-xl);
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   display: flex;
   flex-direction: column;
@@ -49,7 +49,7 @@
     gap: 8px;
     margin: 4px 0 0;
     font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
@@ -90,14 +90,14 @@
   // Reputation score card — sits apart from the engine stat tiles below it.
   &__info {
     background: var(--surface-3);
-    border-radius: 18px;
+    border-radius: var(--rd-lg);
     padding: 18px 22px;
     min-width: 0;
   }
 
   &__label {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     font-weight: 600;
     color: var(--glacia-ink-dim);
   }
@@ -119,14 +119,14 @@
 
   &__tone {
     padding: 3px 12px;
-    border-radius: 999px;
-    font-size: 12px;
+    border-radius: var(--glacia-radius-pill);
+    font-size: var(--fs-sm);
     font-weight: 700;
   }
 
   &__text {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink);
   }
 
@@ -145,14 +145,14 @@
   text-align: center;
   gap: 2px;
   background: var(--surface-3);
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   padding: 14px 12px;
 
   &__label {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 600;
     color: var(--glacia-ink-dim);
   }
@@ -178,7 +178,7 @@
 
   &__title {
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 17px;
+    font-size: var(--fs-3xl);
     font-weight: 800;
     color: var(--glacia-ink);
     margin: 0;
@@ -197,16 +197,16 @@
   padding: 4px;
   gap: 2px;
   border: 1px solid var(--glacia-glass-border);
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   background: var(--surface-3);
 
   &__item {
     border: none;
     background: transparent;
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
     padding: 6px 12px;
     font: inherit;
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 600;
     color: var(--glacia-ink-dim);
     cursor: pointer;
@@ -231,7 +231,7 @@
   margin: 0;
   padding: 0;
   border: 1px solid var(--glacia-glass-border);
-  border-radius: 16px;
+  border-radius: var(--rd-lg);
   // Fixed to 10 collapsed rows (46px + 1px divider each, plus the 2px border)
   // so the modal keeps its size on every tab, even an empty one; the rest is
   // reached by scrolling the list.
@@ -242,7 +242,7 @@
   &::-webkit-scrollbar { width: 5px; }
   &::-webkit-scrollbar-thumb {
     background: rgba(var(--tint), 0.15);
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
   }
   &::-webkit-scrollbar-track { background: transparent; }
 
@@ -253,7 +253,7 @@
     height: 100%;
     padding: 28px;
     text-align: center;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     color: var(--glacia-ink-dim);
   }
 }
@@ -263,7 +263,7 @@
 
   &:last-child { border-bottom: none; }
 
-  &--failed { background: #fbeaea; }
+  &--failed { background: var(--red-soft); }
   &--open:not(&--failed) { background: var(--surface-3); }
 
   &__head {
@@ -283,28 +283,28 @@
 
   &__icon {
     flex-shrink: 0;
-    &--failed { color: #c0392b; }
+    &--failed { color: var(--red-ink); }
     &--passed { color: #4caf6d; }
   }
 
   &__name {
     flex: 1;
     min-width: 0;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     font-weight: 700;
     color: var(--glacia-ink);
   }
 
   &__status {
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 700;
 
-    &--failed { color: #c0392b; }
+    &--failed { color: var(--red-ink); }
     &--passed {
-      color: #2f7d57;
-      background: #e3f5e8;
+      color: var(--green-ink);
+      background: var(--green-tint);
       padding: 3px 12px;
-      border-radius: 999px;
+      border-radius: var(--glacia-radius-pill);
     }
   }
 
@@ -330,7 +330,7 @@
 .rep-card {
   background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
-  border-radius: 20px;
+  border-radius: var(--rd-xl);
   padding: 14px 16px;
   min-width: 0;
 
@@ -338,16 +338,16 @@
 
   &__label {
     margin: 0 0 6px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 700;
     color: var(--glacia-ink-dim);
 
-    .rep-card--solution & { color: #c0392b; }
+    .rep-card--solution & { color: var(--red-ink); }
   }
 
   &__text {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--fs-md);
     line-height: 1.55;
     color: var(--glacia-ink);
   }

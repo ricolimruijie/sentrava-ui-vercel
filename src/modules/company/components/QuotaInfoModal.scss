@@ -21,7 +21,7 @@
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  border-radius: 20px;
+  border-radius: var(--rd-xl);
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   overflow: hidden;
   animation: quota-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -49,7 +49,7 @@
     align-items: center;
     gap: 8px;
     margin: 4px 0 0;
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 500;
     color: var(--glacia-ink-dim);
   }
@@ -94,7 +94,7 @@
 
   &--head {
     padding: 0 16px 2px;
-    font-size: 12.5px;
+    font-size: var(--fs-md);
     font-weight: 700;
     color: var(--glacia-ink-dim);
   }
@@ -103,7 +103,7 @@
 .quota-row {
   padding: 12px 16px;
   background: var(--surface-3);
-  border-radius: 16px;
+  border-radius: var(--rd-lg);
 
   &__service {
     display: flex;
@@ -118,7 +118,7 @@
     border-radius: 50%;
     background: var(--surface);
     border: 1px solid rgba(var(--tint), 0.08);
-    color: #2b5a99;
+    color: var(--blue-ink);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -127,7 +127,7 @@
 
   &__name {
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 14.5px;
+    font-size: var(--fs-xl);
     font-weight: 800;
     color: var(--glacia-ink);
   }
@@ -141,20 +141,20 @@
 
   &__remaining {
     font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 21px;
+    font-size: var(--fs-4xl);
     font-weight: 800;
     color: var(--glacia-ink);
   }
 
   &__unit {
     margin-left: 5px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
   &__used {
     font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 12.5px;
+    font-size: var(--fs-md);
     font-weight: 600;
     color: var(--glacia-ink-dim);
     white-space: nowrap;
@@ -163,7 +163,7 @@
   &__bar {
     height: 6px;
     margin-top: 6px;
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
     background: var(--hairline-strong);
     overflow: hidden;
 
@@ -187,10 +187,10 @@
     align-items: center;
     gap: 5px;
     padding: 4px 12px;
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
     background: var(--blue-soft);
     color: var(--blue-ink);
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 700;
 
     b { font-weight: 800; }
@@ -200,12 +200,12 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
   &__none {
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 }

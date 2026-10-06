@@ -183,7 +183,7 @@ defineExpose({ pagination })
 .vtable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--fs-md);
   table-layout: fixed;
 
   thead tr {
@@ -197,7 +197,7 @@ defineExpose({ pagination })
   th {
     padding: 12px 14px;
     text-align: left;
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -218,7 +218,7 @@ defineExpose({ pagination })
     border-bottom: 1px solid var(--glacia-glass-border);
     vertical-align: middle;
     color: var(--glacia-ink);
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -278,7 +278,7 @@ defineExpose({ pagination })
   }
 
   &__empty-text {
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 600;
     color: var(--glacia-ink);
   }

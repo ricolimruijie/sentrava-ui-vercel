@@ -97,7 +97,7 @@ const types = [
     }
 
     &-label {
-      font-size: 11px;
+      font-size: var(--fs-xs);
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -121,8 +121,8 @@ const types = [
     padding: 6px 14px;
     border-radius: var(--glacia-radius-pill);
     background: rgba(74, 144, 226, 0.14);
-    color: #2C6FCB;
-    font-size: 12px;
+    color: var(--blue-ink);
+    font-size: var(--fs-sm);
     font-weight: 600;
     white-space: nowrap;
   }
@@ -155,7 +155,7 @@ const types = [
   &__cell-icon {
     width: 44px;
     height: 44px;
-    border-radius: 12px;
+    border-radius: var(--rd-md);
     background: rgba(255, 37, 41, 0.12);
     display: flex;
     align-items: center;
@@ -174,7 +174,7 @@ const types = [
     display: flex;
     align-items: center;
     min-height: 32px;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 500;
     color: var(--glacia-ink-dim);
     line-height: 1.3;

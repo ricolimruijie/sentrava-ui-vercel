@@ -202,10 +202,10 @@ const saQuotaRows = computed(() => {
   const q = company.value?.quota
   const label = q != null ? String(q) : '—'
   return [
-    { key: 'domain',  label: 'Domain inspection scan quota for one month', value: label, icon: IconWorld,   color: '#2563EB', bg: '#eff6ff' },
-    { key: 'network', label: 'Network scan quota for one month',            value: label, icon: IconNetwork, color: '#7C3AED', bg: '#f5f3ff' },
-    { key: 'webapp',  label: 'Web application scan quota for one month',    value: label, icon: IconBrowser, color: '#0D9488', bg: '#f0fdfa' },
-    { key: 'source',  label: 'Source code scan quota for one month',        value: label, icon: IconCode,    color: '#EA580C', bg: '#fff7ed' },
+    { key: 'domain',  label: 'Domain inspection scan quota for one month', value: label, icon: IconWorld,   color: 'var(--blue-text)', bg: 'var(--blue-soft)' },
+    { key: 'network', label: 'Network scan quota for one month',            value: label, icon: IconNetwork, color: '#7C3AED', bg: 'var(--violet-tint)' },
+    { key: 'webapp',  label: 'Web application scan quota for one month',    value: label, icon: IconBrowser, color: '#0D9488', bg: 'var(--teal-tint)' },
+    { key: 'source',  label: 'Source code scan quota for one month',        value: label, icon: IconCode,    color: 'var(--glacia-sev-high)', bg: 'var(--orange-tint)' },
   ]
 })
 

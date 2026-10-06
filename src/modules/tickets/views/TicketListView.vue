@@ -81,10 +81,10 @@ const columns = [
 ]
 
 const statusMeta = {
-  open:     { label: 'Open',     color: '#e53925', bg: 'rgba(255, 37, 41, 0.08)' },
-  resolved: { label: 'Resolved', color: '#16a34a', bg: 'rgba(22, 163, 74, 0.12)' },
+  open:     { label: 'Open',     color: 'var(--red-ink)', bg: 'rgba(255, 37, 41, 0.08)' },
+  resolved: { label: 'Resolved', color: 'var(--green-ink)', bg: 'rgba(22, 163, 74, 0.12)' },
 }
-function s(status) { return statusMeta[status] ?? { label: status, color: '#64748b', bg: 'rgba(100,116,139,0.12)' } }
+function s(status) { return statusMeta[status] ?? { label: status, color: 'var(--slate-ink)', bg: 'rgba(100,116,139,0.12)' } }
 
 const activeTab = ref('open')
 const openCount = computed(() => rawTickets.value.filter((t) => t.status === 'open').length)

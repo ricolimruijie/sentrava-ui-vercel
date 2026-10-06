@@ -17,7 +17,7 @@
   align-items: center;
   padding: 5px 14px;
   border-radius: var(--glacia-radius-pill);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -47,7 +47,7 @@
   position: fixed;
   width: 176px;
   background: var(--surface);
-  border-radius: 12px;
+  border-radius: var(--rd-md);
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;
   padding: 6px;
@@ -61,11 +61,11 @@
     gap: 10px;
     width: 100%;
     padding: 9px 10px;
-    border-radius: 8px;
+    border-radius: var(--rd-sm);
     border: none;
     background: transparent;
     color: var(--glacia-ink);
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 500;
     font-family: 'Manrope', 'Inter', sans-serif;
     cursor: pointer;
@@ -98,7 +98,7 @@
   width: 100%;
   max-width: 460px;
   background: var(--surface);
-  border-radius: 24px;
+  border-radius: var(--rd-2xl);
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px;
   animation: delete-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -121,7 +121,7 @@
   &__close {
     width: 32px;
     height: 32px;
-    border-radius: 8px;
+    border-radius: var(--rd-sm);
     border: none;
     background: none;
     color: var(--glacia-ink-dim);
@@ -139,7 +139,7 @@
 
   &__sub {
     margin: 6px 0 0;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
@@ -152,7 +152,7 @@
   }
 
   &__empty {
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
@@ -172,11 +172,11 @@
     height: 48px;
     margin-top: 22px;
     padding: 0 18px;
-    border-radius: 12px;
+    border-radius: var(--rd-md);
     border: none;
     background: var(--glacia-red);
     color: #fff;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     font-weight: 700;
     font-family: 'Manrope', 'Inter', sans-serif;
     cursor: pointer;
@@ -200,8 +200,8 @@
   align-items: center;
   gap: 4px;
   padding: 5px 12px;
-  border-radius: 999px;
-  font-size: 12px;
+  border-radius: var(--glacia-radius-pill);
+  font-size: var(--fs-sm);
   font-weight: 700;
   font-family: 'Manrope', 'Inter', sans-serif;
   white-space: nowrap;
@@ -212,7 +212,7 @@
   background: none;
   cursor: pointer;
   color: inherit;
-  font-size: 13px;
+  font-size: var(--fs-md);
   line-height: 1;
   padding: 0 0 0 2px;
   opacity: 0.7;
@@ -248,7 +248,7 @@
   width: 100%;
   max-width: 520px;
   background: var(--surface);
-  border-radius: 24px;
+  border-radius: var(--rd-2xl);
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 32px;
   animation: delete-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -288,7 +288,7 @@
 
   &__note {
     margin: 18px 0 0;
-    font-size: 15px;
+    font-size: var(--fs-xl);
     line-height: 1.7;
     color: var(--glacia-ink-dim);
   }
@@ -312,14 +312,14 @@
   gap: 12px;
   margin: 24px 0 0;
   padding: 16px 18px;
-  border-radius: 18px;
+  border-radius: var(--rd-lg);
   border: 1.5px solid var(--glacia-red);
   background: var(--surface);
   cursor: pointer;
   user-select: none;
 
   span {
-    font-size: 14px;
+    font-size: var(--fs-lg);
     line-height: 1.5;
     color: var(--glacia-ink);
   }
@@ -330,7 +330,7 @@
   width: 20px;
   height: 20px;
   margin: 0;
-  border-radius: 6px;
+  border-radius: var(--rd-xs);
   border: 2px solid var(--glacia-red);
   background: var(--surface);
   flex-shrink: 0;
@@ -349,9 +349,9 @@
 .modal-btn {
   flex: 1;
   height: 52px;
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   border: none;
-  font-size: 16px;
+  font-size: var(--fs-2xl);
   font-weight: 700;
   font-family: 'Manrope', 'Inter', sans-serif;
   cursor: pointer;
@@ -371,7 +371,7 @@
   }
 
   &--save {
-    background: linear-gradient(135deg, #b91c1c, #ff2e3a);
+    background: linear-gradient(135deg, var(--red-deep), var(--glacia-red));
     color: #fff;
     box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
 
@@ -388,7 +388,7 @@
   }
 
   &--saved {
-    background: #16a34a;
+    background: var(--green);
     box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.4);
   }
 

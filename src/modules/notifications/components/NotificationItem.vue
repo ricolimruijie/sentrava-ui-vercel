@@ -77,7 +77,7 @@ const warn = computed(() => ['N-SC-02', 'N-AI-02', 'N-IN-01', 'N-IN-02', 'N-CD-0
     flex: none;
     width: 34px;
     height: 34px;
-    border-radius: 10px;
+    border-radius: var(--rd-md);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -86,10 +86,10 @@ const warn = computed(() => ['N-SC-02', 'N-AI-02', 'N-IN-01', 'N-IN-02', 'N-CD-0
     &--warn { background: rgba(255, 37, 41, 0.1); color: var(--glacia-red); }
   }
   &__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-  &__title { font-size: 13px; font-weight: 600; line-height: 1.3; }
+  &__title { font-size: var(--fs-md); font-weight: 600; line-height: 1.3; }
   &--unread &__title { font-weight: 700; }
-  &__msg { font-size: 12.5px; line-height: 1.45; color: var(--glacia-ink-dim); overflow-wrap: anywhere; }
-  &__time { font-size: 11.5px; color: var(--glacia-ink-dim); opacity: 0.8; }
+  &__msg { font-size: var(--fs-md); line-height: 1.45; color: var(--glacia-ink-dim); overflow-wrap: anywhere; }
+  &__time { font-size: var(--fs-sm); color: var(--glacia-ink-dim); opacity: 0.8; }
   &__side { flex: none; display: flex; align-items: center; align-self: stretch; }
   // Unread dot on the left edge of the row, level with the middle of the icon.
   &__dot { position: absolute; left: 7px; top: 25px; width: 8px; height: 8px; border-radius: 50%; background: var(--glacia-red); }

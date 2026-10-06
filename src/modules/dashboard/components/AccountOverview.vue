@@ -94,7 +94,7 @@ defineProps({
   }
 
   &__banner-label {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -109,7 +109,8 @@ defineProps({
     height: 72px;
     transform: translate(-50%, -50%);
     border-radius: 50%;
-    background: linear-gradient(135deg, #FDECEB 0%, #F8CFCD 100%);
+    // Tints are translucent in dark mode, so sit them on an opaque surface or the banner shows through.
+    background: linear-gradient(135deg, var(--red-soft) 0%, var(--red-line) 100%), var(--surface);
     border: 4px solid var(--glacia-bg-elevated);
     box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
     display: flex;
@@ -130,7 +131,7 @@ defineProps({
 
   &__name {
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 19px;
+    font-size: var(--fs-4xl);
     font-weight: 800;
     color: var(--glacia-ink);
     margin: 0;
@@ -138,7 +139,7 @@ defineProps({
 
   &__company {
     margin: 2px 0 0;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
@@ -148,7 +149,7 @@ defineProps({
     border-radius: var(--glacia-radius-pill);
     background: rgba(255, 37, 41, 0.1);
     color: var(--glacia-red);
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 700;
   }
 
@@ -180,20 +181,20 @@ defineProps({
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
+      font-size: var(--fs-md);
       color: var(--glacia-ink);
     }
 
     &-status {
-      font-size: 13px;
+      font-size: var(--fs-md);
       font-weight: 800;
     }
 
     &.on {
       background: rgba(22, 163, 74, 0.1);
-      color: #16a34a;
+      color: var(--green-ink);
 
-      .account__twofa-status { color: #16a34a; }
+      .account__twofa-status { color: var(--green-ink); }
     }
 
     &.off {
@@ -227,13 +228,13 @@ defineProps({
   }
 
   &__label {
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
     font-weight: 500;
   }
 
   &__value {
-    font-size: 14px;
+    font-size: var(--fs-lg);
     font-weight: 700;
     color: var(--glacia-ink);
     text-align: right;

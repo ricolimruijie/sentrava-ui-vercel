@@ -9,7 +9,7 @@
   width: 100%;
   max-width: 640px;
   background: var(--surface);
-  border-radius: 20px;
+  border-radius: var(--rd-xl);
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px 28px 0;
   overflow: hidden;
@@ -40,7 +40,7 @@
 
 .rep-modal__desc {
   margin: 6px 0 0;
-  font-size: 14px;
+  font-size: var(--fs-lg);
   color: var(--glacia-ink-dim);
 }
 
@@ -84,7 +84,7 @@
 }
 
 .rep-modal__label {
-  font-size: 15px;
+  font-size: var(--fs-xl);
   font-weight: 800;
   color: var(--glacia-ink);
   margin: 0;
@@ -94,7 +94,7 @@
   border: none;
   background: none;
   padding: 0;
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 700;
   color: var(--glacia-red);
   cursor: pointer;
@@ -116,7 +116,7 @@
   align-items: center;
   gap: 10px;
   padding: 6px 4px;
-  border-radius: 10px;
+  border-radius: var(--rd-md);
   cursor: pointer;
   transition: background 0.13s;
 
@@ -134,7 +134,7 @@
     flex-shrink: 0;
     width: 22px;
     height: 22px;
-    border-radius: 8px;
+    border-radius: var(--rd-sm);
     border: 2px solid var(--hairline-strong);
     background: var(--surface);
     box-sizing: border-box;
@@ -165,14 +165,14 @@
   }
 
   &__text {
-    font-size: 14px;
+    font-size: var(--fs-lg);
     font-weight: 600;
     color: var(--glacia-ink);
   }
 
   &__bar {
     height: 6px;
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
     background: var(--surface-3);
     overflow: hidden;
   }
@@ -180,7 +180,7 @@
   &__bar-fill {
     display: block;
     height: 100%;
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
     background: var(--hairline-strong);
     transition: background 0.13s;
 
@@ -190,7 +190,7 @@
   }
 
   &__count {
-    font-size: 14px;
+    font-size: var(--fs-lg);
     font-weight: 700;
     color: var(--glacia-ink-dim);
     text-align: right;
@@ -199,10 +199,10 @@
 }
 
 .rep-radio__tag {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   padding: 3px 12px;
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   white-space: nowrap;
   justify-self: start;
 }
@@ -228,7 +228,7 @@
 }
 
 .rep-check__vuln {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--glacia-ink-dim);
   white-space: nowrap;
@@ -244,7 +244,7 @@
 
 .rep-check__end-ip {
   font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 600;
   color: var(--glacia-ink);
   white-space: nowrap;
@@ -253,7 +253,7 @@
 
 .rep-modal__end-count {
   margin: 10px 0 0;
-  font-size: 13px;
+  font-size: var(--fs-md);
   color: var(--glacia-ink-dim);
 
   b {
@@ -271,7 +271,7 @@
 
 .rep-modal__count {
   margin: 0 0 10px;
-  font-size: 14px;
+  font-size: var(--fs-lg);
   color: var(--glacia-ink-dim);
 
   b {
@@ -282,7 +282,7 @@
 
 .rep-modal__progress {
   height: 6px;
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   background: var(--surface-3);
   overflow: hidden;
 }
@@ -290,7 +290,7 @@
 .rep-modal__progress-fill {
   display: block;
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   background: var(--glacia-red);
   transition: width 0.2s ease;
 }
@@ -304,9 +304,9 @@
 .rep-btn {
   flex: 1;
   height: 52px;
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   border: none;
-  font-size: 15px;
+  font-size: var(--fs-xl);
   font-weight: 700;
   font-family: 'Manrope', 'Inter', sans-serif;
   cursor: pointer;
@@ -326,12 +326,12 @@
   }
 
   &--download {
-    background: #ff2e3a;
+    background: var(--glacia-red);
     color: #fff;
     box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
 
     &:hover:not(:disabled) {
-      background: #e6212c;
+      background: var(--red-hover);
     }
 
     &:disabled {
@@ -344,7 +344,7 @@
     // Mid-download still reads as "red", not "disabled" — the :disabled
     // attribute here only blocks a second click while it's in flight.
     &.rep-btn--busy:disabled {
-      background: #ff2e3a;
+      background: var(--glacia-red);
       color: #fff;
       box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
     }

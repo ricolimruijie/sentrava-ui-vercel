@@ -48,7 +48,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 13px;
+      font-size: var(--fs-md);
       color: var(--glacia-ink-dim);
       white-space: nowrap;
     }
@@ -72,7 +72,7 @@
   border: 1px solid var(--glacia-glass-border);
   background: var(--surface);
   color: var(--glacia-ink);
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -103,7 +103,7 @@
   width: 26px;
   height: 26px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -114,7 +114,7 @@
   transition: background 160ms ease;
 
   &:hover {
-    background: #e01e22;
+    background: var(--red-hover);
   }
 }
 
@@ -149,7 +149,7 @@
   left: 20px;
   top: 0;
   height: 126px; // 3 × 38px items + 2 × 6px padding
-  border-radius: 16px;
+  border-radius: var(--rd-lg);
   background: var(--surface);
 }
 
@@ -165,7 +165,7 @@
   // Solid backing identical to the flyout — the goo shape alone can't be
   // trusted to cover the list in every browser's filter region.
   background: var(--surface);
-  border-radius: 16px;
+  border-radius: var(--rd-lg);
 }
 
 .lm:not(.is-open):not(.is-closing) .lm-goo > .lm-shape,
@@ -197,10 +197,10 @@
   min-height: 38px;
   padding: 6px 12px 6px 10px;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--rd-md);
   background: none;
   font-family: 'Manrope', 'Inter', sans-serif;
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 500;
   color: var(--glacia-ink);
   text-align: left;
@@ -250,7 +250,7 @@
   padding: 6px;
   background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   z-index: 3;
 }
@@ -307,7 +307,7 @@
   width: 100%;
   max-width: 480px;
   background: var(--surface);
-  border-radius: 20px;
+  border-radius: var(--rd-xl);
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px;
   animation: create-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -357,11 +357,11 @@
     width: 100%;
     height: 54px;
     padding: 0 18px;
-    border-radius: 14px;
+    border-radius: var(--rd-md);
     border: 1px solid var(--glacia-glass-border);
     background: var(--surface);
     color: var(--glacia-ink);
-    font-size: 15px;
+    font-size: var(--fs-xl);
     font-family: 'Manrope', 'Inter', sans-serif;
     outline: none;
     box-sizing: border-box;
@@ -373,7 +373,7 @@
     }
 
     &:focus {
-      border-color: #2563EB;
+      border-color: var(--blue);
       box-shadow: 0 2px 6px rgba(16, 24, 32, 0.12);
     }
 
@@ -415,9 +415,9 @@
 .modal-btn {
   flex: 1;
   height: 52px;
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   border: none;
-  font-size: 16px;
+  font-size: var(--fs-2xl);
   font-weight: 700;
   font-family: 'Manrope', 'Inter', sans-serif;
   cursor: pointer;
@@ -437,7 +437,7 @@
   }
 
   &--save {
-    background: #ff2e3a;
+    background: var(--glacia-red);
     color: #fff;
     box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
 
@@ -449,12 +449,12 @@
     // Excludes --saved so a lingering :hover (the mouse doesn't move after
     // a click) can't out-specificity the green "saved" background below.
     &:not(:disabled):not(.modal-btn--saved):hover {
-      background: #e6212c;
+      background: var(--red-hover);
     }
   }
 
   &--saved {
-    background: #16a34a;
+    background: var(--green);
     box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.4);
   }
 
@@ -487,13 +487,13 @@
   margin-top: 16px;
 
   &__label {
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
     margin-bottom: 4px;
   }
 
   &__value {
-    font-size: 15px;
+    font-size: var(--fs-xl);
     font-weight: 800;
     color: var(--glacia-ink);
   }
@@ -507,7 +507,7 @@
 
 .activation-subtitle {
   font-family: 'Manrope', 'Inter', sans-serif;
-  font-size: 16px;
+  font-size: var(--fs-2xl);
   font-weight: 800;
   color: var(--glacia-ink);
   margin: 0 0 4px;
@@ -531,7 +531,7 @@
   // at different lengths (e.g. "Domain inspection…" = 2 lines vs others = 1).
   &__field .create-modal__label {
     white-space: nowrap;
-    font-size: 13px;
+    font-size: var(--fs-md);
     min-height: auto;
     line-height: 1.3;
 
@@ -546,7 +546,7 @@
   flex-direction: column;
   margin-top: 16px;
   padding: 18px;
-  border-radius: 16px;
+  border-radius: var(--rd-lg);
   border: 0.5px solid var(--glacia-glass-border);
   background: var(--surface);
   box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
@@ -563,14 +563,14 @@
   }
 
   &__title {
-    font-size: 15px;
+    font-size: var(--fs-xl);
     font-weight: 700;
     color: var(--glacia-ink);
   }
 
   &__desc {
     margin-top: 4px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
@@ -591,7 +591,7 @@
   flex-shrink: 0;
   width: 44px;
   height: 26px;
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   border: none;
   background: rgba(var(--tint), 0.12);
   cursor: pointer;
@@ -625,7 +625,7 @@
   min-height: 640px;
   max-height: calc(100vh - 40px);
   background: var(--surface);
-  border-radius: 20px;
+  border-radius: var(--rd-xl);
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   overflow: hidden;
   display: flex;
@@ -684,9 +684,9 @@
     height: 48px;
     border-radius: 50%;
     background: var(--blue-soft);
-    color: #1e3a5f;
+    color: var(--blue-ink);
     font-weight: 800;
-    font-size: 17px;
+    font-size: var(--fs-3xl);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -694,12 +694,12 @@
   }
 
   &__label {
-    font-size: 13px;
-    color: #64748b;
+    font-size: var(--fs-md);
+    color: var(--slate-ink);
   }
 
   &__name {
-    font-size: 16px;
+    font-size: var(--fs-2xl);
     font-weight: 800;
     line-height: 1.3;
     color: var(--glacia-ink);
@@ -721,7 +721,7 @@
 .sa-date-pill {
   background: var(--surface);
   border: 1px solid rgba(var(--tint), 0.1);
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   padding: 10px 12px;
   text-align: left;
   cursor: pointer;
@@ -737,14 +737,14 @@
   }
 
   &__label {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 600;
     color: var(--ink-2);
     white-space: nowrap;
   }
 
   &__value {
-    font-size: 14px;
+    font-size: var(--fs-lg);
     font-weight: 800;
     color: var(--glacia-ink);
     white-space: nowrap;
@@ -752,14 +752,14 @@
     text-overflow: ellipsis;
 
     &--placeholder {
-      color: #64748b;
+      color: var(--slate-ink);
       font-weight: 700;
     }
   }
 }
 
 .sa-required {
-  color: #dc2626;
+  color: var(--red-ink);
 }
 
 .sa-cal {
@@ -774,7 +774,7 @@
 
   &__month {
     display: inline-block;
-    font-size: 16px;
+    font-size: var(--fs-2xl);
     font-weight: 800;
     color: var(--glacia-ink);
     animation: sa-fade 0.3s ease;
@@ -840,7 +840,7 @@
   }
 
   &__weekday {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 700;
     color: var(--ink-2);
     height: 28px;
@@ -862,7 +862,7 @@
     border: none;
     background: transparent;
     color: var(--glacia-ink);
-    font-size: 14px;
+    font-size: var(--fs-lg);
     font-weight: 500;
     font-family: 'Manrope', 'Inter', sans-serif;
     cursor: pointer;
@@ -882,7 +882,7 @@
 
     &--selected {
       background: transparent;
-      color: #b91c1c;
+      color: var(--red-deep);
       font-weight: 700;
       animation: sa-pop 0.34s;
     }
@@ -938,7 +938,7 @@
 
   h3 {
     margin: 0;
-    font-size: 19px;
+    font-size: var(--fs-4xl);
     font-weight: 800;
     color: var(--glacia-ink);
   }
@@ -948,15 +948,15 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 13px;
-  color: #64748b;
+  font-size: var(--fs-md);
+  color: var(--slate-ink);
 }
 
 .sa-quota-desc {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: var(--fs-md);
   line-height: 1.5;
-  color: #64748b;
+  color: var(--slate-ink);
 }
 
 .sa-close {
@@ -993,14 +993,14 @@
   align-items: center;
   gap: 12px;
   padding: 14px;
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   border: 1px solid rgba(var(--tint), 0.06);
   background: var(--surface-2);
 
   &__icon {
     width: 38px;
     height: 38px;
-    border-radius: 10px;
+    border-radius: var(--rd-md);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1015,9 +1015,9 @@
   }
 
   &__label {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     line-height: 1.4;
-    color: #64748b;
+    color: var(--slate-ink);
   }
 
   &__value {
@@ -1031,8 +1031,8 @@
 .sa-activate-card {
   margin-top: 18px;
   padding: 18px 20px;
-  border-radius: 16px;
-  border: 1px solid #c9dcf5;
+  border-radius: var(--rd-lg);
+  border: 1px solid var(--hairline-strong);
   background: var(--surface);
   box-shadow: 0 12px 28px -18px rgba(59, 110, 190, 0.45);
   display: flex;
@@ -1041,15 +1041,15 @@
   gap: 16px;
 
   &__title {
-    font-size: 16px;
+    font-size: var(--fs-2xl);
     font-weight: 800;
     color: var(--glacia-ink);
   }
 
   &__desc {
     margin-top: 4px;
-    font-size: 13px;
-    color: #64748b;
+    font-size: var(--fs-md);
+    color: var(--slate-ink);
   }
 }
 
@@ -1058,7 +1058,7 @@
   flex-shrink: 0;
   width: 52px;
   height: 30px;
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   border: none;
   background: rgba(var(--tint), 0.12);
   cursor: pointer;
@@ -1095,9 +1095,9 @@
 .sa-btn {
   flex: 1;
   height: 52px;
-  border-radius: 16px;
+  border-radius: var(--rd-lg);
   border: none;
-  font-size: 16px;
+  font-size: var(--fs-2xl);
   font-weight: 800;
   font-family: 'Manrope', 'Inter', sans-serif;
   cursor: pointer;
@@ -1108,26 +1108,26 @@
 
   &--cancel {
     background: var(--red-soft);
-    color: #dc2626;
+    color: var(--red-ink);
 
     &:hover {
-      background: #fee2e2;
+      background: var(--red-tint);
     }
   }
 
   &--save-idle {
     background: var(--surface-2);
-    color: #64748b;
+    color: var(--slate-ink);
     cursor: default;
   }
 
   &--save-active {
-    background: #ff2e3a;
+    background: var(--glacia-red);
     color: #fff;
     box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
 
     &:hover {
-      background: #e6212c;
+      background: var(--red-hover);
     }
   }
 
@@ -1151,14 +1151,14 @@
   gap: 12px;
 
   &__icon {
-    color: #64748b;
+    color: var(--slate-ink);
   }
 
   &__text {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     line-height: 1.55;
-    color: #64748b;
+    color: var(--slate-ink);
     max-width: 240px;
   }
 }
@@ -1186,7 +1186,7 @@
 
 .field-error {
   margin: 6px 0 0;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   line-height: 1.4;
   color: var(--glacia-sev-critical);
 }
@@ -1197,7 +1197,7 @@
   gap: 12px;
   margin: 24px 0 8px;
   padding: 16px 18px;
-  border-radius: 18px;
+  border-radius: var(--rd-lg);
   border: 1.5px solid var(--glacia-red);
   background: var(--surface);
   cursor: pointer;
@@ -1209,7 +1209,7 @@
   width: 20px;
   height: 20px;
   margin: 0;
-  border-radius: 6px;
+  border-radius: var(--rd-xs);
   border: 2px solid var(--glacia-red);
   background: var(--surface);
   flex-shrink: 0;
@@ -1226,14 +1226,14 @@
 }
 
 .revoke-ack span {
-  font-size: 14px;
+  font-size: var(--fs-lg);
   line-height: 1.5;
   color: var(--glacia-ink);
 }
 
 .account-card {
   margin-top: 16px;
-  border-radius: 18px;
+  border-radius: var(--rd-lg);
   overflow: hidden;
   border: 1px solid var(--glacia-glass-border);
   background: var(--surface);
@@ -1241,7 +1241,7 @@
 
   &__header {
     height: 56px;
-    background: linear-gradient(135deg, #e53925, #d63a2e);
+    background: linear-gradient(135deg, var(--red-hover), #d63a2e);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1250,7 +1250,7 @@
   }
 
   &__id {
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 700;
     letter-spacing: 0.06em;
   }
@@ -1271,17 +1271,17 @@
     height: 56px;
     border-radius: 50%;
     background: var(--surface-3);
-    border: 3px solid #fff;
+    border: 3px solid var(--surface);
     box-shadow: 0 4px 12px rgba(16, 24, 32, 0.12);
     color: var(--glacia-ink-dim);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    font-size: var(--fs-xl);
     font-weight: 800;
 
     &--named {
-      background: #ffe9ea;
+      background: var(--red-wash);
       color: var(--glacia-red);
     }
   }
@@ -1300,7 +1300,7 @@
 
   &__company {
     margin-top: 2px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
@@ -1327,12 +1327,12 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
   &__row-value {
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 700;
     color: var(--glacia-ink);
     text-align: right;
@@ -1348,7 +1348,7 @@
     gap: 12px;
     margin-top: 8px;
     padding: 10px 14px;
-    border-radius: 12px;
+    border-radius: var(--rd-md);
     background: var(--green-soft);
   }
 
@@ -1356,15 +1356,15 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 500;
     color: var(--glacia-ink);
   }
 
   &__2fa-value {
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 700;
-    color: #2e7d32;
+    color: var(--green-ink);
   }
 }
 
@@ -1378,9 +1378,9 @@
 .delete-company__icon {
   width: 56px;
   height: 56px;
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   background: rgba(255, 37, 41, 0.1);
-  color: #e53925;
+  color: var(--red-ink);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1389,7 +1389,7 @@
 
 .delete-company__name {
   font-family: 'Manrope', 'Inter', sans-serif;
-  font-size: 16px;
+  font-size: var(--fs-2xl);
   font-weight: 800;
   color: var(--glacia-ink);
   line-height: 1.3;

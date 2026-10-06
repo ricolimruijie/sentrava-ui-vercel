@@ -29,11 +29,11 @@ const severityOptions = [
   { value: 'info', label: 'Info' },
 ]
 const severityPill = {
-  critical: { label: 'Critical', bg: '#F9D0D0', color: '#9B1C1C' },
-  high: { label: 'High', bg: '#FDE8E8', color: '#C81E1E' },
-  medium: { label: 'Medium', bg: '#FEF3C7', color: '#B45309' },
-  low: { label: 'Low', bg: '#E3F5E8', color: '#2F9E52' },
-  info: { label: 'Info', bg: '#DFF3FC', color: '#1197C2' },
+  critical: { label: 'Critical', bg: 'var(--red-line)', color: '#9B1C1C' },
+  high: { label: 'High', bg: 'var(--red-tint)', color: 'var(--red-deep)' },
+  medium: { label: 'Medium', bg: 'var(--amber-tint)', color: 'var(--amber-ink)' },
+  low: { label: 'Low', bg: 'var(--green-tint)', color: 'var(--green-ink)' },
+  info: { label: 'Info', bg: 'var(--cyan-tint)', color: 'var(--cyan-ink)' },
 }
 const severityRank = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }
 

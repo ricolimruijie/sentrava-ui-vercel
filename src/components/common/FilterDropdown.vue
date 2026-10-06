@@ -97,7 +97,7 @@ onUnmounted(() => {
   padding: 10px 18px;
   box-sizing: border-box;
   border: 1px solid var(--hairline);
-  border-radius: 10px;
+  border-radius: var(--rd-md);
   background: var(--surface);
   cursor: pointer;
   text-align: left;
@@ -124,7 +124,7 @@ onUnmounted(() => {
 }
 
 .dd__title {
-  font-size: 10.5px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   line-height: 13px;
   color: #849599;
@@ -195,7 +195,7 @@ onUnmounted(() => {
   display: none;
   padding: 6px;
   background: var(--surface);
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   box-shadow: 0 16px 36px -10px rgba(16, 24, 32, 0.24);
   border: 1px solid var(--hairline);
   box-sizing: border-box;
@@ -210,7 +210,7 @@ onUnmounted(() => {
   width: 100%;
   padding: 9px 12px;
   border: none;
-  border-radius: 9px;
+  border-radius: var(--rd-sm);
   background: transparent;
   cursor: pointer;
   font: inherit;
@@ -233,7 +233,7 @@ onUnmounted(() => {
 }
 .dd__opt-check {
   flex: none;
-  color: var(--glacia-red, #ff2529);
+  color: var(--glacia-red, var(--glacia-red));
   visibility: hidden;
 }
 .dd__opt[aria-selected="true"] .dd__opt-check {

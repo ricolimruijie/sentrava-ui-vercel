@@ -14,7 +14,7 @@ const typeStyle = {
   'Source Code':       { color: '#c2410c', bg: 'rgba(234,88,12,0.14)'  },
 }
 
-function ts(type) { return typeStyle[type] ?? { color: '#64748b', bg: 'rgba(100,116,139,0.14)' } }
+function ts(type) { return typeStyle[type] ?? { color: 'var(--slate-ink)', bg: 'rgba(100,116,139,0.14)' } }
 
 // Only scans that are still running belong in this list — a finished scan is
 // removed outright rather than shown in a "done" state.
@@ -86,7 +86,7 @@ const runningItems = computed(() => props.items.filter((i) => i.status === 'runn
 
   &__caption {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
@@ -110,7 +110,7 @@ const runningItems = computed(() => props.items.filter((i) => i.status === 'runn
     gap: 10px;
     padding: 20px;
     text-align: center;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: var(--glacia-ink-dim);
   }
 
@@ -126,7 +126,7 @@ const runningItems = computed(() => props.items.filter((i) => i.status === 'runn
   }
 
   &__empty-text {
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 600;
     color: var(--glacia-ink);
   }
@@ -134,7 +134,7 @@ const runningItems = computed(() => props.items.filter((i) => i.status === 'runn
 
 .srow {
   border: 1px solid var(--glacia-glass-border);
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   background: var(--glacia-glass-fill-strong);
   padding: 14px 16px;
   max-height: 200px;
@@ -150,7 +150,7 @@ const runningItems = computed(() => props.items.filter((i) => i.status === 'runn
   }
 
   &__target {
-    font-size: 15px;
+    font-size: var(--fs-xl);
     font-weight: 700;
     color: var(--glacia-ink);
     overflow: hidden;
@@ -159,7 +159,7 @@ const runningItems = computed(() => props.items.filter((i) => i.status === 'runn
   }
 
   &__type {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 600;
     padding: 4px 12px;
     border-radius: var(--glacia-radius-pill);

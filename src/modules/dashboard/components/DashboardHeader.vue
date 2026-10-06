@@ -108,7 +108,7 @@ const hi = computed(() => greeting())
   }
 
   &__sub {
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
     font-weight: 400;
   }
@@ -144,7 +144,7 @@ const hi = computed(() => greeting())
   color: #fff;
   border: none;
   border-radius: var(--glacia-radius-pill);
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -152,7 +152,7 @@ const hi = computed(() => greeting())
   transition: background .15s, box-shadow .15s;
 
   &:hover, &--open {
-    background: #e01e22;
+    background: var(--red-hover);
     box-shadow: 0 8px 24px rgba(255,37,41,0.50);
   }
 
@@ -170,7 +170,7 @@ const hi = computed(() => greeting())
   right: 0;
   width: 200px;
   background: var(--surface);
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;
   padding: 6px;
@@ -183,11 +183,11 @@ const hi = computed(() => greeting())
     gap: 10px;
     width: 100%;
     padding: 9px 10px;
-    border-radius: 9px;
+    border-radius: var(--rd-sm);
     border: none;
     background: transparent;
     color: var(--glacia-ink);
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 500;
     font-family: 'Manrope', 'Inter', sans-serif;
     cursor: pointer;

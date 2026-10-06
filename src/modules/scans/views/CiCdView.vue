@@ -9,6 +9,7 @@ import DataTable from '@/components/common/DataTable.vue'
 import FilterDropdown from '@/components/common/FilterDropdown.vue'
 import GlassField from '@/components/common/GlassField.vue'
 import { IconDotsVertical, IconArrowUpRight, IconTrash, IconX, IconCheck, IconTag, IconLogs } from '@tabler/icons-vue'
+import { TAG_COLORS } from '@/config/tagPalette'
 
 const { can } = useRole()
 
@@ -28,11 +29,11 @@ const columns = [
 ]
 
 const statusMeta = {
-  Queue:     { label: 'Queue',     color: '#0c4a6e', bg: '#e0f2fe' },
-  Scanning:  { label: 'Scanning',  color: '#F79009', bg: '#fef3c7' },
-  Completed: { label: 'Completed', color: '#16a34a', bg: '#dcfce7' },
-  Failed:    { label: 'Failed',    color: '#dc2626', bg: '#fee2e2' },
-  Waiting:   { label: 'Waiting',   color: '#6b21a8', bg: '#f3e8ff' },
+  Queue:     { label: 'Queue',     color: 'var(--sky-ink)', bg: 'var(--sky-tint)' },
+  Scanning:  { label: 'Scanning',  color: 'var(--amber-ink)', bg: 'var(--amber-tint)' },
+  Completed: { label: 'Completed', color: 'var(--green-ink)', bg: 'var(--green-tint)' },
+  Failed:    { label: 'Failed',    color: 'var(--red-ink)', bg: 'var(--red-tint)' },
+  Waiting:   { label: 'Waiting',   color: 'var(--violet-ink)', bg: 'var(--violet-tint)' },
 }
 
 // Legacy lowercase values map onto the same five types.
@@ -40,7 +41,7 @@ const legacyStatus = { completed: 'Completed', failed: 'Failed', running: 'Scann
 
 function s(status) {
   const key = legacyStatus[status] ?? status
-  return statusMeta[key] ?? { label: status, color: '#64748b', bg: 'rgba(100, 116, 139, 0.12)' }
+  return statusMeta[key] ?? { label: status, color: 'var(--slate-ink)', bg: 'rgba(100, 116, 139, 0.12)' }
 }
 
 // Date matches the Last Modified column (e.g. "Mon, 10 Feb 2025"), plus 24h time.
@@ -87,14 +88,7 @@ function viewDetail(item) {
 }
 
 // ── Manage Tags modal ──────────────────────────────────────────────────────
-const tagColors = [
-  { swatch: '#F26D6D', bg: '#FDE8E8', fg: '#E03131' }, { swatch: '#F2994A', bg: '#FDEEE0', fg: '#E8590C' },
-  { swatch: '#F2C94C', bg: '#FCF3D6', fg: '#A67C00' }, { swatch: '#A8BD3A', bg: '#F1F5D6', fg: '#6B8E00' },
-  { swatch: '#4CAF6D', bg: '#E3F5E8', fg: '#2F9E52' }, { swatch: '#3DBFA8', bg: '#DEF7F0', fg: '#12967D' },
-  { swatch: '#3DC6F2', bg: '#DFF3FC', fg: '#1197C2' }, { swatch: '#7C93F0', bg: '#E6E9FC', fg: '#5C6BC0' },
-  { swatch: '#E896BB', bg: '#FBE6F0', fg: '#C2255C' }, { swatch: '#B69AE8', bg: '#F0E6FB', fg: '#7C3FC4' },
-  { swatch: '#9AA5B1', bg: '#ECEEF0', fg: '#5C6470' },
-]
+const tagColors = TAG_COLORS
 
 const showTagModal = ref(false)
 const tagItem = ref(null)

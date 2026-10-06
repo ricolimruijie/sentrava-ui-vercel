@@ -21,7 +21,7 @@
     gap: 10px;
     cursor: pointer;
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     color: var(--glacia-ink);
     text-align: left;
     transition: border-color 200ms ease, box-shadow 280ms ease;
@@ -38,7 +38,7 @@
   &__inline-menu {
     margin-top: 10px;
     padding: 8px;
-    border-radius: 16px;
+    border-radius: var(--rd-lg);
     border: 0.5px solid var(--glacia-glass-border);
     background: var(--surface);
     max-height: 260px;
@@ -103,7 +103,7 @@
 .calendar__nav-btn {
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: var(--rd-sm);
   border: none;
   background: transparent;
   color: var(--glacia-ink);
@@ -120,7 +120,7 @@
 
 .calendar__month {
   font-family: 'Manrope', 'Inter', sans-serif;
-  font-size: 17px;
+  font-size: var(--fs-3xl);
   font-weight: 700;
   color: var(--glacia-ink);
 }
@@ -165,7 +165,7 @@
 }
 
 .calendar__weekday {
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 700;
   color: var(--glacia-ink);
   padding: 6px 0;
@@ -183,7 +183,7 @@
   border: none;
   background: transparent;
   color: var(--glacia-ink);
-  font-size: 14px;
+  font-size: var(--fs-lg);
   font-weight: 500;
   font-family: 'Manrope', 'Inter', sans-serif;
   cursor: pointer;
@@ -193,7 +193,7 @@
 
   &--selected {
     background: transparent;
-    color: #b91c1c;
+    color: var(--red-deep);
     font-weight: 700;
     animation: dt-pop 0.34s;
   }

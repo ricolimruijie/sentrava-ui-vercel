@@ -20,7 +20,7 @@
 
   &__desc {
     margin: 6px 0 0;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     line-height: 1.55;
     color: var(--glacia-ink-dim);
   }
@@ -36,7 +36,7 @@
 .tfa-box {
   margin-top: 14px;
   padding: 22px;
-  border-radius: 16px;
+  border-radius: var(--rd-lg);
   border: 1px solid var(--hairline);
   background: var(--surface);
 }
@@ -53,7 +53,7 @@
   width: 160px;
   height: 160px;
   flex-shrink: 0;
-  border-radius: 8px;
+  border-radius: var(--rd-sm);
 }
 
 .tfa-secret {
@@ -65,19 +65,19 @@
 
   &__label {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     line-height: 1.5;
     color: var(--glacia-ink);
   }
 
   &__key {
     padding: 12px 14px;
-    border-radius: 12px;
+    border-radius: var(--rd-md);
     border: 1px solid var(--hairline);
     background: var(--surface-3);
     color: var(--glacia-ink-dim);
     font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     letter-spacing: 0.04em;
     user-select: all;
     overflow-wrap: anywhere;
@@ -92,18 +92,18 @@
   height: 40px;
   padding: 0 16px;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--rd-md);
   background: rgba(255, 37, 41, 0.1);
   color: var(--glacia-red);
   font-family: 'Manrope', 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: var(--fs-lg);
   font-weight: 700;
   cursor: pointer;
   transition: background 0.13s;
 
   &:hover { background: rgba(255, 37, 41, 0.16); }
 
-  &--done { background: rgba(22, 163, 74, 0.12); color: #16a34a; }
+  &--done { background: rgba(22, 163, 74, 0.12); color: var(--green-ink); }
 
   &__spinner {
     width: 14px;
@@ -119,9 +119,9 @@
   min-width: 120px;
   height: 42px;
   padding: 0 24px;
-  border-radius: 12px;
+  border-radius: var(--rd-md);
   border: none;
-  font-size: 14px;
+  font-size: var(--fs-lg);
   font-weight: 700;
   font-family: 'Manrope', 'Inter', sans-serif;
   cursor: pointer;
@@ -140,21 +140,21 @@
   }
 
   &--save {
-    background: #ff2e3a;
+    background: var(--glacia-red);
     color: #fff;
     box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
 
-    &:not(:disabled):not(.modal-btn--saved):hover { background: #e6212c; }
+    &:not(:disabled):not(.modal-btn--saved):hover { background: var(--red-hover); }
   }
 
   &--saved {
-    background: #16a34a;
+    background: var(--green);
     box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.4);
   }
 
   &--create {
     background: rgba(255, 46, 58, 0.14);
-    color: #7f1d1d;
+    color: var(--red-deep);
     cursor: default;
   }
 

@@ -22,7 +22,7 @@
   &__desc {
     margin: 6px 0 16px;
     max-width: 900px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     line-height: 1.6;
     color: var(--glacia-ink-dim);
   }
@@ -38,7 +38,7 @@
   color: #fff;
   border: none;
   border-radius: var(--glacia-radius-pill);
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -46,7 +46,7 @@
   transition: background 0.15s, box-shadow 0.15s;
 
   &:hover {
-    background: #e01e22;
+    background: var(--red-hover);
     box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5);
   }
 }
@@ -76,7 +76,7 @@
   position: fixed;
   width: 176px;
   background: var(--surface);
-  border-radius: 12px;
+  border-radius: var(--rd-md);
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;
   padding: 6px;
@@ -90,11 +90,11 @@
     gap: 10px;
     width: 100%;
     padding: 9px 10px;
-    border-radius: 8px;
+    border-radius: var(--rd-sm);
     border: none;
     background: transparent;
     color: var(--glacia-ink);
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 500;
     font-family: 'Manrope', 'Inter', sans-serif;
     cursor: pointer;
@@ -147,7 +147,7 @@
   width: 100%;
   max-width: 480px;
   background: var(--surface);
-  border-radius: 20px;
+  border-radius: var(--rd-xl);
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px;
   animation: create-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -198,7 +198,7 @@
 
   &__note {
     margin: 0 0 12px;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     color: var(--glacia-ink-dim);
   }
 
@@ -206,11 +206,11 @@
     width: 100%;
     height: 54px;
     padding: 0 18px;
-    border-radius: 14px;
+    border-radius: var(--rd-md);
     border: 1px solid var(--glacia-glass-border);
     background: var(--surface);
     color: var(--glacia-ink);
-    font-size: 15px;
+    font-size: var(--fs-xl);
     font-family: 'Manrope', 'Inter', sans-serif;
     outline: none;
     box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
@@ -221,7 +221,7 @@
     }
 
     &:focus {
-      border-color: #2563EB;
+      border-color: var(--blue);
       box-shadow: 0 2px 6px rgba(16, 24, 32, 0.12);
     }
   }
@@ -254,7 +254,7 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     line-height: 1.6;
     color: var(--glacia-ink-dim);
   }
@@ -269,9 +269,9 @@
 .modal-btn {
   flex: 1;
   height: 52px;
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   border: none;
-  font-size: 16px;
+  font-size: var(--fs-2xl);
   font-weight: 700;
   font-family: 'Manrope', 'Inter', sans-serif;
   cursor: pointer;
@@ -291,7 +291,7 @@
   }
 
   &--save {
-    background: #ff2e3a;
+    background: var(--glacia-red);
     color: #fff;
     box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
 
@@ -303,12 +303,12 @@
     // Excludes --saved so a lingering :hover (the mouse doesn't move after
     // a click) can't out-specificity the green "saved" background below.
     &:not(:disabled):not(.modal-btn--saved):hover {
-      background: #e6212c;
+      background: var(--red-hover);
     }
   }
 
   &--saved {
-    background: #16a34a;
+    background: var(--green);
     box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.4);
   }
 
@@ -346,12 +346,12 @@
   height: 56px;
   padding: 12px;
   border: none;
-  border-radius: 16px;
+  border-radius: var(--rd-lg);
   background: var(--glacia-red);
   color: #fff;
   font-family: 'Manrope', 'Inter', sans-serif;
   font-weight: 700;
-  font-size: 17px;
+  font-size: var(--fs-3xl);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -362,7 +362,7 @@
   transition: background 0.2s ease;
 
   &--copied {
-    background: #16a34a;
+    background: var(--green);
   }
 }
 
@@ -399,7 +399,7 @@
 .edit-modal__label {
   display: block;
   margin: 16px 0 8px;
-  font-size: 14px;
+  font-size: var(--fs-lg);
   font-weight: 700;
   color: var(--glacia-ink);
 }
@@ -410,7 +410,7 @@
   gap: 12px;
   margin: 24px 0 28px;
   padding: 16px 18px;
-  border-radius: 18px;
+  border-radius: var(--rd-lg);
   border: 1.5px solid var(--glacia-red);
   background: var(--surface);
   cursor: pointer;
@@ -422,7 +422,7 @@
   width: 20px;
   height: 20px;
   margin: 0;
-  border-radius: 6px;
+  border-radius: var(--rd-xs);
   border: 2px solid var(--glacia-red);
   background: var(--surface);
   flex-shrink: 0;
@@ -439,7 +439,7 @@
 }
 
 .revoke-ack span {
-  font-size: 14px;
+  font-size: var(--fs-lg);
   line-height: 1.5;
   color: var(--glacia-ink);
 }

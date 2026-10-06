@@ -196,7 +196,7 @@ $w-collapsed:  64px;
 
   &__logo-text {
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 17px; // same size as the SENTRAVA text on the login page
+    font-size: var(--fs-3xl); // same size as the SENTRAVA text on the login page
     font-weight: 800;
     letter-spacing: 0.13em;
     text-transform: uppercase;
@@ -222,7 +222,7 @@ $w-collapsed:  64px;
     left: 0;
     width: 0;
     height: 0;
-    border-radius: 9px;
+    border-radius: var(--rd-sm);
     z-index: 0;
     opacity: 0;
     pointer-events: none;
@@ -254,7 +254,7 @@ $w-collapsed:  64px;
     justify-content: center;
     gap: 2px;
     overflow: hidden;
-    font-size: 10px;
+    font-size: var(--fs-xs);
     line-height: 14px;
     color: var(--glacia-ink-dim);
     white-space: nowrap;
@@ -268,7 +268,7 @@ $w-collapsed:  64px;
 
   &__version { font-weight: 700; }
   // One line: the capitals fit the 190px content width only at this size.
-  &__copyright { font-size: 8.5px; letter-spacing: 0.02em; opacity: 0.8; }
+  &__copyright { font-size: var(--fs-xs); letter-spacing: 0.02em; opacity: 0.8; }
 
   &__section {
     display: flex;
@@ -288,7 +288,7 @@ $w-collapsed:  64px;
     left: 0;
     right: 0;
     margin: 0;
-    font-size: 10.5px;
+    font-size: var(--fs-xs);
     font-weight: 600;
     letter-spacing: 0.09em;
     text-transform: uppercase;
@@ -320,9 +320,9 @@ $w-collapsed:  64px;
     // same spot open and closed. Label position is unchanged (padding-left + gap = 20px).
     gap: 8.5px;
     padding: 9px 10px 9px 11.5px;
-    border-radius: 9px;
+    border-radius: var(--rd-sm);
     color: var(--glacia-ink-dim);
-    font-size: 13.5px;
+    font-size: var(--fs-lg);
     font-weight: 500;
     text-decoration: none;
     transition: background 0.13s, color 0.13s;

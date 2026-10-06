@@ -1,7 +1,7 @@
 .side-card {
   background: var(--surface);
   border: 1px solid var(--glacia-glass-border);
-  border-radius: 16px;
+  border-radius: var(--rd-lg);
   box-shadow: inset 0 1px 0 var(--glacia-glass-highlight), 0 4px 24px rgba(0, 0, 0, 0.07), 0 1px 6px rgba(0, 0, 0, 0.04);
   padding: 18px;
   display: flex;
@@ -64,7 +64,7 @@
     gap: 12px;
     padding: 10px;
     border: 0;
-    border-radius: 12px;
+    border-radius: var(--rd-md);
     background: transparent;
     text-align: left;
     cursor: pointer;
@@ -95,7 +95,7 @@
     height: 18px;
     box-sizing: border-box;
     border-radius: 50%;
-    border: 3px solid #fff;
+    border: 3px solid var(--surface);
     box-shadow: 0 0 0 1px var(--glacia-glass-border);
     flex: none;
     position: relative;
@@ -110,7 +110,7 @@
   }
 
   &__date {
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 600;
     color: var(--glacia-ink);
     white-space: nowrap;
@@ -121,7 +121,7 @@
   }
 
   &__status {
-    font-size: 11.5px;
+    font-size: var(--fs-sm);
     color: var(--glacia-ink-dim);
   }
 
@@ -136,11 +136,11 @@
     gap: 4px;
     height: 26px;
     padding: 0 10px 0 12px;
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
     border: none;
     background: var(--glacia-red);
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 11.5px;
+    font-size: var(--fs-sm);
     font-weight: 700;
     color: #fff;
     cursor: pointer;
@@ -150,20 +150,20 @@
     transition: background 0.15s;
 
     &:hover {
-      background: #e01e22;
+      background: var(--red-hover);
       animation-play-state: paused;
     }
   }
 
   &__count {
-    font-size: 11.5px;
+    font-size: var(--fs-sm);
     color: var(--glacia-ink-dim);
     margin: 0;
   }
 
   &__recurrence {
     margin: -8px 0 0;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: var(--glacia-ink-dim);
   }
 
@@ -173,7 +173,7 @@
   }
 
   &__section {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 700;
     color: var(--glacia-ink-dim);
     text-transform: uppercase;
@@ -185,9 +185,9 @@
 .btn-register {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 14px;
   border-radius: var(--glacia-radius-pill); border: none;
-  background: var(--glacia-red); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  background: var(--glacia-red); color: #fff; font-size: var(--fs-md); font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0;
   box-shadow: 0 6px 20px rgba(255, 37, 41, 0.4); transition: background 0.15s, box-shadow 0.15s;
-  &:hover { background: #e01e22; box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5); }
+  &:hover { background: var(--red-hover); box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5); }
 
   &--block {
     width: 100%;
@@ -212,7 +212,7 @@
     box-shadow: 0 6px 20px rgba(255, 37, 41, 0.4);
 
     &:hover:not(:disabled) {
-      background: #e01e22;
+      background: var(--red-hover);
       box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5);
     }
 
@@ -249,12 +249,12 @@
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  background: #fef6e4;
-  border-radius: 14px;
+  background: var(--amber-tint);
+  border-radius: var(--rd-md);
   padding: 14px 16px;
-  font-size: 13px;
+  font-size: var(--fs-md);
   line-height: 1.5;
-  color: #7c5a12;
+  color: var(--amber-ink);
 
   &__icon {
     flex-shrink: 0;
@@ -305,7 +305,7 @@
   width: 28px;
   height: 28px;
   margin-left: auto;
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   background: rgba(220, 38, 38, 0.1);
   transition: width 420ms cubic-bezier(0.65, 0, 0.35, 1), background 300ms ease,
     opacity 260ms ease, transform 320ms cubic-bezier(0.65, 0, 0.35, 1);
@@ -330,7 +330,7 @@
   position: absolute;
   border: 0;
   padding: 0;
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -343,7 +343,7 @@
   width: 28px;
   height: 28px;
   background: transparent;
-  color: #dc2626;
+  color: var(--red-ink);
   transition: opacity 180ms ease, transform 360ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 
@@ -418,7 +418,7 @@
   width: 24px;
   height: 24px;
   background: var(--surface);
-  color: #5b6470;
+  color: var(--ink-3);
   box-shadow: 0 1px 3px rgba(16, 24, 32, 0.12);
   opacity: 0;
   transform: scale(0.4);

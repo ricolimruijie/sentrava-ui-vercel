@@ -71,7 +71,7 @@ function onGlobalKeydown(e) {
   box-sizing: border-box;
   padding: 8px;
   border: 1px solid var(--glacia-glass-border, var(--hairline));
-  border-radius: 999px;
+  border-radius: var(--glacia-radius-pill);
   background: var(--glacia-glass-fill-strong, var(--surface-2));
   overflow: hidden;
   flex-shrink: 0;
@@ -93,7 +93,7 @@ function onGlobalKeydown(e) {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--glacia-ink-dim, #6C7A80);
+  color: var(--glacia-ink-dim);
   transition: color 0.15s ease;
 
   &:hover { color: var(--glacia-ink, var(--glacia-ink)); }
@@ -106,12 +106,12 @@ function onGlobalKeydown(e) {
   outline: none;
   background: transparent;
   font-family: 'Manrope', 'Inter', sans-serif;
-  font-size: 13px;
+  font-size: var(--fs-md);
   color: var(--glacia-ink, var(--glacia-ink));
   opacity: 0;
   transition: opacity 0.15s ease;
 
-  &::placeholder { color: var(--glacia-ink-dim, #6C7A80); }
+  &::placeholder { color: var(--glacia-ink-dim); }
 
   // Chrome/Safari draw a native cancel (×) button on type="search" once it
   // has a value — hide it since the pill's own collapse/Escape covers that.
@@ -124,5 +124,8 @@ function onGlobalKeydown(e) {
 
 @media (prefers-reduced-motion: reduce) {
   .search, .search__input { transition: none; }
+}
+.search:focus-within {
+  border-color: var(--glacia-red); box-shadow: 0 0 0 3px rgba(255, 37, 41, 0.18);
 }
 </style>

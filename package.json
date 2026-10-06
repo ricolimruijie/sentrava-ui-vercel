@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src",
-    "test": "vitest run"
+    "test": "vitest run",
+    "hex:baseline": "WRITE_HEX_BASELINE=1 vitest run src/styles/rawHex.test.js"
   },
   "dependencies": {
     "@primevue/themes": "^4.3.5",

@@ -12,7 +12,7 @@ const props = defineProps({
 })
 
 const LEVELS = [
-  { key: 'critical', label: 'Critical', color: '#B91C1C' },
+  { key: 'critical', label: 'Critical', color: 'var(--red-deep)' },
   { key: 'high', label: 'High', color: '#EF4444' },
   { key: 'medium', label: 'Medium', color: '#F59E0B' },
   { key: 'low', label: 'Low', color: '#22C55E' },
@@ -70,18 +70,18 @@ function hide() {
   min-width: 38px; // same width as a two-digit count, so a "-" badge lines up
   height: 28px;
   padding: 0 9px;
-  border-radius: 8px;
+  border-radius: var(--rd-sm);
   background: var(--surface-3);
-  border: 1px solid #d8dee4;
+  border: 1px solid var(--hairline-strong);
   color: var(--ink-3);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   white-space: nowrap;
   cursor: default;
   outline: none;
 
   &:hover,
-  &:focus-visible { background: #E2E6EA; }
+  &:focus-visible { background: var(--surface-3); }
 
   &__tip {
     position: fixed;
@@ -92,12 +92,12 @@ function hide() {
     gap: 6px;
     min-width: 170px;
     padding: 10px 12px;
-    border-radius: 10px;
+    border-radius: var(--rd-md);
     background: var(--surface);
     color: var(--glacia-ink, var(--glacia-ink));
-    border: 1px solid var(--glacia-glass-border, #E3E8EC);
+    border: 1px solid var(--glacia-glass-border, var(--hairline));
     box-shadow: 0 12px 32px -8px rgba(16, 24, 32, 0.22);
-    font-size: 12px;
+    font-size: var(--fs-sm);
     pointer-events: none;
     white-space: nowrap;
 
@@ -109,18 +109,18 @@ function hide() {
       width: 8px;
       height: 8px;
       background: var(--surface);
-      border-bottom: 1px solid var(--glacia-glass-border, #E3E8EC);
-      border-left: 1px solid var(--glacia-glass-border, #E3E8EC);
+      border-bottom: 1px solid var(--glacia-glass-border, var(--hairline));
+      border-left: 1px solid var(--glacia-glass-border, var(--hairline));
       transform: translateY(-50%) rotate(45deg);
     }
   }
 
   &__tip-title {
-    font-size: 10.5px;
+    font-size: var(--fs-xs);
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--glacia-ink-dim, #6c7a80);
+    color: var(--glacia-ink-dim);
   }
 
   &__row {

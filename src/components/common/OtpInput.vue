@@ -87,7 +87,7 @@ defineExpose({ focus: () => focusAt(0) })
     height: 58px;
     padding: 0;
     text-align: center;
-    border-radius: 12px;
+    border-radius: var(--rd-md);
     border: 1px solid var(--hairline);
     background: var(--surface-3);
     color: var(--glacia-ink);
@@ -98,7 +98,7 @@ defineExpose({ focus: () => focusAt(0) })
     caret-color: transparent; // no blinking cursor line inside the box
 
     // No transitions: the box simply takes the focus ring as the cursor moves on while typing.
-    &:focus { border-color: #2563EB; }
+    &:focus { border-color: var(--blue); }
   }
 }
 

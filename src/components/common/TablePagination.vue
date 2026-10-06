@@ -75,7 +75,7 @@ const pageList = computed(() => {
   flex-wrap: wrap;
 
   &__info {
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
@@ -95,7 +95,7 @@ const pageList = computed(() => {
   border: 1px solid var(--glacia-glass-border);
   background: var(--glacia-glass-fill-strong);
   color: var(--glacia-ink-dim);
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;

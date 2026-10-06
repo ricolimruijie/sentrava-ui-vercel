@@ -24,11 +24,11 @@ const columns = [
 ]
 
 const statusMeta = {
-  online:  { label: 'Online',  color: '#16a34a', bg: 'rgba(22, 163, 74, 0.12)' },
-  offline: { label: 'Offline', color: '#dc2626', bg: 'rgba(220, 38, 38, 0.12)' },
+  online:  { label: 'Online',  color: 'var(--green-ink)', bg: 'rgba(22, 163, 74, 0.12)' },
+  offline: { label: 'Offline', color: 'var(--red-ink)', bg: 'rgba(220, 38, 38, 0.12)' },
 }
 function s(status) {
-  return statusMeta[status] ?? { label: status === 'maintenance' ? 'Offline' : status, color: '#64748b', bg: 'rgba(100, 116, 139, 0.12)' }
+  return statusMeta[status] ?? { label: status === 'maintenance' ? 'Offline' : status, color: 'var(--slate-ink)', bg: 'rgba(100, 116, 139, 0.12)' }
 }
 
 const search = ref('')
@@ -173,7 +173,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   align-items: center;
   padding: 5px 14px;
   border-radius: var(--glacia-radius-pill);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -222,7 +222,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
   width: max-content;
   min-width: 176px;
   background: var(--surface);
-  border-radius: 12px;
+  border-radius: var(--rd-md);
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;
   padding: 6px;
@@ -236,11 +236,11 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     gap: 10px;
     width: 100%;
     padding: 9px 10px;
-    border-radius: 8px;
+    border-radius: var(--rd-sm);
     border: none;
     background: transparent;
     color: var(--glacia-ink);
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 500;
     font-family: 'Manrope', 'Inter', sans-serif;
     white-space: nowrap;

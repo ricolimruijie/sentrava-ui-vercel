@@ -89,7 +89,7 @@
     border: none;
     background: var(--glacia-red);
     color: #fff;
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
@@ -98,7 +98,7 @@
     transition: background 0.15s, box-shadow 0.15s;
 
     &:hover {
-      background: #e01e22;
+      background: var(--red-hover);
       box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5);
     }
   }
@@ -125,12 +125,12 @@
   &__avatar {
     background: var(--glacia-red) !important;
     color: #fff !important;
-    font-size: var(--text-xs) !important;
+    font-size: var(--fs-xs) !important;
     font-weight: 700 !important;
   }
 
   &__username {
-    font-size: var(--text-sm);
+    font-size: var(--fs-md);
     font-weight: 500;
     color: var(--glacia-ink);
     max-width: 120px;
@@ -156,14 +156,14 @@
   min-width: 0;
 
   &__crumb {
-    font-size: 14px;
+    font-size: var(--fs-lg);
     font-weight: 500;
     color: var(--glacia-ink-dim);
     white-space: nowrap;
 
     &--link {
       text-decoration: none;
-      border-radius: 6px;
+      border-radius: var(--rd-xs);
       padding: 2px 4px;
       margin: -2px -4px;
       transition: background 0.13s, color 0.13s;
@@ -187,9 +187,9 @@
     background: transparent;
     padding: 2px 4px;
     margin: -2px -4px;
-    border-radius: 6px;
+    border-radius: var(--rd-xs);
     font: inherit;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     font-weight: 500;
     color: var(--glacia-ink-dim);
     cursor: pointer;
@@ -217,7 +217,7 @@
     left: 0;
     width: 210px;
     background: var(--surface);
-    border-radius: 12px;
+    border-radius: var(--rd-md);
     box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
     overflow: hidden;
     padding: 6px;
@@ -232,9 +232,9 @@
     gap: 10px;
     width: 100%;
     padding: 9px 10px;
-    border-radius: 8px;
+    border-radius: var(--rd-sm);
     color: var(--glacia-ink);
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 500;
     font-family: 'Manrope', 'Inter', sans-serif;
     text-decoration: none;
@@ -254,7 +254,7 @@
 
   &__current {
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 16px;
+    font-size: var(--fs-2xl);
     font-weight: 700;
     color: var(--glacia-ink);
     margin: 0;
@@ -272,7 +272,7 @@
   right: 0;
   width: 240px;
   background: var(--surface);
-  border-radius: 16px;
+  border-radius: var(--rd-lg);
   box-shadow: 0 12px 28px -6px rgba(16, 24, 32, 0.2);
   overflow: hidden;
   padding: 16px;
@@ -301,7 +301,7 @@
 
   &__name {
     margin-top: 6px;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     font-weight: 700;
     color: var(--glacia-ink);
     white-space: nowrap;
@@ -312,7 +312,7 @@
   }
 
   &__email {
-    font-size: 12px;
+    font-size: var(--fs-sm);
     color: var(--glacia-ink-dim);
     white-space: nowrap;
     overflow: hidden;
@@ -336,10 +336,10 @@
     gap: 8px;
     padding: 12px 8px;
     border: 1px solid var(--glacia-glass-border);
-    border-radius: 12px;
+    border-radius: var(--rd-md);
     background: none;
     color: var(--glacia-ink-dim);
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-family: 'Manrope', 'Inter', sans-serif;
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(16, 24, 32, 0.08);
@@ -354,13 +354,13 @@
 
   &__logout {
     border: none;
-    border-radius: 12px;
+    border-radius: var(--rd-md);
     padding: 10px;
     background: rgba(220, 38, 38, 0.08);
     color: var(--glacia-sev-critical);
     font-weight: 600;
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 13.5px;
+    font-size: var(--fs-lg);
     cursor: pointer;
     transition: background 0.13s;
     animation: menu-body-fade 0.3s ease 0.32s both;

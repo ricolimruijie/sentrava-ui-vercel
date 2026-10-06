@@ -117,7 +117,7 @@ function save() {
   width: 100%;
   max-width: 480px;
   background: var(--surface);
-  border-radius: 20px;
+  border-radius: var(--rd-xl);
   box-shadow: 0 24px 48px -12px rgba(16, 24, 32, 0.35);
   padding: 28px;
   animation: create-modal-bounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -159,13 +159,13 @@ function save() {
   }
 
   &__info-label {
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
     margin: 0 0 4px;
   }
 
   &__info-value {
-    font-size: 15px;
+    font-size: var(--fs-xl);
     font-weight: 800;
     color: var(--glacia-ink);
     margin: 0;
@@ -193,9 +193,9 @@ function save() {
 .modal-btn {
   flex: 1;
   height: 52px;
-  border-radius: 14px;
+  border-radius: var(--rd-md);
   border: none;
-  font-size: 16px;
+  font-size: var(--fs-2xl);
   font-weight: 700;
   font-family: 'Manrope', 'Inter', sans-serif;
   cursor: pointer;
@@ -224,17 +224,17 @@ function save() {
   }
 
   &--save {
-    background: #ff2e3a;
+    background: var(--glacia-red);
     color: #fff;
     box-shadow: 0 8px 20px -6px rgba(255, 46, 58, 0.4);
 
     &:disabled { cursor: default; }
 
-    &:not(:disabled):not(.modal-btn--saved):hover { background: #e6212c; }
+    &:not(:disabled):not(.modal-btn--saved):hover { background: var(--red-hover); }
   }
 
   &--saved {
-    background: #16a34a;
+    background: var(--green);
     box-shadow: 0 8px 20px -6px rgba(22, 163, 74, 0.4);
   }
 

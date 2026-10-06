@@ -173,7 +173,7 @@ function downloadAuditLog(entries) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   background: rgba(var(--tint), 0.06);
   color: var(--glacia-ink-dim);
@@ -189,14 +189,14 @@ function downloadAuditLog(entries) {
 }
 
 .member-cell__name {
-  font-size: 13.5px;
+  font-size: var(--fs-lg);
   font-weight: 700;
   line-height: 1.3;
   color: var(--glacia-ink);
 }
 
 .member-cell__username {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   line-height: 1.3;
   color: var(--glacia-ink-dim);
 }
@@ -204,8 +204,8 @@ function downloadAuditLog(entries) {
 .btn-download {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 14px;
   border-radius: var(--glacia-radius-pill); border: none;
-  background: var(--glacia-red); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  background: var(--glacia-red); color: #fff; font-size: var(--fs-md); font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0;
   box-shadow: 0 6px 20px rgba(255, 37, 41, 0.4); transition: background 0.15s, box-shadow 0.15s;
-  &:hover { background: #e01e22; box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5); }
+  &:hover { background: var(--red-hover); box-shadow: 0 8px 24px rgba(255, 37, 41, 0.5); }
 }
 </style>

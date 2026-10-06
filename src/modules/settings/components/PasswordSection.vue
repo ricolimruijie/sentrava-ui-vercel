@@ -130,10 +130,10 @@ function submit() {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 12.5px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
 
-    &--ok { color: #16a34a; }
+    &--ok { color: var(--green-ink); }
   }
 
   &__success {
@@ -143,10 +143,10 @@ function submit() {
     max-width: 420px;
     margin-bottom: 16px;
     padding: 12px 14px;
-    border-radius: 12px;
+    border-radius: var(--rd-md);
     background: rgba(22, 163, 74, 0.1);
-    color: #16a34a;
-    font-size: 13.5px;
+    color: var(--green-ink);
+    font-size: var(--fs-lg);
     font-weight: 600;
   }
 }

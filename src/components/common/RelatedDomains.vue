@@ -69,10 +69,10 @@ function hide() {
   &__badge {
     flex-shrink: 0;
     padding: 2px 8px;
-    border-radius: 999px;
+    border-radius: var(--glacia-radius-pill);
     background: rgba(255, 37, 41, 0.1);
     color: var(--glacia-red);
-    font-size: 11.5px;
+    font-size: var(--fs-sm);
     font-weight: 700;
     line-height: 1.4;
     cursor: default;
@@ -90,12 +90,12 @@ function hide() {
     flex-direction: column;
     gap: 4px;
     padding: 10px 12px;
-    border-radius: 10px;
+    border-radius: var(--rd-md);
     background: var(--surface);
     color: var(--glacia-ink, var(--glacia-ink));
-    border: 1px solid var(--glacia-glass-border, #E3E8EC);
+    border: 1px solid var(--glacia-glass-border, var(--hairline));
     box-shadow: 0 12px 32px -8px rgba(16, 24, 32, 0.22);
-    font-size: 12px;
+    font-size: var(--fs-sm);
     pointer-events: none;
     white-space: nowrap;
 
@@ -107,23 +107,23 @@ function hide() {
       width: 8px;
       height: 8px;
       background: var(--surface);
-      border-bottom: 1px solid var(--glacia-glass-border, #E3E8EC);
-      border-left: 1px solid var(--glacia-glass-border, #E3E8EC);
+      border-bottom: 1px solid var(--glacia-glass-border, var(--hairline));
+      border-left: 1px solid var(--glacia-glass-border, var(--hairline));
       transform: translateY(-50%) rotate(45deg);
     }
   }
 
   &__tip-title {
-    font-size: 10.5px;
+    font-size: var(--fs-xs);
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--glacia-ink-dim, #6c7a80);
+    color: var(--glacia-ink-dim);
   }
 
   &__tip-item {
     font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 12px;
+    font-size: var(--fs-sm);
   }
 }
 </style>

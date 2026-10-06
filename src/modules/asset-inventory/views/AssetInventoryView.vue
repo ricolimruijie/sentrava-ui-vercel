@@ -12,6 +12,7 @@ import GlassField from '@/components/common/GlassField.vue'
 import { emptyData } from '@/utils/dataMode'
 import { formatShortDate } from '@/utils/helpers'
 import { IconDotsVertical, IconPlus, IconWorld, IconBrowser, IconNetwork, IconCode, IconTag, IconChevronDown, IconX, IconCheck, IconArrowUpRight, IconRefresh, IconTrash, IconSitemap, IconCircleDot, IconArrowsLeftRight, IconPencil, IconArrowRight, IconPalette, IconSearch } from '@tabler/icons-vue'
+import { TAG_COLORS } from '@/config/tagPalette'
 
 const { can } = useRole()
 
@@ -328,7 +329,7 @@ const statusOptions = [
 ]
 const tagsData = ref(emptyData.value ? [] : [
   { id: 1, name: 'Production', color: '#2f9e52', bg: '#e8f5e9', usedBy: 3 },
-  { id: 2, name: 'Load balancer', color: '#1197c2', bg: '#dff3fc', usedBy: 1 },
+  { id: 2, name: 'Load balancer', color: 'var(--cyan-ink)', bg: 'var(--cyan-tint)', usedBy: 1 },
   { id: 3, name: 'Internal', color: '#5c6470', bg: '#eceef0', usedBy: 2 },
   { id: 4, name: 'Staging', color: '#a67c00', bg: '#fcf3d6', usedBy: 1 },
   { id: 5, name: 'Dev', color: '#6b8e00', bg: '#f1f5d6', usedBy: 1 },
@@ -664,14 +665,7 @@ const ips37ByDomain = {
   'monitor.protergo.io': [{ address: '103.150.24.56', tags: [] }],
   'auth.protergo.io': [{ address: '103.150.24.57', tags: [] }],
 }
-const tagColors = [
-  { swatch: '#F26D6D', bg: '#FDE8E8', fg: '#E03131' }, { swatch: '#F2994A', bg: '#FDEEE0', fg: '#E8590C' },
-  { swatch: '#F2C94C', bg: '#FCF3D6', fg: '#A67C00' }, { swatch: '#A8BD3A', bg: '#F1F5D6', fg: '#6B8E00' },
-  { swatch: '#4CAF6D', bg: '#E3F5E8', fg: '#2F9E52' }, { swatch: '#3DBFA8', bg: '#DEF7F0', fg: '#12967D' },
-  { swatch: '#3DC6F2', bg: '#DFF3FC', fg: '#1197C2' }, { swatch: '#7C93F0', bg: '#E6E9FC', fg: '#5C6BC0' },
-  { swatch: '#E896BB', bg: '#FBE6F0', fg: '#C2255C' }, { swatch: '#B69AE8', bg: '#F0E6FB', fg: '#7C3FC4' },
-  { swatch: '#9AA5B1', bg: '#ECEEF0', fg: '#5C6470' },
-]
+const tagColors = TAG_COLORS
 const detailState = reactive({
   activeSubdomain37: 'api.protergo.io',
   ips37TagsOverride: {},
@@ -1746,7 +1740,7 @@ function onNetworkRegistered(row) {
                 </div>
                 <div class="dv-ip-list">
                   <div v-for="ip in ips37" :key="ip.address" class="dv-ip" :class="{ 'dv-ip--open': ip.isConfiguring }">
-                    <div class="dv-ip__main dv-ip__main--clickable" @click="ip.toggleConfig">
+                    <div class="dv-ip__main dv-ip__main--clickable" role="button" tabindex="0" :aria-expanded="!!ip.isConfiguring" @click="ip.toggleConfig" @keydown.enter.self.prevent="ip.toggleConfig" @keydown.space.self.prevent="ip.toggleConfig">
                       <div class="dv-ip__row">
                         <span class="dv-mono">{{ ip.address }}</span>
                         <span class="dv-ip__head-right">

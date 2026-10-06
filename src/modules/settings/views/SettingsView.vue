@@ -72,7 +72,7 @@ function select(key) {
 
   &__desc {
     margin: 6px 0 0;
-    font-size: 14px;
+    font-size: var(--fs-lg);
     color: var(--glacia-ink-dim);
   }
 
@@ -104,7 +104,7 @@ function select(key) {
     border-radius: var(--glacia-radius-sm);
     background: transparent;
     font-family: 'Manrope', 'Inter', sans-serif;
-    font-size: 13.5px;
+    font-size: var(--fs-lg);
     font-weight: 600;
     color: var(--glacia-ink-dim);
     text-align: left;

@@ -119,7 +119,7 @@ function goTicket(item) {
     background-repeat: no-repeat;
     background-position: left calc(100% - 2px);
     padding: 4px 2px 6px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 700;
     color: var(--glacia-red);
     cursor: pointer;
@@ -129,7 +129,7 @@ function goTicket(item) {
 
     &:hover {
       background-size: 100% 2px;
-      color: #e01e22;
+      color: var(--red-hover);
     }
   }
 
@@ -163,14 +163,14 @@ function goTicket(item) {
   }
 
   &__empty-text {
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 600;
     color: var(--glacia-ink);
   }
 
   &__caption {
     margin: 0 0 12px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: var(--glacia-ink-dim);
   }
 
@@ -182,7 +182,7 @@ function goTicket(item) {
 .ttable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--fs-md);
   table-layout: fixed;
 
   // Same rules as every other table (see DataTable): 14px cell padding, fixed-format columns have an
@@ -190,11 +190,11 @@ function goTicket(item) {
   th {
     text-align: left;
     padding: 6px 14px;
-    font-size: var(--text-xs);
+    font-size: var(--fs-xs);
     font-weight: 600;
     line-height: 1.3;
-    color: var(--color-text-muted);
-    border-bottom: 1px solid var(--color-border);
+    color: var(--glacia-ink-dim);
+    border-bottom: 1px solid var(--glacia-glass-border);
     // Headers stay on one line and are never cut off.
     white-space: nowrap;
     overflow: visible;
@@ -202,7 +202,7 @@ function goTicket(item) {
 
   td {
     padding: 9px 14px;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--glacia-glass-border);
     vertical-align: middle;
     font-weight: 500;
     color: var(--glacia-ink);
@@ -213,7 +213,7 @@ function goTicket(item) {
 
   tr:last-child td { border-bottom: none; }
 
-  tr:hover td { background: var(--color-bg); }
+  tr:hover td { background: var(--glacia-bg); }
 
   &__status { text-align: center; }
 
@@ -229,18 +229,18 @@ function goTicket(item) {
   align-items: center;
   padding: 4px 12px;
   border-radius: var(--glacia-radius-pill);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   white-space: nowrap;
 
   &.open {
     background: rgba(234, 88, 12, 0.12);
-    color: #ea580c;
+    color: var(--glacia-sev-high);
   }
 
   &.resolved {
     background: rgba(22, 163, 74, 0.12);
-    color: #16a34a;
+    color: var(--green-ink);
   }
 }
 
@@ -259,6 +259,6 @@ function goTicket(item) {
   box-shadow: 0 2px 8px rgba(255, 37, 41, 0.35);
   transition: background 0.15s;
 
-  &:hover { background: #e01e22; }
+  &:hover { background: var(--red-hover); }
 }
 </style>
