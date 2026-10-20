@@ -1,0 +1,70 @@
+// The real app, scaled into a window. The page's own light theme applies here (the landing page switches off
+// dark mode while it is open), so colours match the app.
+.dash-stage { position: relative; width: clamp(900px, 75vw, 1560px); max-width: 100vw; } /* about three quarters of the screen width, like orchid's */
+@media (max-width: 1099px) { .dash-stage { width: 100%; } }
+.dash-sticky { position: sticky; top: 104px; }
+
+.dash-frame {
+  position: relative; width: 100%; overflow: hidden; border-radius: var(--rd-2xl);
+  background: var(--glacia-bg);
+  border: 1px solid rgba(255,255,255,.6);
+  box-shadow: 0 50px 100px -30px rgba(40,0,6,.6), inset 0 1px 0 rgba(255,255,255,.9);
+  will-change: transform, opacity;
+}
+.dash-frame--compact { height: auto; }
+
+// The app at desktop size; the frame's height and the scale are set from JS.
+.dash-app {
+  position: absolute; top: 0; left: 0; display: flex; transform-origin: 0 0; overflow: hidden;
+  color: var(--glacia-ink); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: var(--fs-xl);
+  background:
+    radial-gradient(ellipse 600px 500px at 6% -10%, rgba(255,37,41,.10), transparent 70%),
+    radial-gradient(ellipse 500px 600px at 100% 110%, rgba(40,90,210,.08), transparent 70%),
+    var(--glacia-bg);
+  user-select: none;
+}
+.dash-frame--compact .dash-app { position: static; display: block; transform: none; width: auto; height: auto; }
+
+.dash-sidebar { flex: none; height: 100%; }
+.dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; }
+.dash-frame--compact .dash-main { height: auto; }
+.dash-scroll { flex: 1; min-height: 0; overflow: hidden; }
+.dash-page { padding: 24px 28px 40px; will-change: transform; }
+.dash-frame--compact .dash-page { padding: 16px; }
+
+// The page body, laid out like ClientDashboard.
+.dashboard { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.row { display: grid; gap: 14px; align-items: stretch; }
+.row--top { grid-template-columns: 3fr 3fr 4fr; align-items: start; }
+.row--mid { grid-template-columns: 7fr 3fr; }
+.row--bot { grid-template-columns: 2fr 3fr; }
+.ticket-feed { grid-column: 2; }
+@media (max-width: 1024px) {
+  .row--top, .row--mid, .row--bot { grid-template-columns: 1fr; }
+  .ticket-feed { grid-column: 1; }
+}
+
+// Top bar: the app's navbar (breadcrumb, company filter, theme, notifications, user), drawn without its behaviour.
+.dash-navbar {
+  height: 60px; min-height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px;
+  background: var(--glacia-glass-fill); border-bottom: 1px solid var(--glacia-glass-border);
+  backdrop-filter: blur(var(--glacia-blur-md)) saturate(140%); -webkit-backdrop-filter: blur(var(--glacia-blur-md)) saturate(140%);
+  box-shadow: inset 0 -1px 0 var(--glacia-glass-border);
+  &__left, &__right { display: flex; align-items: center; gap: 12px; }
+  &__right { gap: 6px; }
+  &__btn { position: relative; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--glacia-radius-sm); color: var(--glacia-ink-dim); }
+  &__btn--sun { color: var(--amber-ink); }
+  &__badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--red); color: #fff; font-style: normal; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  &__divider { width: 1px; height: 24px; margin: 0 6px; background: var(--glacia-glass-border); }
+}
+.dash-crumbs { display: flex; align-items: center; gap: 8px; font-size: var(--fs-2xl);
+  &__section { display: inline-flex; align-items: center; gap: 4px; color: var(--glacia-ink-dim); font-weight: 500; }
+  &__sep { color: var(--glacia-ink-dim); }
+  &__current { font-family: 'Manrope', 'Inter', sans-serif; font-size: var(--fs-4xl); font-weight: 700; color: var(--glacia-ink); }
+}
+.dash-filter { display: flex; align-items: center; justify-content: space-between; width: 260px; height: 40px; padding: 0 16px; margin-right: 6px; border-radius: var(--glacia-radius-sm); border: 1px solid var(--glacia-glass-border); background: var(--glacia-glass-fill-strong); color: var(--glacia-ink-dim); font-size: var(--fs-lg); }
+.dash-user { display: flex; align-items: center; gap: 8px; padding: 4px 6px; font-size: var(--fs-lg); font-weight: 500; color: var(--glacia-ink);
+  &__avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--red); color: #fff; font-style: normal; font-size: var(--fs-sm); font-weight: 700; }
+}
+
+@media (prefers-reduced-motion: reduce) { .dash-sticky { position: static; } }

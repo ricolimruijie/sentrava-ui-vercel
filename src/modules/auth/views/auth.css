@@ -57,7 +57,7 @@
 .hl { font-weight: 700; color: var(--coral-700); }
 .hl--dark { color: var(--text-1); }
 
-.form { display: flex; flex-direction: column; gap: 14px; }
+.form { display: flex; flex-direction: column; gap: var(--form-gap, 14px); }
 
 /* Fields are the app's own GlassField; these wrappers only add the shake, the
    Forgot Password link (right of the label) and the show/hide eye. */
@@ -99,13 +99,13 @@
 
 .turnstile { position: relative; min-height: 65px; }
 /* Mockup only: hides the "For testing only" line Cloudflare prints on its test widget (gone with a real site key). */
-.turnstile--test::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 18px; box-sizing: border-box; background: rgb(250 250 250); border: 1px solid rgb(224 224 224); border-top: 0; pointer-events: none; } /* Cloudflare draws the widget itself (normal height 65px) */
+.turnstile--test::after { opacity: 0; animation: ts-cover-in 0s linear 1.2s forwards; /* appears once the widget has had time to load */ content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 18px; box-sizing: border-box; background: rgb(250 250 250); border: 1px solid rgb(224 224 224); border-top: 0; pointer-events: none; } /* Cloudflare draws the widget itself (normal height 65px) */
 /* Folds away once verified: the row collapses and fades so the form closes up. */
 .turnstile-wrap { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows 420ms var(--ease), opacity 300ms ease, margin-top 420ms var(--ease); }
 .turnstile-wrap__in { min-height: 0; overflow: hidden; }
-.turnstile-wrap.is-hidden { grid-template-rows: 0fr; opacity: 0; margin-top: -14px; visibility: hidden; transition: grid-template-rows 420ms var(--ease), opacity 300ms ease, margin-top 420ms var(--ease), visibility 0s 420ms; }
+.turnstile-wrap.is-hidden { grid-template-rows: 0fr; opacity: 0; margin-top: calc(var(--form-gap, 14px) * -1); visibility: hidden; transition: grid-template-rows 420ms var(--ease), opacity 300ms ease, margin-top 420ms var(--ease), visibility 0s 420ms; }
 
-.submit { height: 44px; margin-top: 2px; border-radius: var(--glacia-radius-pill); border: 0; background: var(--coral-600); color: #fff; font: inherit; font-size: var(--fs-lg); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 14px 28px -14px rgba(204,20,32,.7); transition: background 160ms ease; }
+.submit { padding-bottom: 2px; /* optical centring: the g descender pulls the label low */ height: 44px; margin-top: 2px; border-radius: var(--glacia-radius-pill); border: 0; background: var(--coral-600); color: #fff; font: inherit; font-size: var(--fs-lg); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 14px 28px -14px rgba(204,20,32,.7); transition: background 160ms ease; }
 .submit:hover:not(:disabled) { background: var(--coral-700); }
 .submit:disabled { cursor: default; }
 .submit.is-done { background: var(--success); }
@@ -138,10 +138,25 @@
 @keyframes morphB { 0%,100% { border-radius: 42% 58% 35% 65% / 58% 40% 60% 42%; transform: translate(0,0) rotate(0) } 50% { border-radius: 63% 37% 56% 44% / 40% 62% 38% 60%; transform: translate(-5%,-4%) rotate(-22deg) } }
 @keyframes morphC { 0%,100% { border-radius: 50% 50% 40% 60% / 40% 60% 50% 50%; transform: translate(0,0) scale(1) } 50% { border-radius: 36% 64% 60% 40% / 62% 36% 64% 38%; transform: translate(3%,-6%) scale(1.06) } }
 @keyframes rise { from { opacity: 0; transform: translateY(12px) } }
+@keyframes ts-cover-in { to { opacity: 1 } }
 @keyframes spin { to { transform: rotate(360deg) } }
 @keyframes shake { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-5px) } 75% { transform: translateX(5px) } }
 
-/* Narrow phones: slimmer card padding and a smaller heading so it still stays on one line. */
+/* Narrow phones: slimmer card padding and a smaller heading. */
+/* Log in page: logo row, eyebrow, headline. */
+.login--centered .card:has(.head--login) { gap: 16px; }
+.head--login { gap: 0; }
+.head--login .head__top { margin-bottom: 18px; }
+.head--login .brand { margin-bottom: 0; }
+.eyebrow { margin: 0 0 6px; font-size: var(--fs-xs); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--coral-700); }
+.headline { margin: 0 0 8px; font-size: var(--fs-2xl); line-height: 1.5; font-weight: 700; letter-spacing: 0; color: var(--text-1); text-wrap: wrap; } /* same type as the other helper text, in the darker ink */
+.form--login { --form-gap: 14px; }
+.form--login :deep(.gf__box) { height: 38px; }
+.form--login :deep(.gf__req) { display: none; } /* no red * on the log in labels; the fields are still validated */
+/* Clicked/focused field: plain blue border (the shared field uses a red border and ring). */
+.form--login :deep(.gf__box:focus-within), .form--login :deep(.is-active .gf__box) { border-color: var(--blue); box-shadow: inset 0 1px 0 var(--glacia-glass-highlight); }
+.form--login .eye { top: 28px; width: 32px; height: 32px; }
+
 @media (max-width: 480px) {
   .login--centered .card, .card--demo { padding-left: 22px; padding-right: 22px; }
   .title { font-size: var(--fs-2xl); }

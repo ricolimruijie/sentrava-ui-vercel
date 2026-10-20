@@ -7,6 +7,8 @@ import { scanModules } from '@/config/scanModules'
 
 const props = defineProps({
   companies: { type: Array, default: () => [] },
+  // Overrides the signed-in user's first name (the home page's dashboard preview has no user).
+  name: { type: String, default: null },
 })
 const emit = defineEmits(['run-scan'])
 
@@ -35,7 +37,7 @@ function runScan(moduleKey) {
 }
 
 const name = computed(() => {
-  const n = auth.user?.name ?? auth.user?.username ?? ''
+  const n = props.name ?? auth.user?.name ?? auth.user?.username ?? ''
   return n.split(' ')[0]
 })
 const hi = computed(() => greeting())

@@ -9,13 +9,16 @@ const year = new Date().getFullYear()
 
 const props = defineProps({
   collapsed: { type: Boolean, default: false },
+  // Show this path as the current page instead of the router's (the home page's dashboard preview).
+  activePath: { type: String, default: null },
 })
 
 const route = useRoute()
+const currentPath = () => props.activePath ?? route.path
 
 function isActive(itemRoute) {
-  if (itemRoute === '/assets') return route.path === '/assets'
-  return route.path === itemRoute || route.path.startsWith(itemRoute + '/')
+  if (itemRoute === '/assets') return currentPath() === '/assets'
+  return currentPath() === itemRoute || currentPath().startsWith(itemRoute + '/')
 }
 
 function activeItemRoute() {
@@ -51,16 +54,18 @@ function movePill() {
   }
   const elRect = el.getBoundingClientRect()
   const navRect = nav.getBoundingClientRect()
+  // Rects are in screen pixels; undo any CSS scaling above the sidebar (the home page's dashboard preview).
+  const k = nav.offsetWidth ? navRect.width / nav.offsetWidth : 1
   pillStyle.value = {
-    top: `${elRect.top - navRect.top}px`,
-    left: `${elRect.left - navRect.left}px`,
-    width: `${elRect.width}px`,
-    height: `${elRect.height}px`,
+    top: `${(elRect.top - navRect.top) / k}px`,
+    left: `${(elRect.left - navRect.left) / k}px`,
+    width: `${elRect.width / k}px`,
+    height: `${elRect.height / k}px`,
     opacity: 1,
   }
 }
 
-watch(() => route.path, () => nextTick(movePill))
+watch(() => currentPath(), () => nextTick(movePill))
 
 // While the sidebar animates its width the pill follows it frame by frame (its own
 // left/width transition is switched off meanwhile), so it never lags behind or

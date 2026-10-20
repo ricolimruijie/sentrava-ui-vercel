@@ -193,20 +193,18 @@ onBeforeUnmount(() => {
 <template>
   <AuthLayout :layout="layout" :motion="motion">
       <div class="card">
-        <header class="head rise" style="--d: 80ms">
+        <header class="head rise" :class="{ 'head--login': step === 'credentials' }" style="--d: 80ms">
           <div class="head__top">
             <span v-if="!isSplit" class="brand"><img :src="logoIcon" class="brand__logo" width="28" height="28" alt="" aria-hidden="true" />SENTRAVA</span>
             <button v-if="step !== 'credentials'" type="button" class="tfa__back" @click="backToLogin"><span class="icon icon--sm">arrow_back</span>Back to log in</button>
           </div>
           <template v-if="step === 'credentials'">
-          <h1 class="title">Stay ahead of every threat</h1>
-          <p class="subtitle">
-            Log in to SENTRAVA to see <strong class="hl">every asset</strong>, <strong class="hl">every risk</strong>, and <strong class="hl">what to mitigate next</strong> across your <strong class="hl hl--dark">environment</strong>.
-          </p>
+          <p class="eyebrow">Centralized Vulnerability Assessment</p>
+          <h1 class="headline">One platform, complete visibility into your security posture.</h1>
           </template>
         </header>
 
-        <form v-if="step === 'credentials'" class="form rise" style="--d: 160ms" novalidate @submit.prevent="onSubmit">
+        <form v-if="step === 'credentials'" class="form form--login rise" style="--d: 160ms" novalidate @submit.prevent="onSubmit">
           <div :key="'e' + (errors.email ? shakeKey : 0)" class="fld" :class="{ 'fld--shake': errors.email }">
             <GlassField
               v-model="email"

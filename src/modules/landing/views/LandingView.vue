@@ -6,9 +6,10 @@
       <!-- Sticky nav -->
       <div class="navwrap">
         <nav class="nav glass" @mousemove="glassMove">
-          <a href="#top" class="brand" @click="scrollTop"><img :src="logoIcon" alt="" width="30" height="30" />SentraVA</a>
+          <a href="#top" class="brand" @click="scrollTop"><img :src="logoIcon" alt="" width="28" height="28" />SENTRAVA</a>
           <div v-if="wide" class="links">
-            <a v-for="n in navItems" :key="n.id" :href="'#' + n.id" :class="['link', { on: active === n.id }]" @click="scrollTo(n.id, $event)">{{ n.label }}</a>
+            <span class="links-pill" :class="{ ready: pill.ready }" :style="{ width: pill.w + 'px', transform: 'translateX(' + pill.x + 'px)' }" aria-hidden="true"></span>
+            <a v-for="n in navItems" :key="n.id" :ref="(el) => (linkEls[n.id] = el)" :href="'#' + n.id" :class="['link', { on: active === n.id }]" @click="scrollTo(n.id, $event)">{{ n.label }}</a>
           </div>
           <div class="row gap8">
             <RouterLink v-if="wide" to="/login" class="btn">Log in</RouterLink>
@@ -78,6 +79,15 @@
         </div>
       </header>
 
+      <!-- Dashboard: scales in, then stays pinned while it comes alive as you scroll -->
+      <section id="dashboard" class="col gap48 dash-section">
+        <div class="dash-title" data-ani="slide">
+          <h2>Your whole security posture, on one dashboard</h2>
+          <p class="muted lead2">Every asset, scan and finding in one view, so you always know what to fix next.</p>
+        </div>
+        <LandingDashboard />
+      </section>
+
       <!-- Strip: what one platform covers (loops sideways) -->
       <div class="strip" data-ani="fade" aria-label="Targets SentraVA assesses">
         <div class="strip-track">
@@ -91,10 +101,10 @@
 
       <!-- Steps -->
       <section class="col gap48">
-        <h2 data-ani="slide">From target to report in three steps</h2>
-        <div class="grid3" data-ani="stagger">
+        <h2 data-ani="slide" class="oneline">From registration to report in four steps</h2>
+        <div class="grid4" data-ani="stagger">
           <div v-for="(s, i) in steps" :key="s.title" class="col gap18">
-            <div class="row gap16"><span class="stepicon icon">{{ s.icon }}</span><span v-if="i < 2" class="rule" data-rule></span></div>
+            <div class="row gap16"><span class="stepicon icon">{{ s.icon }}</span><span v-if="i < steps.length - 1" class="rule" data-rule></span></div>
             <h3>{{ s.title }}</h3>
             <p class="muted body">{{ s.body }}</p>
           </div>
@@ -192,7 +202,7 @@
       <!-- Footer -->
       <footer class="footer" data-ani="fade">
         <div class="col gap12">
-          <span class="brand sm"><img :src="logoIcon" alt="" width="26" height="26" />SentraVA</span>
+          <span class="brand sm"><img :src="logoIcon" alt="" width="28" height="28" />SENTRAVA</span>
           <span class="muted small2 body">Centralized vulnerability assessment.</span>
         </div>
         <div v-for="col in footerCols" :key="col.title" class="col gap12 small2">
@@ -229,13 +239,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import Lenis from 'lenis'
 import CoralBackdrop from '@/components/common/CoralBackdrop.vue'
+import LandingDashboard from '@/modules/landing/components/LandingDashboard.vue'
 import { useEscapeToClose } from '@/composables/useEscapeToClose'
 import logoIcon from '@/assets/sentrava-logo-icon.svg'
 
@@ -283,7 +294,8 @@ const TARGETS = [
 ]
 const navItems = [['product', 'Product'], ['targets', 'Targets'], ['reports', 'Reports'], ['security', 'Security'], ['faq', 'FAQ']].map(([id, label]) => ({ id, label }))
 const steps = [
-  { icon: 'my_location', title: 'Choose a target', body: 'Add a domain, network range, web application, or source code repository.' },
+  { icon: 'app_registration', title: 'Register your assets', body: 'Register your domains, network ranges, web applications, and source code repositories in the asset inventory.' },
+  { icon: 'my_location', title: 'Choose a target', body: 'Pick the registered asset you want to assess and start a scan.' },
   { icon: 'radar', title: 'Scan', body: 'SentraVA scans the target and lists every vulnerability it finds, ranked by severity.' },
   { icon: 'description', title: 'Review and report', body: 'Review results in one place and download reports to share with your team.' }
 ]
@@ -381,20 +393,50 @@ const pick = i => { tsel.value = i; tsw.value = now.value }
 
 /* ---------- nav ---------- */
 // Lenis (when running) owns scrolling; otherwise fall back to the native scroll.
-function goTo(target) {
+// While a click on a nav link is scrolling the page, that link stays active (navLock): otherwise the
+// scroll listener would flip the active section on every section the page glides past, and the pill
+// would jump back before sliding to the target.
+let navLock = null
+let navLockTimer
+function unlockNav() {
+  clearTimeout(navLockTimer)
+  if (navLock === null) return
+  navLock = null
+  spy()
+}
+function goTo(target, lockId) {
   const top = typeof target === 'number' ? target : target.getBoundingClientRect().top + window.scrollY - 100
-  if (lenis) lenis.scrollTo(top, { duration: 1.4 })
-  else window.scrollTo({ top, behavior: 'auto' })
+  if (lockId) {
+    navLock = lockId
+    active.value = lockId
+    clearTimeout(navLockTimer)
+    navLockTimer = setTimeout(unlockNav, 2200) // safety net if the scroll is interrupted
+  }
+  if (lenis) lenis.scrollTo(top, { duration: 1.4, onComplete: unlockNav })
+  else { window.scrollTo({ top, behavior: 'auto' }); unlockNav() }
 }
 function scrollTo(id, e) {
   if (e) e.preventDefault()
   const el = document.getElementById(id)
   if (!el) return
-  goTo(el)
-  active.value = id
   menuOpen.value = false
+  goTo(el, id)
 }
+// Glass pill behind the active nav link: it slides to the new link when the section changes.
+const linkEls = {}
+const pill = reactive({ x: 0, w: 0, ready: false })
+function measurePill() {
+  const el = linkEls[active.value]
+  if (!el) return
+  pill.x = el.offsetLeft
+  pill.w = el.offsetWidth
+  if (!pill.ready) requestAnimationFrame(() => { pill.ready = true }) // no slide on the first placement
+}
+watch(active, () => nextTick(measurePill))
+watch(wide, (v) => { pill.ready = false; if (v) nextTick(measurePill) })
+
 function spy() {
+  if (navLock) return
   let cur = 'product'
   navItems.forEach(({ id }) => { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 160) cur = id })
   if (cur !== active.value) active.value = cur
@@ -408,7 +450,7 @@ function glassMove(e) {
 
 function scrollTop(e) {
   e.preventDefault()
-  goTo(0)
+  goTo(0, 'product')
 }
 function openDemo() {
   demoSent.value = false
@@ -464,11 +506,19 @@ function setupMotion() {
 }
 
 /* ---------- lifecycle ---------- */
-const onResize = () => { w.value = window.innerWidth }
+const onResize = () => { w.value = window.innerWidth; measurePill() }
+// The home page is light only (coral background, and the dashboard preview shows the app in its light theme):
+// switch dark mode off while it is open and give it back when leaving.
+let hadDark = false
 onMounted(() => {
+  hadDark = document.documentElement.classList.contains('dark')
+  document.documentElement.classList.remove('dark')
   reduced.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   window.addEventListener('resize', onResize)
   window.addEventListener('scroll', spy, { passive: true })
+  for (const ev of ['wheel', 'touchstart', 'keydown']) window.addEventListener(ev, unlockNav, { passive: true })
+  nextTick(measurePill)
+  document.fonts?.ready.then(measurePill) // link widths change once the web font is in
   t0 = performance.now()
   if (!reduced.value) {
     const loop = () => {
@@ -481,8 +531,11 @@ onMounted(() => {
   }
 })
 onBeforeUnmount(() => {
+  if (hadDark) document.documentElement.classList.add('dark')
   window.removeEventListener('resize', onResize)
   window.removeEventListener('scroll', spy)
+  for (const ev of ['wheel', 'touchstart', 'keydown']) window.removeEventListener(ev, unlockNav)
+  clearTimeout(navLockTimer)
   cancelAnimationFrame(raf)
   ctx?.revert()
   if (tick) gsap.ticker.remove(tick)
