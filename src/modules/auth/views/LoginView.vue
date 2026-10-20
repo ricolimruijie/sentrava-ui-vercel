@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore, LOGOUT_REASON_KEY } from '@/stores/auth'
 import { SESSION_MESSAGES } from '@/modules/auth/utils/session'
@@ -10,6 +10,7 @@ import { maskEmail } from '@/utils/helpers'
 import { useResendCooldown } from '@/composables/useResendCooldown'
 import AuthLayout from '@/modules/auth/views/AuthLayout.vue'
 import logoIcon from '@/assets/sentrava-logo-icon.svg'
+import { loadTurnstile, siteKey, TEST_SITE_KEY } from '@/modules/auth/utils/turnstile'
 
 // Login page — design and behavior from references/LoginPage.vue (animated
 // coral visual, floating-label-free inputs with focus/error rings, shake on
@@ -17,7 +18,34 @@ import logoIcon from '@/assets/sentrava-logo-icon.svg'
 // Logged in button states), wired to the real auth store.
 const layout = 'centered' // 'split' | 'centered'
 const motion = true
-const turnstileVerified = true // wire to the Turnstile callback once it is real
+// Cloudflare Turnstile (the real widget, see utils/turnstile.js). 'checking' until Cloudflare
+// passes the visitor, 'success' for a moment, then the row folds away; the token stays in the widget.
+const captcha = ref('checking') // 'checking' | 'success' | 'hidden' | 'error'
+const turnstileVerified = computed(() => captcha.value === 'success' || captcha.value === 'hidden')
+const turnstileEl = ref(null)
+const widgetShown = ref(false)
+const usingTestKey = siteKey === TEST_SITE_KEY // the test widget prints a "For testing only" line; the strip below covers it
+let widgetId = null
+let hideTimer
+function renderCaptcha() {
+  captcha.value = 'checking'
+  loadTurnstile().then((ts) => {
+    if (!turnstileEl.value) return
+    widgetShown.value = true
+    widgetId = ts.render(turnstileEl.value, {
+      sitekey: siteKey,
+      theme: 'light',
+      size: 'flexible',
+      callback: () => {
+        captcha.value = 'success'
+        hideTimer = setTimeout(() => { captcha.value = 'hidden' }, 1400)
+      },
+      'expired-callback': () => { clearTimeout(hideTimer); captcha.value = 'checking' },
+      'error-callback': () => { clearTimeout(hideTimer); captcha.value = 'checking' },
+    })
+  }).catch(() => { captcha.value = 'error' })
+}
+onMounted(renderCaptcha)
 
 const router = useRouter()
 const route  = useRoute()
@@ -155,7 +183,11 @@ function useDemo(account) {
   onSubmit()
 }
 
-onBeforeUnmount(() => clearTimeout(timer))
+onBeforeUnmount(() => {
+  clearTimeout(timer)
+  clearTimeout(hideTimer)
+  if (widgetId !== null) window.turnstile?.remove(widgetId)
+})
 </script>
 
 <template>
@@ -218,12 +250,14 @@ onBeforeUnmount(() => clearTimeout(timer))
           </button>
 
           <!-- Replace with the real Cloudflare Turnstile widget -->
-          <div class="turnstile">
-            <slot name="turnstile">
-              <span class="turnstile__check">check</span>
-              <span class="turnstile__text">Success!</span>
-              <span class="turnstile__brand"><b>CLOUDFLARE</b><small>Privacy · Help</small></span>
-            </slot>
+          <div class="turnstile-wrap" :class="{ 'is-hidden': captcha === 'hidden' }" :aria-hidden="captcha === 'hidden'">
+            <div class="turnstile-wrap__in">
+              <slot name="turnstile"><div ref="turnstileEl" class="turnstile" :class="{ 'turnstile--test': usingTestKey && widgetShown }"></div></slot>
+              <p v-if="captcha === 'error'" class="error" role="alert">
+                <span class="icon icon--sm">error</span>Security check could not load.
+                <a href="#" class="link" @click.prevent="renderCaptcha">Try again</a>
+              </p>
+            </div>
           </div>
         </form>
 

@@ -106,7 +106,7 @@ styles in a sibling `Name.scss` (`<style scoped lang="scss" src="./Name.scss">`)
 
 - Public: `/login` (`name: login`).
 - Guarded layout: `/` → `AppLayout` (Sidebar + Navbar), `meta.requiresAuth: true` redirects to `/login?redirect=...`.
-- `/` and unknown paths redirect to `/dashboard`.
+- `/` is the public home page (`modules/landing`, layout from `docs/design-references/Sentrava Home v3.vue`) on the same animated coral background as the login page (`components/common/CoralBackdrop.vue`); its **Log in** buttons go to `/login`, and a signed-in user visiting `/` is sent to `/dashboard`. Unknown paths redirect to `/dashboard` (then to login if signed out). Request a demo and Download sample report are not wired to anything yet, and the FAQ/Security copy still has the reference's `[bracketed]` placeholders.
 - Implemented routes:
   - `/dashboard` → `DashboardView.vue` (one dashboard for every role per the PRD; Super Admin additionally gets the company filter in the navbar)
   - `/assets` → Asset Inventory

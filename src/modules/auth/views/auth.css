@@ -97,12 +97,13 @@
 .icon { flex: none; font-family: 'Material Symbols Outlined'; font-size: 20px; line-height: 1; }
 .icon--sm { font-size: var(--fs-xl); }
 
-.turnstile { display: flex; align-items: center; gap: 12px; box-sizing: border-box; height: 40px; padding: 0 12px; border-radius: var(--rd-md); background: var(--gray-50); border: 1px solid var(--gray-100); }
-.turnstile__check { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--success); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Material Symbols Outlined'; font-size: 18px; }
-.turnstile__text { flex: 1; font-size: var(--fs-lg); font-weight: 600; }
-.turnstile__brand { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.turnstile__brand b { font-size: var(--fs-xs); font-weight: 800; letter-spacing: 1.2px; color: var(--text-2); }
-.turnstile__brand small { font-size: var(--fs-xs); color: var(--text-3); }
+.turnstile { position: relative; min-height: 65px; }
+/* Mockup only: hides the "For testing only" line Cloudflare prints on its test widget (gone with a real site key). */
+.turnstile--test::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 18px; box-sizing: border-box; background: rgb(250 250 250); border: 1px solid rgb(224 224 224); border-top: 0; pointer-events: none; } /* Cloudflare draws the widget itself (normal height 65px) */
+/* Folds away once verified: the row collapses and fades so the form closes up. */
+.turnstile-wrap { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows 420ms var(--ease), opacity 300ms ease, margin-top 420ms var(--ease); }
+.turnstile-wrap__in { min-height: 0; overflow: hidden; }
+.turnstile-wrap.is-hidden { grid-template-rows: 0fr; opacity: 0; margin-top: -14px; visibility: hidden; transition: grid-template-rows 420ms var(--ease), opacity 300ms ease, margin-top 420ms var(--ease), visibility 0s 420ms; }
 
 .submit { height: 44px; margin-top: 2px; border-radius: var(--glacia-radius-pill); border: 0; background: var(--coral-600); color: #fff; font: inherit; font-size: var(--fs-lg); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 14px 28px -14px rgba(204,20,32,.7); transition: background 160ms ease; }
 .submit:hover:not(:disabled) { background: var(--coral-700); }
@@ -148,4 +149,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .blob, .rise, .visual__headline, .fld--shake { animation: none; }
+  .turnstile-wrap, .turnstile-wrap.is-hidden { transition: none; }
 }

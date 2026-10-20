@@ -181,8 +181,15 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     ...authRoutes,
+    // Public home page; signed-in users are sent on to the dashboard by the guard below.
     {
       path: '/',
+      name: 'landing',
+      component: () => import('@/modules/landing/views/LandingView.vue'),
+      meta: { public: true },
+    },
+    {
+      path: '/app-shell',
       component: AppLayout,
       children: appRoutes,
     },
@@ -196,7 +203,7 @@ router.beforeEach((to) => {
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
-  if (to.path === '/' || to.path === '') {
+  if (to.name === 'landing' && auth.isAuthenticated) {
     return { path: '/dashboard' }
   }
 })

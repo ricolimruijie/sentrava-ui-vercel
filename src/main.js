@@ -10,6 +10,7 @@ import Tooltip from 'primevue/tooltip'
 import router from './router'
 import App from './App.vue'
 import { initTheme } from '@/composables/useTheme'
+import { hideSplash } from '@/utils/splash'
 import '@/styles/design-tokens.css'
 import '@/styles/main.scss'
 
@@ -69,4 +70,7 @@ app.directive('tooltip', Tooltip)
   // mocks and the saved login are ready (route guards fetch data and read auth).
   app.use(router)
   app.mount('#app')
+
+  // The first page (route guards may fetch data) is ready: let the splash screen go.
+  try { await router.isReady() } finally { hideSplash() }
 })()

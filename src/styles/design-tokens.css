@@ -68,6 +68,12 @@
   --gap-lg: 24px;
   --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--glacia-red);
 
+  /* Coral palette behind the signed-out pages (login, landing). Fixed: not swapped in dark mode. */
+  --coral-500: var(--glacia-red); --coral-600: #e31724; --coral-700: #b7101c; --coral-800: #8a0c15; --coral-900: #5c070e;
+  --coral-flame: #ff5a3c; --coral-flame-2: #ff4a2e; --coral-ember: #3e070b;
+  --on-glass-1: #101820; --on-glass-2: #47565e; --on-glass-3: #6c7a80; /* text on the white glass cards */
+  --on-glass-critical: #c41e2a; --on-glass-high: #c2410c; --on-glass-warn: #92400e; --on-glass-ok: #15803d; --on-glass-info: #1d4ed8; --ice-ink: #2b6aa1;
+
   /* Surfaces & lines that used to be hard-coded in components (light values
      are the original colors; html.dark below swaps them). */
   --surface: #ffffff;
