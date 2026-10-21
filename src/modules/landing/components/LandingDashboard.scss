@@ -9,7 +9,8 @@
   background: var(--glacia-bg);
   border: 1px solid rgba(255,255,255,.6);
   box-shadow: 0 50px 100px -30px rgba(40,0,6,.6), inset 0 1px 0 rgba(255,255,255,.9);
-  will-change: transform, opacity;
+  // No will-change: it makes the browser rasterize the layer once at the starting scale (0.86) and then
+  // stretch that bitmap, which is what made the dashboard look blurry.
 }
 .dash-frame--compact { height: auto; }
 
@@ -29,7 +30,7 @@
 .dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; }
 .dash-frame--compact .dash-main { height: auto; }
 .dash-scroll { flex: 1; min-height: 0; overflow: hidden; }
-.dash-page { padding: 24px 28px 40px; will-change: transform; }
+.dash-page { padding: 24px 28px 40px; }
 .dash-frame--compact .dash-page { padding: 16px; }
 
 // The page body, laid out like ClientDashboard.

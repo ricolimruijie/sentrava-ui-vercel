@@ -100,49 +100,94 @@
       </div>
 
       <!-- Steps -->
-      <section class="col gap48">
-        <h2 data-ani="slide" class="oneline">From registration to report in four steps</h2>
-        <div class="grid4" data-ani="stagger">
-          <div v-for="(s, i) in steps" :key="s.title" class="col gap18">
-            <div class="row gap16"><span class="stepicon icon">{{ s.icon }}</span><span v-if="i < steps.length - 1" class="rule" data-rule></span></div>
-            <h3>{{ s.title }}</h3>
-            <p class="muted body">{{ s.body }}</p>
+      <!-- Pinned on wide screens: scrolling walks through the four steps (timeline on the right fills as you go).
+           On small screens or with reduced motion it is a plain list. -->
+      <div class="flow-outer"><section ref="flowEl" class="flow" :class="{ 'flow--static': !flowLive }">
+        <div class="flow-pin">
+          <div class="flow-panel">
+            <div class="flow-left">
+              <div class="flow-intro" data-ani="slide">
+                <h2>From target to report in four steps</h2>
+                <p class="flow-sub">Register an asset once, then scan and report on it whenever you need.</p>
+              </div>
+
+              <!-- Live illustration: one radar that changes with the active step -->
+              <div class="flow-stage" aria-hidden="true">
+                <div class="radar">
+                  <svg class="rd-rings" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="14" /><circle cx="50" cy="50" r="28" /><circle cx="50" cy="50" r="42" />
+                    <path d="M50 6V94M6 50H94" />
+                  </svg>
+                  <span class="rd-sweep" :class="{ on: flowStep === 2 }"></span>
+                  <span class="rd-core" :class="{ off: flowStep === 3 }"></span>
+                  <span v-for="(d, i) in flowDots" :key="d.name" class="rd-dot"
+                    :class="{ on: flowStep <= 2, dim: flowStep >= 1 && i !== 2, lock: flowStep >= 1 && i === 2, sink: flowStep === 3 }"
+                    :style="{ left: (flowStep === 3 ? 50 : d.x) + '%', top: (flowStep === 3 ? 50 : d.y) + '%', transitionDelay: (flowStep === 0 ? i * 140 : 0) + 'ms' }">
+                    <span class="icon">{{ d.icon }}</span>
+                  </span>
+                  <span v-for="(k, i) in flowBlips" :key="i" class="rd-blip"
+                    :class="{ on: flowStep === 2, sink: flowStep === 3 }"
+                    :style="{ left: (flowStep === 3 ? 50 : k.x) + '%', top: (flowStep === 3 ? 50 : k.y) + '%', background: SEVCOLOR[k.s], transitionDelay: (flowStep === 2 ? 300 + i * 260 : 0) + 'ms' }"></span>
+                  <div class="rd-report" :class="{ on: flowStep === 3 }">
+                    <span class="icon rd-report-ico">description</span>
+                    <span class="rd-report-line"></span><span class="rd-report-line short"></span>
+                    <span class="rd-report-badges"><i style="background: var(--on-glass-critical)"></i><i style="background: var(--on-glass-high)"></i><i style="background: var(--on-glass-warn)"></i><i style="background: var(--on-glass-ok)"></i></span>
+                  </div>
+                </div>
+                <p class="rd-caption mono">{{ ['4 assets registered', 'Target locked: app.example.com', 'Scanning · findings ranked by severity', 'Report ready to download'][flowStep] }}</p>
+              </div>
+            </div>
+            <ol class="flow-steps">
+              <li v-for="(s, i) in steps" :key="s.title" class="flow-step" :class="{ on: flowStep === i, done: flowStep > i }" :style="{ '--sp': flowStep > i ? 1 : flowStep === i ? flowSub : 0 }">
+                <span class="stepicon icon">{{ s.icon }}</span>
+                <div class="flow-card">
+                  <div class="between gap10"><h3>{{ s.title }}</h3><span class="mono small flow-tag">0{{ i + 1 }} / {{ s.tag }}</span></div>
+                  <p class="body">{{ s.body }}</p>
+                </div>
+              </li>
+            </ol>
           </div>
         </div>
-      </section>
+      </section></div>
 
       <!-- Targets -->
-      <section id="targets" class="col gap40">
+      <div class="tg-outer"><section id="targets" ref="tgEl" class="col gap40 tgsec" :class="{ 'tgsec--live': tgLive }">
         <h2 data-ani="slide">One platform for every target</h2>
         <div class="targets" data-ani="slide">
-          <div class="col gap8">
-            <button v-for="(t, i) in TARGETS" :key="t.key" :class="['tab', { on: i === tsel }]" @click="pick(i)">
-              <span class="tabicon icon">{{ t.icon }}</span>
-              <span class="col gap2 minw0"><b>{{ t.name }}</b><span class="muted small2">{{ t.short }}</span></span>
-              <span class="mono small faint">{{ t.tag }}</span>
-              <span class="tabprog" :style="{ width: i === tsel && !reduced ? Math.min(100, ta / ADV * 100) + '%' : '0%' }"></span>
-            </button>
-          </div>
-          <div class="panel">
-            <div class="col gap14" :style="{ opacity: tp.op, transform: 'translateY(' + tp.ty + 'px)' }">
-              <div class="between"><h3 class="h26">{{ tp.name }}</h3><span class="mono small muted">{{ tp.tag }}</span></div>
-              <p class="muted body maxw520">{{ tp.desc }}</p>
-            </div>
-            <div class="col gap14">
-              <div v-for="c in tp.checks" :key="c.text" class="row gap12" :style="{ opacity: c.op, transform: 'translateX(' + c.tx + 'px)' }">
-                <span class="icon ok">check_circle</span><span>{{ c.text }}</span>
+          <ol class="tg-rail">
+            <li v-for="(t, i) in TARGETS" :key="t.key" :class="{ on: i === tsel, done: i < tsel }">
+              <button class="tg-rail-btn" @click="pick(i)">
+                <span class="mono small tg-num">0{{ i + 1 }}</span>
+                <b>{{ t.name }}</b>
+                <span class="mono small tg-rail-tag">{{ t.tag }}</span>
+              </button>
+              <span class="tg-bar"><i :style="{ width: (i < tsel ? 100 : i === tsel ? (tgLive ? tgSub * 100 : !reduced ? Math.min(100, ta / ADV * 100) : 100) : 0) + '%' }"></i></span>
+            </li>
+          </ol>
+          <div class="tg-stack">
+            <article v-for="(t, i) in TARGETS" :key="t.key" class="tgcard" :class="{ front: i === tsel }"
+              :style="{ '--d': i - tsel, zIndex: TARGETS.length - Math.abs(i - tsel) }">
+              <span class="tg-bignum mono" aria-hidden="true">0{{ i + 1 }}</span>
+              <div class="col gap14" :style="{ opacity: cv(i).op, transform: 'translateY(' + cv(i).ty + 'px)' }">
+                <div class="row gap14"><span class="tabicon icon">{{ t.icon }}</span><h3 class="h26">{{ t.name }}</h3><span class="mono small muted tgtag">{{ t.tag }}</span></div>
+                <p class="muted body maxw520">{{ t.desc }}</p>
               </div>
-            </div>
-            <div class="example" :style="{ opacity: tp.exOp, transform: 'translateY(' + tp.exTy + 'px)' }">
-              <span class="small muted">Example finding</span>
-              <div class="row gap12">
-                <span :class="['badge', tp.ex.sev]">{{ tp.ex.label }}</span>
-                <div class="col gap2 minw0"><b>{{ tp.ex.title }}</b><span class="mono small muted">{{ tp.ex.where }}</span></div>
+              <div class="col gap14">
+                <div v-for="c in cv(i).checks" :key="c.text" class="row gap12" :style="{ opacity: c.op, transform: 'translateX(' + c.tx + 'px)' }">
+                  <span class="icon ok">check_circle</span><span>{{ c.text }}</span>
+                </div>
               </div>
-            </div>
+              <div class="example" :style="{ opacity: cv(i).exOp, transform: 'translateY(' + cv(i).exTy + 'px)' }">
+                <span class="small muted">Example finding</span>
+                <div class="row gap12">
+                  <span :class="['badge', cv(i).ex.sev]">{{ cv(i).ex.label }}</span>
+                  <div class="col gap2 minw0"><b>{{ cv(i).ex.title }}</b><span class="mono small muted">{{ cv(i).ex.where }}</span></div>
+                </div>
+              </div>
+            </article>
           </div>
         </div>
-      </section>
+            </section></div>
 
       <!-- Reports -->
       <section id="reports" class="split">
@@ -294,11 +339,29 @@ const TARGETS = [
 ]
 const navItems = [['product', 'Product'], ['targets', 'Targets'], ['reports', 'Reports'], ['security', 'Security'], ['faq', 'FAQ']].map(([id, label]) => ({ id, label }))
 const steps = [
-  { icon: 'app_registration', title: 'Register your assets', body: 'Register your domains, network ranges, web applications, and source code repositories in the asset inventory.' },
-  { icon: 'my_location', title: 'Choose a target', body: 'Pick the registered asset you want to assess and start a scan.' },
-  { icon: 'radar', title: 'Scan', body: 'SentraVA scans the target and lists every vulnerability it finds, ranked by severity.' },
-  { icon: 'description', title: 'Review and report', body: 'Review results in one place and download reports to share with your team.' }
+  { icon: 'app_registration', title: 'Register your assets', tag: 'ASSETS', body: 'Add the domains, network ranges, web applications, and source code repositories you want assessed.' },
+  { icon: 'my_location', title: 'Choose a target', tag: 'TARGET', body: 'Select which registered asset to assess: a domain, network, web application, or source code repository.' },
+  { icon: 'radar', title: 'Scan', tag: 'SCAN', body: 'SentraVA scans the target and lists every vulnerability it finds, ranked by severity.' },
+  { icon: 'description', title: 'Review and report', tag: 'REPORT', body: 'Review results in one place and download reports to share with your team.' }
 ]
+// Radar illustration: positions are percentages of the radar box.
+const flowDots = [
+  { icon: 'language', name: 'Domains', x: 26, y: 20 },
+  { icon: 'lan', name: 'Networks', x: 82, y: 32 },
+  { icon: 'web', name: 'Web applications', x: 70, y: 80 },
+  { icon: 'code', name: 'Source code', x: 20, y: 68 }
+]
+const flowBlips = [
+  { x: 40, y: 30, s: 'critical' }, { x: 63, y: 27, s: 'high' }, { x: 74, y: 50, s: 'medium' }, { x: 57, y: 63, s: 'high' },
+  { x: 38, y: 72, s: 'low' }, { x: 27, y: 46, s: 'medium' }, { x: 51, y: 17, s: 'low' }, { x: 84, y: 66, s: 'low' }
+]
+const flowEl = ref(null)
+const tgEl = ref(null)
+const tgSub = ref(0)
+const flowStep = ref(0)
+const flowSub = ref(0) // progress through the active step, 0 to 1
+const flowLive = computed(() => !reduced.value && w.value >= 1000)
+const tgLive = flowLive // the targets section pins on the same screens, and scrolling moves through the targets
 const audiences = [
   { icon: 'code', who: 'Engineers', what: 'Each finding with its location, severity, and the detail needed to fix it.' },
   { icon: 'monitoring', who: 'Leadership', what: 'A severity summary that shows overall risk at a glance.' },
@@ -390,6 +453,11 @@ const tp = computed(() => {
   }
 })
 const pick = i => { tsel.value = i; tsw.value = now.value }
+// What a stacked card shows: the active one animates in, the others sit fully drawn behind it.
+const cv = i => i === tsel.value ? tp.value : (() => {
+  const tg = TARGETS[i]
+  return { ex: FINDINGS[tg.key][0], op: 1, ty: 0, exOp: 1, exTy: 0, checks: tg.checks.map(text => ({ text, op: 1, tx: 0 })) }
+})()
 
 /* ---------- nav ---------- */
 // Lenis (when running) owns scrolling; otherwise fall back to the native scroll.
@@ -496,6 +564,35 @@ function setupMotion() {
       scrollTrigger: { trigger: '[data-split]', start: 'top 85%', end: 'bottom 55%', scrub: true },
     })
 
+    // Steps: the section pins, and scroll progress picks the active step (wide screens only).
+    gsap.matchMedia().add('(min-width: 1000px)', () => {
+      ScrollTrigger.create({
+        trigger: flowEl.value, start: 'top top', end: '+=220%', pin: true, anticipatePin: 1,
+        onUpdate: (self) => {
+          const f = Math.min(3.999, self.progress * 4)
+          flowStep.value = Math.floor(f)
+          flowSub.value = +(f - flowStep.value).toFixed(3)
+        },
+        onLeave: () => { flowStep.value = 3; flowSub.value = 1 },
+        onLeaveBack: () => { flowStep.value = 0; flowSub.value = 0 },
+      })
+    })
+
+    // Targets: the section fills the screen and pins; scroll progress opens each target in turn.
+    gsap.matchMedia().add('(min-width: 1000px)', () => {
+      const n = TARGETS.length
+      const set = (i, sub) => { if (tsel.value !== i) { tsel.value = i; tsw.value = now.value } tgSub.value = sub }
+      ScrollTrigger.create({
+        trigger: tgEl.value, start: 'top top', end: '+=' + n * 70 + '%', pin: true, anticipatePin: 1,
+        onUpdate: (self) => {
+          const f = Math.min(n - 0.001, self.progress * n)
+          set(Math.floor(f), +(f - Math.floor(f)).toFixed(3))
+        },
+        onLeave: () => set(n - 1, 1),
+        onLeaveBack: () => set(0, 0),
+      })
+    })
+
     // Depth: the hero card drifts up slower than the page, and the coral blobs shift with scroll progress.
     gsap.to('.hero-card', { yPercent: -6, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
     ScrollTrigger.create({
@@ -523,7 +620,7 @@ onMounted(() => {
   if (!reduced.value) {
     const loop = () => {
       now.value = (performance.now() - t0) / 1000
-      if (now.value - tsw.value >= ADV) { tsel.value = (tsel.value + 1) % TARGETS.length; tsw.value = now.value }
+      if (!tgLive.value && now.value - tsw.value >= ADV) { tsel.value = (tsel.value + 1) % TARGETS.length; tsw.value = now.value }
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)

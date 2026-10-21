@@ -12,6 +12,12 @@ import OverallSeverityTrend from '@/modules/dashboard/components/OverallSeverity
 import Sidebar from '@/components/layout/Sidebar.vue'
 import { clientDashboardMock } from '@/mocks/dashboard/client'
 
+const DUMMY_TARGETS = {
+  'protergo.id': 'northwind.io',
+  'https://protergo.id': 'https://northwind.io',
+  'greenbone-main': 'inventory-api',
+}
+
 export const dashboardPreview = {
   Sidebar,
   DashboardHeader,
@@ -23,6 +29,16 @@ export const dashboardPreview = {
   TicketFeed,
   VulnerabilityCycleTracker,
   OverallSeverityTrend,
-  // The same sample data the app shows in demo mode.
-  data: clientDashboardMock,
+  // The same sample data the app shows in demo mode, with the real-looking scan targets swapped for dummy ones.
+  data: {
+    ...clientDashboardMock,
+    accountOverview: {
+      ...clientDashboardMock.accountOverview,
+      company: 'Northwind Security',
+      fullName: 'Alex Morgan',
+      username: 'alexmorgan',
+      email: 'alex@northwind.io',
+    },
+    scanningInProgress: clientDashboardMock.scanningInProgress.map((s) => ({ ...s, target: DUMMY_TARGETS[s.target] ?? s.target })),
+  },
 }

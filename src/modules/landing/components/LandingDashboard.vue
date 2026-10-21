@@ -150,7 +150,7 @@ onBeforeUnmount(() => {
                 <span class="dash-navbar__btn dash-navbar__btn--sun"><IconSun :size="18" /></span>
                 <span class="dash-navbar__btn"><IconBell :size="18" /><i class="dash-navbar__badge">55</i></span>
                 <span class="dash-navbar__divider"></span>
-                <span class="dash-user"><i class="dash-user__avatar">RL</i>Rico Lim <IconChevronDown :size="14" /></span>
+                <span class="dash-user"><i class="dash-user__avatar">AM</i>Alex Morgan <IconChevronDown :size="14" /></span>
               </div>
             </header>
 
@@ -158,7 +158,7 @@ onBeforeUnmount(() => {
               <div ref="page" class="dash-page">
                 <template v-if="ready">
                   <div class="dashboard">
-                    <D.DashboardHeader :companies="data.companies" name="Rico" />
+                    <D.DashboardHeader :companies="data.companies" name="Alex" />
 
                     <div class="row row--top">
                       <D.AccountOverview :data="data.accountOverview" />
