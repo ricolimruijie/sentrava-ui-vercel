@@ -24,7 +24,7 @@ export function useSessionGuard() {
 
   function check() {
     const reason = auth.checkSession()
-    if (reason) router.replace({ name: 'login', query: { reason } })
+    if (reason) router.replace({ name: 'session-ended', query: { reason } })
   }
 
   onMounted(() => {

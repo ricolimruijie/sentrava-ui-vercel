@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { h } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore, LOGOUT_REASON_KEY } from '@/stores/auth'
 import AppLayout    from '@/components/layout/AppLayout.vue'
 import authRoutes   from './auth'
 import dashboardRoutes from './dashboard'
@@ -201,6 +201,10 @@ router.beforeEach((to) => {
   if (dashboardOrigin.value && to.path !== dashboardOrigin.value) dashboardOrigin.value = null
   const auth = useAuthStore()
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    // Signed out on load because the idle/absolute limit passed while the browser was closed.
+    let reason = null
+    try { reason = localStorage.getItem(LOGOUT_REASON_KEY) } catch { /* ignore */ }
+    if (reason) return { name: 'session-ended', query: { reason } }
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.name === 'landing' && auth.isAuthenticated) {

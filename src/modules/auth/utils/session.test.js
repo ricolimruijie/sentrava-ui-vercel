@@ -5,9 +5,9 @@ const T0 = 10_000_000
 
 describe('sessionStatus (PRD 2.2)', () => {
   it('is ok while active and young', () => {
-    expect(sessionStatus({ loginAt: T0, lastActivityAt: T0 + 60_000 }, T0 + 120_000)).toBe('ok')
+    expect(sessionStatus({ loginAt: T0, lastActivityAt: T0 + 1000 }, T0 + 2000)).toBe('ok')
   })
-  it('goes idle after 15 minutes without activity', () => {
+  it('goes idle after the idle timeout without activity', () => {
     expect(sessionStatus({ loginAt: T0, lastActivityAt: T0 }, T0 + IDLE_TIMEOUT_MS - 1)).toBe('ok')
     expect(sessionStatus({ loginAt: T0, lastActivityAt: T0 }, T0 + IDLE_TIMEOUT_MS)).toBe('idle')
   })
