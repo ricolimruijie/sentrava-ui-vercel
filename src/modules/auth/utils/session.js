@@ -2,8 +2,7 @@
 // absolute limit of 8 to 12 hours applies regardless of activity (the lower bound is
 // used). No multi-device login and no "remember me" — both are deliberate.
 
-// TESTING: 1 minute. PRD value is 15 * 60 * 1000 — restore before release.
-export const IDLE_TIMEOUT_MS = 1 * 60 * 1000
+export const IDLE_TIMEOUT_MS = 15 * 60 * 1000
 export const SESSION_MAX_MS = 8 * 60 * 60 * 1000
 
 // -> 'ok' | 'idle' | 'expired'. `expired` (absolute limit) wins over `idle`.
