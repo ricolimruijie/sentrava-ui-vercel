@@ -121,9 +121,10 @@
                   <span class="rd-sweep" :class="{ on: flowStep === 2 }"></span>
                   <span class="rd-core" :class="{ off: flowStep === 3 }"></span>
                   <span v-for="(d, i) in flowDots" :key="d.name" class="rd-dot"
-                    :class="{ on: flowStep <= 2, dim: flowStep >= 1 && i !== 2, lock: flowStep >= 1 && i === 2, sink: flowStep === 3 }"
-                    :style="{ left: (flowStep === 3 ? 50 : d.x) + '%', top: (flowStep === 3 ? 50 : d.y) + '%', transitionDelay: (flowStep === 0 ? i * 140 : 0) + 'ms' }">
+                    :class="{ on: flowStep <= 2, dim: flowStep >= 1 && i !== lockIdx, lock: flowStep >= 1 && i === lockIdx, sink: flowStep === 3 }"
+                    :style="{ left: (flowStep === 3 ? 50 : d.x) + '%', top: (flowStep === 3 ? 50 : d.y) + '%', transitionDelay: (flowStep === 0 ? i * 380 : 0) + 'ms' }">
                     <span class="icon">{{ d.icon }}</span>
+                    <span class="rd-label" :class="{ on: flowStep === 0 }" :style="{ transitionDelay: (flowStep === 0 ? i * 380 + 260 : 0) + 'ms' }">{{ d.name }}</span>
                   </span>
                   <span v-for="(k, i) in flowBlips" :key="i" class="rd-blip"
                     :class="{ on: flowStep === 2, sink: flowStep === 3 }"
@@ -134,7 +135,7 @@
                     <span class="rd-report-badges"><i style="background: var(--on-glass-critical)"></i><i style="background: var(--on-glass-high)"></i><i style="background: var(--on-glass-warn)"></i><i style="background: var(--on-glass-ok)"></i></span>
                   </div>
                 </div>
-                <p class="rd-caption mono">{{ ['4 assets registered', 'Target locked: app.example.com', 'Scanning · findings ranked by severity', 'Report ready to download'][flowStep] }}</p>
+                <p class="rd-caption mono">{{ ['4 assets registered', 'Target locked: ' + TARGETS[lockIdx].host, 'Scanning · findings ranked by severity', 'Report ready to download'][flowStep] }}</p>
               </div>
             </div>
             <ol class="flow-steps">
@@ -152,7 +153,7 @@
 
       <!-- Targets -->
       <div class="tg-outer"><section id="targets" ref="tgEl" class="col gap40 tgsec" :class="{ 'tgsec--live': tgLive }">
-        <h2 data-ani="slide">One platform for every target</h2>
+        <h2 class="oneline" data-ani="slide">One platform for every target</h2>
         <div class="targets" data-ani="slide">
           <ol class="tg-rail">
             <li v-for="(t, i) in TARGETS" :key="t.key" :class="{ on: i === tsel, done: i < tsel }">
@@ -172,37 +173,103 @@
                 <div class="row gap14"><span class="tabicon icon">{{ t.icon }}</span><h3 class="h26">{{ t.name }}</h3><span class="mono small muted tgtag">{{ t.tag }}</span></div>
                 <p class="muted body maxw520">{{ t.desc }}</p>
               </div>
-              <div class="col gap14">
-                <div v-for="c in cv(i).checks" :key="c.text" class="row gap12" :style="{ opacity: c.op, transform: 'translateX(' + c.tx + 'px)' }">
-                  <span class="icon ok">check_circle</span><span>{{ c.text }}</span>
+              <div class="tgpts" :class="'tgpts--' + t.layout">
+                <div v-for="(c, n) in cv(i).points" :key="c.pt.title" class="tgpt" :class="c.pt.tone && 'tone-' + c.pt.tone" :style="{ opacity: c.op, transform: 'translateX(' + c.tx + 'px)' }">
+                  <span v-if="c.pt.icon" class="tgpt-ico icon" aria-hidden="true">{{ c.pt.icon }}</span>
+                  <span v-else class="tgpt-n" aria-hidden="true">{{ n + 1 }}</span>
+                  <div class="tgpt-body">
+                    <div class="tgpt-head"><b>{{ c.pt.title }}</b><span v-if="c.pt.cat" class="tgpt-cat">{{ c.pt.cat }}</span></div>
+                    <span class="tgpt-text">{{ c.pt.body }}</span>
+                  </div>
+                  <div v-if="c.pt.chips" class="tgpt-chips"><span v-for="ch in c.pt.chips" :key="ch.t" class="tgpt-chip mono" :class="ch.s">{{ ch.t }}</span></div>
+                  <span v-if="c.pt.tag" class="tgpt-tag mono">{{ c.pt.tag }}</span>
+                  <span v-if="c.pt.out" class="tgpt-out">{{ c.pt.out }}</span>
                 </div>
               </div>
-              <div class="example" :style="{ opacity: cv(i).exOp, transform: 'translateY(' + cv(i).exTy + 'px)' }">
-                <span class="small muted">Example finding</span>
-                <div class="row gap12">
-                  <span :class="['badge', cv(i).ex.sev]">{{ cv(i).ex.label }}</span>
-                  <div class="col gap2 minw0"><b>{{ cv(i).ex.title }}</b><span class="mono small muted">{{ cv(i).ex.where }}</span></div>
-                </div>
-              </div>
+              <p v-if="t.note" class="small muted tgnote">{{ t.note }}</p>
             </article>
           </div>
         </div>
             </section></div>
 
       <!-- Reports -->
-      <section id="reports" class="split">
-        <div class="col gap24" data-ani="slide">
-          <h2>Reports for everyone who needs to act</h2>
-          <p class="muted lead2 maxw500">Every scan produces a downloadable report. Engineers get the detail to fix each issue. Leadership gets a clear picture of risk.</p>
-          <div class="row"><button class="btn lg secondary">Download sample report</button></div>
+      <div class="rp-outer"><section id="reports" ref="rpEl" class="rp" :class="{ 'rp--live': rpLive }">
+        <div class="rp-top" data-ani="slide">
+          <div class="col gap14">
+            <h2>Reports for everyone who needs to act</h2>
+            <p class="lead2 rp-lead-p">Every scan produces a downloadable report. Engineers get the detail to fix each issue. Leadership gets a clear picture of risk.</p>
+          </div>
+          <button class="btn lg secondary" :class="{ pulse: rpLive && rsel === 2 }">Download sample report</button>
         </div>
-        <div class="col gap14" data-ani="stagger">
-          <div v-for="a in audiences" :key="a.who" class="aud">
-            <span class="audicon icon">{{ a.icon }}</span>
-            <div class="col gap4"><b>{{ a.who }}</b><span class="muted body">{{ a.what }}</span></div>
+        <!-- One finding, three lenses: the same issue is rewritten for each audience as you scroll. -->
+        <div class="rp-stage" data-ani="slide">
+          <ol class="rp-rail">
+            <li v-for="(a, i) in audiences" :key="a.who" :class="{ on: i === rsel, done: i < rsel }">
+              <button class="rp-rail-btn" @click="pickR(i)">
+                <span class="rp-rail-ico icon" aria-hidden="true">{{ a.icon }}</span>
+                <span class="col gap2 minw0"><b>{{ a.who }}</b><span class="rp-rail-txt">{{ a.what }}</span></span>
+              </button>
+              <span class="tg-bar"><i :style="{ width: (i < rsel ? 100 : i === rsel ? rSub * 100 : 0) + '%' }"></i></span>
+            </li>
+          </ol>
+          <div class="rp-card">
+            <div class="rp-fhead">
+              <span class="rp-sev"><i></i>Critical</span>
+              <b>SQL injection in user lookup</b>
+              <span class="mono small rp-loc">SV-2041 · src/api/users.py:42</span>
+            </div>
+            <div class="rp-views">
+              <!-- Engineers: the code and the fix -->
+              <div class="rp-view" :class="{ on: viewOn(0) }">
+                <div class="rp-lensrow"><span class="rp-lens">For engineers</span><span v-for="c in RP_TAGS" :key="c" class="rp-chip mono">{{ c }}</span></div>
+                <div class="rp-code mono">
+                  <div v-for="(l, n) in RP_CODE" :key="n" class="rp-ln" :class="l.k" :style="{ '--i': n }"><em>{{ l.n }}</em><span>{{ l.t }}</span></div>
+                </div>
+                <div class="rp-proof rp-it" style="--i: 5"><span class="rp-proof-lab">Proof</span><span class="mono rp-proof-req">GET /api/users?id=1' OR '1'='1</span><b class="rp-proof-res">200 · all rows returned</b></div>
+                <p class="rp-fix rp-it" style="--i: 6"><span class="icon">build</span><span><b>Fix</b> Use a parameterised query so user input is never part of the SQL text.</span></p>
+                <div class="rp-acts rp-it" style="--i: 7"><span class="rp-act"><span class="icon">confirmation_number</span>Create ticket</span><span class="rp-act"><span class="icon">content_copy</span>Copy patch</span><span class="rp-act"><span class="icon">replay</span>Re-scan after fix</span></div>
+              </div>
+              <!-- Leadership: the same finding in plain language -->
+              <div class="rp-view" :class="{ on: viewOn(1) }">
+                <span class="rp-lens">For leadership</span>
+                <p class="rp-plain rp-it" style="--i: 0">Anyone who can reach this page could read or change customer records.</p>
+                <div class="rp-meter rp-it" style="--i: 1">
+                  <span class="rp-meter-lab">Severity</span>
+                  <span class="rp-segs"><i v-for="n in 5" :key="n" :style="{ '--i': n }"></i></span>
+                  <b>Critical</b>
+                  <span class="rp-rec"><span class="icon">schedule</span>Fix within 24 hours</span>
+                </div>
+                <div class="rp-facts">
+                  <div v-for="(f, n) in RP_FACTS" :key="f.k" class="rp-it rp-fact" :style="{ '--i': n + 2 }"><span>{{ f.k }}</span><b>{{ f.v }}</b></div>
+                </div>
+                <div class="rp-kpis">
+                  <div v-for="(k, n) in RP_KPIS" :key="k.k" class="rp-it rp-kpi" :style="{ '--i': n + 5, '--w': k.w }"><span>{{ k.k }}</span><b>{{ k.v }}<small>{{ k.sub }}</small></b><span class="rp-bar"><i></i></span></div>
+                </div>
+                <div class="rp-trend rp-it" style="--i: 8">
+                  <span class="small">Open critical findings, last 6 scans</span>
+                  <svg viewBox="0 0 300 36" aria-hidden="true"><path d="M2 6 L62 9 L122 8 L182 20 L242 24 L298 30" pathLength="1" /></svg>
+                  <b>5 → 2</b>
+                </div>
+              </div>
+              <!-- Compliance: the same finding as an audit record -->
+              <div class="rp-view" :class="{ on: viewOn(2) }">
+                <span class="rp-lens">For compliance</span>
+                <div class="rp-cols">
+                  <ol class="rp-tl">
+                    <li v-for="(e, n) in RP_AUDIT" :key="e.what" class="rp-it" :class="{ wait: e.wait }" :style="{ '--i': n }"><i></i><b>{{ e.what }}</b><span class="mono small">{{ e.when }}</span><span class="rp-tl-txt">{{ e.note }}</span></li>
+                  </ol>
+                  <div class="rp-kv">
+                    <div v-for="(r, n) in RP_EVID" :key="r.k" class="rp-it rp-kvr" :style="{ '--i': n + 1 }"><span>{{ r.k }}</span><b class="mono">{{ r.v }}</b></div>
+                  </div>
+                </div>
+                <div class="rp-ctrl-list">
+                  <div v-for="(c, n) in RP_CTRLS" :key="c.id" class="rp-it rp-ctrl" :class="c.tone" :style="{ '--i': n + 5 }"><b class="mono">{{ c.id }}</b><span>{{ c.name }}</span><span class="rp-ctrl-st"><i></i>{{ c.st }}</span></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </section></div>
 
       <!-- Statement -->
       <section class="statement">
@@ -332,10 +399,34 @@ const FINDINGS = {
   ]
 }
 const TARGETS = [
-  { key: 'Domain', name: 'Domains', icon: 'language', host: 'example.com', tag: 'DNS', short: 'Records, subdomains, certificates', desc: 'Assesses your domains and the records around them for exposure and misconfiguration.', checks: ['DNS record misconfiguration', 'Exposed subdomains', 'Expired or weak TLS certificates', 'Missing email security records (SPF, DMARC)'] },
-  { key: 'Network', name: 'Networks', icon: 'lan', host: '10.0.4.0/24', tag: 'NET', short: 'Hosts, ports, and services', desc: 'Scans hosts and services across your network ranges to find exposed and vulnerable systems.', checks: ['Open ports and exposed services', 'Outdated software with known vulnerabilities', 'Default or weak service credentials', 'Insecure protocols in use'] },
-  { key: 'Web application', name: 'Web applications', icon: 'web', host: 'app.example.com', tag: 'DAST', short: 'Running, public-facing apps', desc: 'Scans running, public-facing applications from the outside, the way an attacker would see them.', checks: ['Injection flaws such as SQL injection and XSS', 'Missing or misconfigured security headers', 'Weak session and cookie handling', 'Information disclosure'] },
-  { key: 'Source code', name: 'Source code', icon: 'code', host: 'example/api-service', tag: 'SAST', short: 'Repositories and codebases', desc: 'Analyzes your codebase to catch weaknesses before they reach production.', checks: ['Hard-coded secrets and credentials', 'Unsafe handling of user input', 'Weak cryptography', 'Insecure error handling'] }
+  { key: 'Domain', name: 'Domains', icon: 'language', host: 'example.com', tag: 'DNS', short: 'Records, subdomains, certificates', layout: 'rec', desc: 'Register a domain. SentraVA maps its subdomains and endpoints, giving continuous visibility into external perimeter growth, forgotten test environments, and exposed services.', points: [
+    { icon: 'code', title: 'Exposed Services & Ports', body: 'Internet-reachable ports, listeners, and unsegmented services.', tag: 'PORTS' },
+    { icon: 'bug_report', title: 'Known CVE Signatures', body: 'Matches detected server banners and software stacks to public CVE feeds.', tag: 'CVE' },
+    { icon: 'more_horiz', title: 'Weak & Default Logins', body: 'Administrative portals with default passwords or exposed credentials.', tag: 'AUTH' },
+    { icon: 'lock', title: 'SSL/TLS Misconfigurations', body: 'Expired certificates, weak cipher suites, and outdated cryptographic protocols.', tag: 'TLS' },
+    { icon: 'gpp_bad', title: 'End-of-Life Software', body: 'Unsupported server components no longer receiving security patches.', tag: 'EOL' }
+  ] },
+  { key: 'Network', name: 'Network', icon: 'lan', host: '10.0.4.0/24', tag: 'NET', short: 'Hosts, ports, and services', layout: 'host', desc: 'Register an IP or CIDR range. SentraVA finds live hosts and open ports across full subnets or targeted host lists, revealing perimeter exposure on internal and external networks.', points: [
+    { icon: 'dns', title: 'Host & Service Mapping', body: 'Discovers responsive IP addresses, open listening ports, and running daemons.', chips: [{ t: '22 SSH', s: 'ok' }, { t: '80 HTTP', s: 'ok' }, { t: '23 Telnet', s: 'bad' }] },
+    { icon: 'memory', title: 'Network Stack CVEs', body: 'Correlates detected OS versions and network hardware firmware against known flaws.', chips: [{ t: 'OpenSSH 7.4', s: 'bad' }, { t: 'nginx 1.24', s: 'ok' }] },
+    { icon: 'router', title: 'Default Appliance Access', body: 'Identifies unhardened routers, switches, and remote access endpoints.', chips: [{ t: 'admin:admin', s: 'bad' }, { t: '8443 HTTPS', s: 'ok' }] },
+    { icon: 'shield', title: 'Protocol Hardening', body: 'Flags legacy protocols including unencrypted Telnet, cleartext FTP, and weak TLS.', chips: [{ t: '23 Telnet', s: 'bad' }, { t: '21 FTP', s: 'bad' }, { t: '443 TLS', s: 'ok' }] },
+    { icon: 'gpp_bad', title: 'End-of-Life Devices', body: 'Highlights obsolete hardware models and unsupported network operating systems.', chips: [{ t: 'EOL OS', s: 'bad' }, { t: 'No patches', s: 'bad' }] }
+  ] },
+  { key: 'Web application', name: 'Web application', icon: 'web', host: 'app.example.com', tag: 'DAST', short: 'Running, public-facing apps', layout: 'host', desc: 'Register a web application URL. SentraVA scans it from the outside, the way an attacker would see it, probing pages, forms and APIs for exposed admin panels, injection flaws, vulnerable web software, leaked secrets and API misconfigurations.', points: [
+    { icon: 'gpp_maybe', title: 'Administrative exposure', body: 'Finds unprotected admin dashboards, default portals, and test consoles.', chips: [{ t: 'Unauthorized Access', s: 'ok' }] },
+    { icon: 'vaccines', title: 'Injection vulnerabilities', body: 'Tests payloads for Cross-Site Scripting (XSS), SQLi, and code execution.', chips: [{ t: 'Data Compromise', s: 'bad' }] },
+    { icon: 'deployed_code', title: 'Web software CVEs', body: 'Fingerprints CMS engines, frameworks, and third-party web libraries for known flaws.', chips: [{ t: 'RCE & Bypass', s: 'bad' }] },
+    { icon: 'key', title: 'Leaked secrets & files', body: 'Checks public paths for exposed .env files, backup archives, and leaked API tokens.', chips: [{ t: 'Credential Theft', s: 'bad' }] },
+    { icon: 'open_with', title: 'API misconfigurations', body: 'Evaluates REST endpoints for broken authorization and insecure CORS headers.', chips: [{ t: 'Data Leakage', s: 'ok' }] }
+  ] },
+  { key: 'Source code', name: 'Source code', icon: 'code', host: 'example/api-service', tag: 'SAST', short: 'Repositories and codebases', layout: 'host', desc: 'Connect a GitHub repo with a token and all its branches are registered. Static application security testing (SAST) identifies coding flaws, embedded credentials, and IaC weaknesses.', note: 'Native engine support: Java, C#, Go, JavaScript, TypeScript, PHP, Python, Ruby, Scala, and Terraform.', points: [
+    { title: 'Code-Level Injections', body: 'Traces data flow from unvalidated inputs to SQL queries and OS shell commands.', icon: 'bug_report', chips: [{ t: 'Application code', s: 'bad' }] },
+    { title: 'Hardcoded Secrets', body: 'Scans source trees for committed private keys, database credentials, and cloud tokens.', icon: 'key', chips: [{ t: 'Secrets audit', s: 'mid' }] },
+    { title: 'Unsafe Functions', body: 'Flags deprecated cryptographic routines, weak randomness, and unsafe file handlers.', icon: 'warning', chips: [{ t: 'Runtime logic', s: 'mid' }] },
+    { title: 'Authentication Flaws', body: 'Detects broken access controls, insecure session tokens, and bypass vectors.', icon: 'lock_open', chips: [{ t: 'Auth system', s: 'ok' }] },
+    { title: 'IaC Misconfigurations', body: 'Validates Terraform scripts and infrastructure configurations for security oversights.', icon: 'cloud', chips: [{ t: 'Cloud infrastructure', s: 'mid' }] }
+  ] }
 ]
 const navItems = [['product', 'Product'], ['targets', 'Targets'], ['reports', 'Reports'], ['security', 'Security'], ['faq', 'FAQ']].map(([id, label]) => ({ id, label }))
 const steps = [
@@ -347,8 +438,8 @@ const steps = [
 // Radar illustration: positions are percentages of the radar box.
 const flowDots = [
   { icon: 'language', name: 'Domains', x: 26, y: 20 },
-  { icon: 'lan', name: 'Networks', x: 82, y: 32 },
-  { icon: 'web', name: 'Web applications', x: 70, y: 80 },
+  { icon: 'lan', name: 'Network', x: 82, y: 32 },
+  { icon: 'web', name: 'Web application', x: 70, y: 80 },
   { icon: 'code', name: 'Source code', x: 20, y: 68 }
 ]
 const flowBlips = [
@@ -361,6 +452,40 @@ const tgSub = ref(0)
 const flowStep = ref(0)
 const flowSub = ref(0) // progress through the active step, 0 to 1
 const flowLive = computed(() => !reduced.value && w.value >= 1000)
+// The target the radar locks onto: while choosing, it moves across each asset in turn, then stays on the last.
+const lockIdx = computed(() => flowStep.value === 1 ? Math.min(flowDots.length - 1, Math.floor(flowSub.value * flowDots.length)) : flowDots.length - 1)
+const rpEl = ref(null)
+const rpLive = flowLive // the reports section pins on the same screens; scrolling moves through the three lenses
+const rsel = ref(0)
+const rSub = ref(0) // progress through the active lens, 0 to 1
+const RP_CODE = [
+  { n: 40, t: 'def get_user(request):', k: '' },
+  { n: 41, t: '    uid = request.args["id"]', k: '' },
+  { n: 42, t: '-   q = "SELECT * FROM users WHERE id=" + uid', k: 'del' },
+  { n: 42, t: '+   q = "SELECT * FROM users WHERE id = %s"', k: 'add' },
+  { n: 43, t: '+   return db.execute(q, (uid,))', k: 'add' }
+]
+const RP_TAGS = ['CWE-89', 'CVSS 9.8', 'Python', 'Flask']
+const RP_FACTS = [{ k: 'Exposure', v: 'Internet-facing' }, { k: 'Affects', v: 'Customer database' }, { k: 'Time to fix', v: 'About 1 hour' }]
+const RP_KPIS = [
+  { k: 'Risk score', v: '72', sub: ' / 100', w: 0.72 },
+  { k: 'Open criticals', v: '2', sub: ' down from 5', w: 0.4 },
+  { k: 'Fixed this month', v: '14', sub: ' of 19', w: 0.74 }
+]
+const RP_AUDIT = [
+  { what: 'Detected', when: '22 Oct 2026 · 09:14', note: 'Found by the scan of app.example.com' },
+  { what: 'Assigned', when: '22 Oct 2026 · 11:02', note: 'Platform team' },
+  { what: 'Fix verified', when: 'Pending re-scan', note: 'Status moves from Open to Fixed', wait: true }
+]
+const RP_EVID = [
+  { k: 'Scan ID', v: 'scan_8f2a1c' }, { k: 'Scope', v: 'app.example.com' }, { k: 'Method', v: 'Automated · DAST' },
+  { k: 'Owner', v: 'Platform team' }, { k: 'Due', v: '29 Oct 2026' }
+]
+const RP_CTRLS = [
+  { id: 'OWASP A03:2021', name: 'Injection', st: 'Failing', tone: 'bad' },
+  { id: 'PCI DSS 6.2.4', name: 'Attack prevention', st: 'Failing', tone: 'bad' },
+  { id: 'ISO 27001 A.8.28', name: 'Secure coding', st: 'In review', tone: 'mid' }
+]
 const tgLive = flowLive // the targets section pins on the same screens, and scrolling moves through the targets
 const audiences = [
   { icon: 'code', who: 'Engineers', what: 'Each finding with its location, severity, and the detail needed to fix it.' },
@@ -403,7 +528,7 @@ const now = ref(0)
 const tsel = ref(0)
 const tsw = ref(0)
 const reduced = ref(false)
-let raf = 0, t0 = 0, lenis = null, tick = null, ctx = null
+let raf = 0, t0 = 0, lenis = null, tick = null, ctx = null, onRefresh = null
 
 const wide = computed(() => w.value >= 860)
 const live = computed(() => liveScan && !reduced.value)
@@ -449,14 +574,16 @@ const tp = computed(() => {
   return {
     name: tg.name, tag: tg.tag, desc: tg.desc, op, ty: (1 - op) * 12,
     ex: FINDINGS[tg.key][0], exOp: ex, exTy: (1 - ex) * 10,
-    checks: tg.checks.map((text, i) => { const k = ease((a - 0.12 - i * 0.08) / 0.4); return { text, op: k, tx: (1 - k) * -14 } })
+    points: tg.points.map((pt, i) => { const k = ease((a - 0.12 - i * 0.08) / 0.4); return { pt, op: k, tx: (1 - k) * -14 } })
   }
 })
 const pick = i => { tsel.value = i; tsw.value = now.value }
+const viewOn = i => !rpLive.value || rsel.value === i // narrow screens show all three lenses stacked
+const pickR = i => { rsel.value = i; rSub.value = 0 }
 // What a stacked card shows: the active one animates in, the others sit fully drawn behind it.
 const cv = i => i === tsel.value ? tp.value : (() => {
   const tg = TARGETS[i]
-  return { ex: FINDINGS[tg.key][0], op: 1, ty: 0, exOp: 1, exTy: 0, checks: tg.checks.map(text => ({ text, op: 1, tx: 0 })) }
+  return { ex: FINDINGS[tg.key][0], op: 1, ty: 0, exOp: 1, exTy: 0, points: tg.points.map(pt => ({ pt, op: 1, tx: 0 })) }
 })()
 
 /* ---------- nav ---------- */
@@ -535,6 +662,10 @@ function sendDemo() {
 function setupMotion() {
   lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true })
   lenis.on('scroll', ScrollTrigger.update)
+  // The page height changes after load (the dashboard preview grows once it mounts) and ScrollTrigger refreshes;
+  // Lenis keeps its own scroll limit, so re-measure it each time or scrolling stops short of the page end.
+  onRefresh = () => lenis?.resize()
+  ScrollTrigger.addEventListener('refresh', onRefresh)
   tick = (time) => lenis.raf(time * 1000)
   gsap.ticker.add(tick)
   gsap.ticker.lagSmoothing(0)
@@ -593,6 +724,22 @@ function setupMotion() {
       })
     })
 
+    // Reports: created after the targets trigger so ScrollTrigger measures it in page order. It pins, and scroll
+    // progress moves through the three lenses on the same finding.
+    gsap.matchMedia().add('(min-width: 1000px)', () => {
+      const n = audiences.length
+      const set = (i, sub) => { rsel.value = i; rSub.value = sub }
+      ScrollTrigger.create({
+        trigger: rpEl.value, start: 'top top', end: '+=' + n * 55 + '%', pin: true, anticipatePin: 1,
+        onUpdate: (self) => {
+          const f = Math.min(n - 0.001, self.progress * n)
+          set(Math.floor(f), +(f - Math.floor(f)).toFixed(3))
+        },
+        onLeave: () => set(n - 1, 1),
+        onLeaveBack: () => set(0, 0),
+      })
+    })
+
     // Depth: the hero card drifts up slower than the page, and the coral blobs shift with scroll progress.
     gsap.to('.hero-card', { yPercent: -6, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
     ScrollTrigger.create({
@@ -636,6 +783,7 @@ onBeforeUnmount(() => {
   cancelAnimationFrame(raf)
   ctx?.revert()
   if (tick) gsap.ticker.remove(tick)
+  if (onRefresh) ScrollTrigger.removeEventListener('refresh', onRefresh)
   lenis?.destroy()
 })
 </script>

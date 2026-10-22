@@ -6,6 +6,12 @@ export default [
     meta: { public: true },
   },
   {
+    path: '/session-ended',
+    name: 'session-ended',
+    component: () => import('@/modules/auth/views/SessionEndedView.vue'),
+    meta: { public: true },
+  },
+  {
     path: '/forgot-password',
     name: 'forgot-password',
     component: () => import('@/modules/auth/views/ForgotPasswordView.vue'),
