@@ -27,10 +27,6 @@
         <div class="col gap28 hero-copy">
           <h1>Know where you are exposed. Fix what matters first.</h1>
           <p class="lead">SentraVA scans your domains, networks, web applications, and source code from one platform. Findings are ranked by severity and exported as reports your team can act on.</p>
-          <div class="row gap14 wrapflex">
-            <button class="btn lg" @click="openDemo">Request a demo</button>
-            <button class="btn lg secondary">Download sample report</button>
-          </div>
         </div>
 
         <div id="product" class="preview hero-card">
@@ -199,7 +195,6 @@
             <h2>Reports for everyone who needs to act</h2>
             <p class="lead2 rp-lead-p">Every scan produces a downloadable report. Engineers get the detail to fix each issue. Leadership gets a clear picture of risk.</p>
           </div>
-          <button class="btn lg secondary" :class="{ pulse: rpLive && rsel === 2 }">Download sample report</button>
         </div>
         <!-- One finding, three lenses: the same issue is rewritten for each audience as you scroll. -->
         <div class="rp-stage" data-ani="slide">
@@ -271,44 +266,41 @@
         </div>
       </section></div>
 
-      <!-- Statement -->
-      <section class="statement">
-        <p class="statement-h" data-split>Security findings scattered across tools are hard to act on. SentraVA puts them in one place.</p>
-        <p class="muted lead2 maxw640" data-ani="slide">Most teams check domains, networks, applications, and code with separate tools, then reconcile the results by hand. SentraVA runs every assessment from one platform, so there is one list of findings and one report to work from.</p>
+      <!-- Story: the problems SentraVA tackles. A line down the left fills as you scroll and each statement lights its dot. -->
+      <div id="problems" class="col gap48">
+      <header class="story-head">
+        <h2 data-ani="slide">What problems SentraVA tackles</h2>
+        <p class="muted lead2 maxw640" data-ani="slide">Security teams lose time to scattered tools, unclear priorities, and reports built by hand. These are the problems SentraVA is built to remove.</p>
+      </header>
+      <section ref="storyEl" class="story">
+        <div class="story__rail" aria-hidden="true"><span class="story__fill" /></div>
+        <article v-for="(t, i) in story" :key="t.label" class="story__item">
+          <span class="story__dot" aria-hidden="true" />
+          <span class="story__num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</span>
+          <h3 class="story__h">{{ t.title }}</h3>
+          <p class="muted lead2 story__p">{{ t.body }}</p>
+        </article>
       </section>
+      </div>
 
-      <!-- Security -->
-      <section id="security" class="col gap40">
-        <h2 data-ani="slide">How we handle your data</h2>
-        <div class="grid3 gap24" data-ani="stagger">
-          <div v-for="t in trust" :key="t.title" class="trust">
-            <span class="icon trusticon">{{ t.icon }}</span>
-            <b class="t18">{{ t.title }}</b>
-            <span class="mono faint small13">{{ t.body }}</span>
-          </div>
+      <!-- FAQ: title on the left, numbered questions on the right -->
+      <section id="faq" class="faq">
+        <div class="faq-intro col gap16" data-ani="slide">
+          <h2>Frequently asked questions</h2>
+          <p class="muted lead2">Short answers to what teams usually want to know before they start.</p>
         </div>
-      </section>
-
-      <!-- FAQ -->
-      <section id="faq" class="col gap32 faq">
-        <h2 data-ani="slide">Questions buyers ask</h2>
-        <div class="col gap10" data-ani="stagger">
-          <details v-for="q in faq" :key="q.q" class="qa">
-            <summary><span class="grow">{{ q.q }}</span><span class="icon faint">expand_more</span></summary>
-            <p class="muted body">{{ q.a }}</p>
-          </details>
-        </div>
-      </section>
-
-      <!-- CTA -->
-      <section class="cta-wrap" data-ani="slide">
-        <div class="cta glass-strong" @mousemove="glassMove">
-          <h2 class="maxw560">See your first assessment in a live demo</h2>
-          <div class="row gap14 wrapflex">
-            <button class="btn lg" @click="openDemo">Request a demo</button>
-            <button class="btn lg secondary">Download sample report</button>
-          </div>
-        </div>
+        <ul class="faq-list" data-ani="stagger">
+          <li v-for="(q, i) in faq" :key="q.q" class="faq-item" :class="{ 'is-open': faqOpen === i }">
+            <button type="button" class="faq-q" :id="`faq-q-${i}`" :aria-expanded="faqOpen === i" :aria-controls="`faq-a-${i}`" @click="faqOpen = faqOpen === i ? -1 : i">
+              <span class="faq-num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</span>
+              <span class="faq-text">{{ q.q }}</span>
+              <span class="icon faq-icon" aria-hidden="true">expand_more</span>
+            </button>
+            <div class="faq-a" :id="`faq-a-${i}`" role="region" :aria-labelledby="`faq-q-${i}`">
+              <div class="faq-a__in"><p class="muted lead2">{{ q.a }}</p></div>
+            </div>
+          </li>
+        </ul>
       </section>
 
       <!-- Footer -->
@@ -323,29 +315,6 @@
         </div>
         <span class="small faint all">© 2026 SentraVA</span>
       </footer>
-    </div>
-
-    <!-- Demo dialog -->
-    <div v-if="demoOpen" class="overlay" @click.self="demoOpen = false">
-      <form class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-title" @submit.prevent="sendDemo">
-        <div class="between">
-          <h3 id="dlg-title" class="h26">Request a demo</h3>
-          <button type="button" class="round close icon" aria-label="Close" @click="demoOpen = false">close</button>
-        </div>
-        <template v-if="!demoSent">
-          <label class="field">Full name<input required placeholder="Jane Doe" /></label>
-          <label class="field">Work email<input required type="email" placeholder="jane@company.com" /></label>
-          <label class="field">Company<input required placeholder="Company name" /></label>
-          <div class="row gap8 end">
-            <button type="button" class="btn secondary" @click="demoOpen = false">Cancel</button>
-            <button type="submit" class="btn">Send request</button>
-          </div>
-        </template>
-        <template v-else>
-          <p class="muted body">Thanks. We have your request and will be in touch.</p>
-          <div class="row end"><button type="button" class="btn" @click="demoOpen = false">Close</button></div>
-        </template>
-      </form>
     </div>
   </div>
 </template>
@@ -428,7 +397,9 @@ const TARGETS = [
     { title: 'IaC Misconfigurations', body: 'Validates Terraform scripts and infrastructure configurations for security oversights.', icon: 'cloud', chips: [{ t: 'Cloud infrastructure', s: 'mid' }] }
   ] }
 ]
-const navItems = [['product', 'Product'], ['targets', 'Targets'], ['reports', 'Reports'], ['security', 'Security'], ['faq', 'FAQ']].map(([id, label]) => ({ id, label }))
+const storyEl = ref(null)
+const faqOpen = ref(-1) // index of the open question (-1 = all closed)
+const navItems = [['product', 'Product'], ['targets', 'Targets'], ['reports', 'Reports'], ['problems', 'Problems'], ['faq', 'FAQ']].map(([id, label]) => ({ id, label }))
 const steps = [
   { icon: 'app_registration', title: 'Register your assets', tag: 'ASSETS', body: 'Add the domains, network ranges, web applications, and source code repositories you want assessed.' },
   { icon: 'my_location', title: 'Choose a target', tag: 'TARGET', body: 'Select which registered asset to assess: a domain, network, web application, or source code repository.' },
@@ -492,18 +463,19 @@ const audiences = [
   { icon: 'monitoring', who: 'Leadership', what: 'A severity summary that shows overall risk at a glance.' },
   { icon: 'verified', who: 'Compliance', what: 'A downloadable record of what was assessed and what was found.' }
 ]
-const trust = [
-  { icon: 'lock', title: 'Encryption', body: '[Describe encryption in transit and at rest]' },
-  { icon: 'public', title: 'Data residency', body: '[Describe where scan data is stored]' },
-  { icon: 'admin_panel_settings', title: 'Access control', body: '[Describe roles, SSO, and audit logs]' }
+const story = [
+  { label: 'One place', title: 'Security findings scattered across tools are hard to act on. SentraVA puts them in one place.', body: 'Most teams check domains, networks, applications, and code with separate tools, then reconcile the results by hand. Every tool has its own dashboard, its own severity scale, and its own export, so the same issue can show up twice or be missed entirely. SentraVA runs every assessment from one platform, so there is one list of findings and one report to work from. Your team can see all of its assets, what was found on each, and what has already been fixed, without switching between tools or merging spreadsheets.' },
+  { label: 'One view', title: 'Findings split across tools make it hard to see the whole picture.', body: 'Domains, networks, applications, and code each have their own scanner and their own report. Someone has to open every tool, export the results, and line them up by hand just to answer a simple question like "what is our risk today?". SentraVA runs Domain, Network, Web App, and Source Code assessments from one platform and keeps every finding in a single list you can filter by asset, severity, and status.' },
+  { label: 'Where to start', title: 'A long list of issues does not say where to start.', body: 'Hundreds of findings with no order leave teams guessing, and the serious ones get buried under the minor ones. SentraVA ranks every finding by severity, so critical and high issues come first. Each finding shows the affected asset and what was detected, and you can raise a ticket for it, so your team fixes the right things in the right order.' },
+  { label: 'Reports', title: 'Building reports by hand takes time away from fixing.', body: 'Copying results from several tools into one document is slow and easy to get wrong, and it is out of date by the time it is shared. SentraVA produces a report straight from the findings in one place, so you can review the results and download a report for your team, your manager, or an auditor whenever you need one.' }
 ]
 const faq = [
-  { q: 'What can SentraVA scan?', a: 'Domains, networks, web applications, and source code, from one platform.' },
-  { q: 'What do I get after a scan?', a: 'A list of the vulnerabilities found, ranked by severity. You can review the results and download reports.' },
-  { q: 'How is SentraVA priced?', a: '[Describe pricing model]' },
-  { q: 'Is it cloud-hosted or on-premises?', a: '[Describe deployment options]' },
-  { q: 'Which tools does it integrate with?', a: '[List integrations, e.g. CI/CD, issue trackers, chat]' },
-  { q: 'How often can I run scans?', a: '[Describe scan scheduling and limits]' }
+  { q: 'What can SentraVA scan?', a: 'SentraVA assesses four kinds of targets from one platform: domains, networks, web applications, and source code. Domains and networks are checked for exposed services and known vulnerabilities, web applications are tested for common web flaws, and source code is analysed for coding flaws, embedded credentials, and infrastructure-as-code misconfigurations. You register each target once, then scan it whenever you need.' },
+  { q: 'What do I get after a scan?', a: 'You get a list of the vulnerabilities found, ranked by severity so the most urgent come first. Each finding shows the affected asset and what was detected, and you can raise a ticket for it so your team tracks the fix. You can also download a report from the same findings, with the detail engineers need to fix each issue and a clear picture of risk for leadership.' },
+  { q: 'How is SentraVA priced?', a: 'Pricing is based on your assets. We count how many assets or targets you register, such as domains, networks, web applications, and code repositories, and your price follows that number.' },
+  { q: 'How is SentraVA deployed?', a: 'SentraVA is deployed on-premises. We place a probe box in your environment, and it runs the assessments from inside your network. You allow the probe box through your firewall to the assets you want scanned, for example by whitelisting its address, so it can reach them. Nothing else needs to be installed on your assets.' },
+  { q: 'Which tools does it integrate with?', a: 'You can raise a ticket from any finding so your team tracks the fix. Source code scanning connects to a GitHub repository with an access token, and all of its branches are registered for scanning. Connections are managed from the dashboard and the company settings, so an admin can see what is connected in one place.' },
+  { q: 'How often can I run scans?', a: 'Run a scan whenever you need one, for example after a release or a change to your network. You can also schedule a scan to repeat, so a target is checked on a regular cadence without anyone having to remember. Each scan updates the findings for that target, so you can see what is new and what has been fixed since the last one.' }
 ]
 const footerCols = [
   { title: 'Product', links: ['Domain scanning', 'Network scanning', 'Web application scanning', 'Source code scanning', 'Reports'] },
@@ -521,8 +493,6 @@ const SEVCOLOR = { critical: 'var(--on-glass-critical)', high: 'var(--on-glass-h
 const root = ref(null)
 const w = ref(typeof window !== 'undefined' ? window.innerWidth : 1200)
 const menuOpen = ref(false)
-const demoOpen = ref(false)
-const demoSent = ref(false)
 const active = ref('product')
 const now = ref(0)
 const tsel = ref(0)
@@ -647,18 +617,10 @@ function scrollTop(e) {
   e.preventDefault()
   goTo(0, 'product')
 }
-function openDemo() {
-  demoSent.value = false
-  demoOpen.value = true
-}
-function sendDemo() {
-  // No backend yet: the request is only acknowledged on screen.
-  demoSent.value = true
-}
 
 /* ---------- motion ---------- */
 // Same flow as orchid.security: Lenis smooth scroll driving GSAP ScrollTrigger, a staggered fade-up on
-// load, slide / fade / stagger reveals as sections enter, and a scrubbed word-by-word statement.
+// load, slide / fade / stagger reveals as sections enter, and a masked line-by-line headline reveal.
 function setupMotion() {
   lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true })
   lenis.on('scroll', ScrollTrigger.update)
@@ -688,11 +650,30 @@ function setupMotion() {
     gsap.utils.toArray('[data-rule]').forEach((el) =>
       reveal(el, { scaleX: 0, transformOrigin: 'left center' }, { scaleX: 1, duration: 1.2, delay: 0.4, ease: 'power2.out' }, el, 'top 92%'))
 
-    // The statement lights up word by word as it scrolls through.
-    const split = SplitText.create('[data-split]', { type: 'words' })
-    gsap.fromTo(split.words, { opacity: 0.25 }, {
-      opacity: 1, ease: 'none', stagger: 0.1,
-      scrollTrigger: { trigger: '[data-split]', start: 'top 85%', end: 'bottom 55%', scrub: true },
+    // Problems: the rail fills with scroll; each statement's headline rises line by line out of a mask, its number
+    // fades in and its dot lights up as it enters.
+    gsap.fromTo('.story__fill', { scaleY: 0 }, {
+      scaleY: 1, ease: 'none', transformOrigin: 'top center',
+      scrollTrigger: { trigger: storyEl.value, start: 'top 60%', end: 'bottom 60%', scrub: true },
+    })
+    gsap.utils.toArray('.story__item').forEach((item) => {
+      item.classList.add('story__item--wait')
+      ScrollTrigger.create({
+        trigger: item, start: 'top 60%',
+        onEnter: () => item.classList.remove('story__item--wait'),
+        onLeaveBack: () => item.classList.add('story__item--wait'),
+      })
+      gsap.from(item.querySelector('.story__num'), {
+        opacity: 0, x: -24, duration: 0.8, ease: 'power2.out',
+        scrollTrigger: { trigger: item, start: 'top 75%' },
+      })
+      SplitText.create(item.querySelector('.story__h'), {
+        type: 'lines', mask: 'lines', autoSplit: true,
+        onSplit: (self) => gsap.from(self.lines, {
+          yPercent: 110, duration: 0.9, ease: 'power3.out', stagger: 0.12,
+          scrollTrigger: { trigger: item, start: 'top 72%' },
+        }),
+      })
     })
 
     // Steps: the section pins, and scroll progress picks the active step (wide screens only).
