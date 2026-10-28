@@ -2,6 +2,7 @@
 import { ref, onBeforeUnmount } from 'vue'
 import Sidebar   from './Sidebar.vue'
 import AppNavbar from './AppNavbar.vue'
+import PageLoader from './PageLoader.vue'
 import { useSessionGuard } from '@/composables/useSessionGuard'
 import { useEscapeToClose } from '@/composables/useEscapeToClose'
 
@@ -35,8 +36,10 @@ useEscapeToClose()
       <main class="app-layout__content">
         <!-- Pages load their data with a top-level await, so they render inside Suspense. -->
         <router-view v-slot="{ Component }">
-          <Suspense>
+          <!-- timeout 0: show the loader as soon as a page switch starts waiting, not only on the first load. -->
+          <Suspense :timeout="0">
             <component :is="Component" />
+            <template #fallback><PageLoader /></template>
           </Suspense>
         </router-view>
       </main>
