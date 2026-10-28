@@ -57,7 +57,6 @@ const showPassword = ref(false)
 const focused = ref(null)
 const errors = reactive({ email: '', password: '', form: '' })
 const busy = ref(false)
-const noData = ref(false) // demo: sign in with every page empty (works with any role)
 const done = ref(false)
 const shakeKey = ref(0)
 let timer
@@ -68,7 +67,7 @@ const step = ref('credentials')
 const challenge = ref(null) // { challengeId, email }
 const code = ref('')
 const resentNotice = ref(false)
-const cooldown = useResendCooldown(60)
+const cooldown = useResendCooldown(59)
 const maskedEmail = computed(() => maskEmail(challenge.value?.email))
 
 // Say why the user landed here when the session ended on its own (idle / expired).
@@ -97,7 +96,7 @@ async function onSubmit() {
   if (!validate()) { shakeKey.value++; return }
   busy.value = true
   try {
-    const res = await auth.login(email.value.trim(), password.value, { dataMode: noData.value ? 'empty' : undefined })
+    const res = await auth.login(email.value.trim(), password.value)
     busy.value = false
     if (res.twoFactorRequired) {
       challenge.value = res
@@ -168,19 +167,6 @@ function useApp() { step.value = 'code'; code.value = ''; errors.form = ''; cool
 function forgotPassword() {
   // Carry over whatever email was typed so the next page starts filled in.
   router.push({ name: 'forgot-password', query: email.value.trim() ? { email: email.value.trim() } : {} })
-}
-
-// Demo role shortcuts (static mode only)
-const IS_STATIC = import.meta.env.VITE_IS_STATIC === 'true'
-const demoAccounts = [
-  { label: 'Super Admin', email: 'superadmin@sentra.io', password: 'demo' },
-  { label: 'Admin',       email: 'admin@acme.com',       password: 'demo' },
-  { label: 'Member',      email: 'member@acme.com',      password: 'demo' },
-]
-function useDemo(account) {
-  email.value = account.email
-  password.value = account.password
-  onSubmit()
 }
 
 onBeforeUnmount(() => {
@@ -294,27 +280,11 @@ onBeforeUnmount(() => {
             <p v-if="resentNotice" class="tfa__sent" role="status">A new code has been sent to {{ maskedEmail }}.</p>
             <button type="button" class="tfa__plain" @click="useApp"><span class="icon icon--sm">arrow_back</span>Use your Authenticator app instead</button>
           </template>
-          <p v-if="IS_STATIC" class="tfa__demo">Demo: the code is 123456</p>
         </form>
 
         <p v-if="step === 'credentials'" class="terms rise" style="--d: 240ms">
           By continuing, you agree to SENTRAVA's <a href="#" class="link">Terms</a> and <a href="#" class="link">Privacy Policy</a>.
         </p>
-      </div>
-      <div v-if="IS_STATIC" class="card card--demo rise" style="--d: 320ms">
-        <div class="demo__label"><span>Quick demo</span></div>
-        <button
-          type="button" role="switch" :aria-checked="noData" class="demo__switch" :class="{ 'is-on': noData }"
-          @click="noData = !noData"
-        >
-          <span class="demo__track"><i /></span>
-          <span class="demo__switch-text">Show every page with no data</span>
-        </button>
-        <div class="demo__row">
-          <button v-for="acc in demoAccounts" :key="acc.email" type="button" class="demo__btn" @click="useDemo(acc)">
-            {{ acc.label }}
-          </button>
-        </div>
       </div>
   </AuthLayout>
 </template>
