@@ -272,8 +272,8 @@ $w-collapsed:  64px;
   .sidebar--collapsed &__footer { align-items: center; padding-left: 0; padding-right: 0; }
 
   &__version { font-weight: 700; }
-  // Wraps to a second line: the capitals don't fit the 190px content width in one line at 11px.
-  &__copyright { font-size: var(--fs-xs); letter-spacing: 0.02em; opacity: 0.8; white-space: normal; }
+  // One line: normal case at 10px fits the 190px content width (the capitals at 11px didn't).
+  &__copyright { font-size: 10px; letter-spacing: 0; text-transform: none; opacity: 0.8; white-space: nowrap; }
 
   &__section {
     display: flex;
